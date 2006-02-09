@@ -134,15 +134,17 @@ class MException extends Exception
 				
 				$str .= sprintf("  % {$noSpace}s ", $traceLen-$i);
 				
-				if(isset($ti['type'])) {
-					$str .= $ti['class'].$ti['type'].$ti['function'].$args
-						.' on line '.$ti['line']
-						. ' in ' . Utils::relativePath($ti['file'], AB::$dir);
-				}
-				else {
-					$str .= '::'.$ti['function']."$args on line {$ti['line']} in "
-						. Utils::relativePath($ti['file'], AB::$dir);
-				}
+				if(isset($ti['type']))
+					$str .= $ti['class'].$ti['type'];
+				else
+					$str .= '::';
+				$str .= $ti['function'].$args;
+				
+				if(isset($ti['line']))
+					$str .= ' on line '.$ti['line'];
+				if(isset($ti['file']))
+					$str .= ' in ' . Utils::relativePath($ti['file'], AB::$dir);
+
 				$str .="\n";
 			}
 			$str .= $html ? "</pre></div>\n" : "\n";

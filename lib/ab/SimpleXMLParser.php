@@ -41,7 +41,7 @@ class SimpleXMLParser
 	 * header for known strings.
 	 * @var bool
 	 */
-	protected $shouldPredictEncoding = true;
+	protected $shouldPredictEncoding = false;
 	
 	/**
 	 * Predicted encoding name, if any.
