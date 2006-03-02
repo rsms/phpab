@@ -29,7 +29,11 @@ class AB {
 	
 	public static $isSafemode = false;
 	
+	/** @var string */
 	public static $dir = '';
+	
+	/** @var string */
+	public static $basedir = '';
 	
 	/** @var array */
 	public static $config = array();
@@ -107,6 +111,54 @@ class AB {
 			return preg_match('/^(true|yes|1)$/i', $base[$nodename]);
 		return false;
 	}
+	
+	/**
+	 * @ignore
+	 */
+	public static function onPHPError( $errno, $str, $file, $line )
+	{	
+		# if something was prepended by @, errlevel will be 0
+		if(error_reporting() == 0)
+			return;
+		
+		if($errno == E_WARNING || $errno == E_USER_WARNING)
+			throw new PHPException($str, $errno, $file, $line);
+		
+		$fileLine = "on line $line in ";
+		if(isset($_SERVER['DOCUMENT_ROOT']))
+			$fileLine .= Utils::relativePath($file, $_SERVER['DOCUMENT_ROOT']);
+		elseif(isset($GLOBALS['argv'][0]))
+			$fileLine .= Utils::relativePath($file, dirname($GLOBALS['argv'][0]));
+		else
+			$fileLine .= $file;
+		
+		switch($errno) {
+			case E_PARSE:
+			case E_USER_ERROR:
+			case E_ERROR:
+				break;
+			case E_NOTICE:
+			case E_USER_NOTICE:
+				if(ini_get('html_errors') == '0')
+					print "WARNING: $str $fileLine";
+				else
+					print "<span class=\"warning\"><b>WARNING:</b> $str <span class=\"file\">$fileLine</span></span>";
+				return;
+		}
+		
+		if(ini_get('html_errors') == '0') {
+			Utils::printError("FATAL: $str $fileLine\n\t"
+				. str_replace("\n","\n\t",ABException::formatTrace(new Exception(), false, array('__errhandler')))
+				. "\n");
+		}
+		else {
+			Utils::printError("<div class=\"err\"><b>FATAL:</b> $str <span class=\"file\">$fileLine</span>\n"
+				. '<div class="trace">' . ABException::formatTrace(new Exception(), true, array('__errhandler')) . '</div>'
+				. '</div>');
+		}
+		
+		exit(1);
+	}
 }
 
 # __autoload
@@ -116,70 +168,27 @@ if(AB::$isSafemode = (ini_get('safe_mode') == '1')) {
 		foreach(AB::$classpath as $d)
 			if((@include_once "$d/$c.php") !== false)
 				return;
-		AB::onAutoloadFailure($c);
+		
+		$t = debug_backtrace();
+		if(@$t[1]['function'] != 'class_exists')
+			AB::onAutoloadFailure($c);
 	}
 }
 else {
 	/** @ignore */
 	function __autoload($c) {
-		if((@include_once $c . '.php') === false)
-			AB::onAutoloadFailure($c);
+		if((@include_once $c . '.php') === false) {
+			$t = debug_backtrace();
+			if(@$t[1]['function'] != 'class_exists')
+				AB::onAutoloadFailure($c);
+		}
 	}
 }
 
 /** @ignore */
-function __exhandler($e) {
-	print ABException::format($e, true, (ini_get('html_errors') != '0'));
-}
+function __exhandler($e) { print ABException::format($e, true, (ini_get('html_errors') != '0')); }
 set_exception_handler('__exhandler');
-
-
-/** @ignore */
-function __errhandler( $errno, $str, $file, $line )
-{	
-	# if something was prepended by @, errlevel will be 0
-	if(error_reporting() == 0)
-		return;
-	
-	if($errno == E_WARNING || $errno == E_USER_WARNING)
-		throw new PHPException($str, $errno, $file, $line);
-	
-	$fileLine = "on line $line in ";
-	if(isset($_SERVER['DOCUMENT_ROOT']))
-		$fileLine .= Utils::relativePath($file, $_SERVER['DOCUMENT_ROOT']);
-	elseif(isset($GLOBALS['argv'][0]))
-		$fileLine .= Utils::relativePath($file, dirname($GLOBALS['argv'][0]));
-	else
-		$fileLine .= $file;
-	
-	switch($errno) {
-		case E_PARSE:
-		case E_USER_ERROR:
-		case E_ERROR:
-			break;
-		case E_NOTICE:
-		case E_USER_NOTICE:
-			if(ini_get('html_errors') == '0')
-				print "WARNING: $str $fileLine";
-			else
-				print "<span class=\"warning\"><b>WARNING:</b> $str <span class=\"file\">$fileLine</span></span>";
-			return;
-	}
-	
-	if(ini_get('html_errors') == '0') {
-		Utils::printError("FATAL: $str $fileLine\n\t"
-			. str_replace("\n","\n\t",ABException::formatTrace(new Exception(), false, array('__errhandler')))
-			. "\n");
-	}
-	else {
-		Utils::printError("<div class=\"err\"><b>FATAL:</b> $str <span class=\"file\">$fileLine</span>\n"
-			. '<div class="trace">' . ABException::formatTrace(new Exception(), true, array('__errhandler')) . '</div>'
-			. '</div>');
-	}
-	
-	exit(1);
-}
-set_error_handler('__errhandler', E_ALL);
+set_error_handler(array('AB','onPHPError'), E_ALL);
 
 
 # Types
@@ -220,6 +229,16 @@ require_once 'lcs.php';
 
 AB::$dir = dirname(__FILE__);
 AB::addClasspath(AB::$dir);
-@include_once AB::$dir.'/../../config.php';
+
+// Set AB::$basedir
+if(isset($_SERVER['DOCUMENT_ROOT']))
+	AB::$basedir = $_SERVER['DOCUMENT_ROOT'];
+else {
+	if(isset($_SERVER['argv']))
+		if(isset($_SERVER['argv'][0]))
+			AB::$basedir = dirname(realpath($_SERVER['argv'][0]));
+	if(!AB::$basedir)
+		AB::$basedir = getcwd();
+}
 
 ?>

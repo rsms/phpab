@@ -65,16 +65,20 @@ class ABException extends Exception
 	 */
 	public static function format( Exception $e, $includingTrace = true, $html = true, $skip = null )
 	{
+		$file = Utils::relativePath($e->getFile(), AB::$basedir);
+		if($file{0} != '/')
+			$file = '/'.$file;
+		
 		if($html)
 		{
 			$str = '<div class="exception"><b>' .  get_class($e) . '</b><br /> '
 				. '<span class="message">'.nl2br(htmlentities($e->getMessage())).'</span> '
 				. '<span class="file">on line '.$e->getLine()
-				. ' in '.Utils::relativePath($e->getFile(), AB::$dir)."</span>";
+				. ' in '.$file."</span>";
 		}
 		else {
 			$str = get_class($e) . ': ' . $e->getMessage() . ' on line ' . $e->getLine()
-				. ' in ' . Utils::relativePath($e->getFile(), AB::$dir);
+				. ' in ' . $file;
 		}
 		
 		if($includingTrace)
@@ -142,8 +146,12 @@ class ABException extends Exception
 				
 				if(isset($ti['line']))
 					$str .= ' on line '.$ti['line'];
-				if(isset($ti['file']))
-					$str .= ' in ' . Utils::relativePath($ti['file'], AB::$dir);
+				if(isset($ti['file'])) {
+					$file = Utils::relativePath($ti['file'], AB::$basedir);
+					if($file{0} != '/')
+						$file = '/'.$file;
+					$str .= ' in ' . $file;
+				}
 
 				$str .="\n";
 			}
