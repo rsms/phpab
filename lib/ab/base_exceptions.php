@@ -72,13 +72,22 @@ class ABException extends Exception
 		if($html)
 		{
 			$str = '<div class="exception"><b>' .  get_class($e) . '</b><br /> '
-				. '<span class="message">'.nl2br(htmlentities($e->getMessage())).'</span> '
+				. '<span class="message">'.nl2br(htmlentities($e->getMessage()));
+			
+			if($e instanceof PDOException)
+				$str .= '<pre>' . trim(htmlentities($e->errorInfo)).'</pre>';
+			
+			$str .= '</span> '
 				. '<span class="file">on line '.$e->getLine()
 				. ' in '.$file."</span>";
 		}
 		else {
-			$str = get_class($e) . ': ' . $e->getMessage() . ' on line ' . $e->getLine()
-				. ' in ' . $file;
+			$str = get_class($e) . ': ' . $e->getMessage();
+			
+			if($e instanceof PDOException)
+				$str .= "\n".trim($e->errorInfo)."\n";
+			
+			$str .= ' on line ' . $e->getLine() . ' in ' . $file;
 		}
 		
 		if($includingTrace)
