@@ -51,7 +51,7 @@ abstract class DatabaseLogFilter implements LogFilter {
 	 * @param  LogRecord
 	 * @param  string    A preformatted message, compiled by the <samp>filter</samp> 
 	 *                   method, containing <samp>$record->getMessage()</samp> and/or 
-	 *                   <samp>MException::format($record->getThrown())</samp>
+	 *                   <samp>ABException::format($record->getThrown())</samp>
 	 * @return void
 	 * @throws Exception
 	 */
@@ -73,7 +73,7 @@ abstract class DatabaseLogFilter implements LogFilter {
 		if($rec->getMessage())
 			$msg .= $rec->getMessage()."\n";
 		if($rec->getThrown())
-			$msg .= MException::format($rec->getThrown(), true, false);
+			$msg .= ABException::format($rec->getThrown(), true, false);
 		$msg = trim($msg);
 		
 		// forward

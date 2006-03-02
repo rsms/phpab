@@ -288,7 +288,7 @@ class Logger {
 	 *
 	 * If <samp>$msg</samp> is an <samp>object</samp>, it will be converted to a string 
 	 * using $obj->__toString()</samp>. If <samp>$msg</samp> is an <samp>Exception</samp>,
-	 * it will be converted to a string using <samp>MException::format($e)</samp>. However,
+	 * it will be converted to a string using <samp>ABException::format($e)</samp>. However,
 	 * this is done by the LogHandler, so these are more or less guidelines than rules.
 	 *
 	 * @param  LogRecord

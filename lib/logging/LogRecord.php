@@ -124,7 +124,7 @@ class LogRecord
 		if($this->message)
 			$msg .= $this->message.' ';
 		if($this->thrown)
-			$msg .= MException::format($this->thrown, true, false);
+			$msg .= ABException::format($this->thrown, true, false);
 		
 		return "$msg";
 	}

@@ -70,7 +70,7 @@ class MailLogFilter implements LogFilter
 		
 		// Message
 		if($rec->getThrown())
-			$msg .= MException::format($rec->getThrown(), true, false);
+			$msg .= ABException::format($rec->getThrown(), true, false);
 		if($rec->getMessage())
 			$msg .= $rec->getMessage();
 		
