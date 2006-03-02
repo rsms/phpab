@@ -12,7 +12,7 @@
  * @package    hunch.ab
  * @subpackage base
  */
-class MException extends Exception
+class ABException extends Exception
 {	
 	/**
 	 * @param  int
@@ -169,7 +169,7 @@ class MException extends Exception
  * @package    hunch.ab
  * @subpackage io
  */
-class IOException extends MException {}
+class IOException extends ABException {}
 	
 	/**
 	 * Thrown to indicate a connection exception
@@ -231,7 +231,7 @@ class IOException extends MException {}
  * @package    hunch.ab
  * @subpackage base
  */
-class ParseException extends MException {}
+class ParseException extends ABException {}
 
 	/**
 	 * Thrown to indicate an XML parsing error
@@ -245,7 +245,7 @@ class ParseException extends MException {}
  * @package    hunch.ab
  * @subpackage base
  */
-class IllegalArgumentException extends MException {}
+class IllegalArgumentException extends ABException {}
 	
 	/**
 	 * Thrown to indicate errornous format
@@ -266,21 +266,21 @@ class IllegalArgumentException extends MException {}
  * @package    hunch.ab
  * @subpackage base
  */
-class IllegalStateException extends MException {}
+class IllegalStateException extends ABException {}
 
 /**
  * Indicates a classcast gone wrong
  * @package    hunch.ab
  * @subpackage base
  */
-class ClassCastException extends MException {}
+class ClassCastException extends ABException {}
 
 /**
  * Thrown to indicate a configuration error
  * @package    hunch.ab
  * @subpackage base
  */
-class ConfigurationException extends MException {}
+class ConfigurationException extends ABException {}
 
 /**
  * Thrown to indicate a PHP exception.
@@ -288,7 +288,7 @@ class ConfigurationException extends MException {}
  * @package    hunch.ab
  * @subpackage base
  */
-class PHPException extends MException {
+class PHPException extends ABException {
 	/**
 	 * @param  string
 	 * @return void
@@ -308,6 +308,6 @@ class PHPException extends MException {
  * @package    hunch.ab
  * @subpackage base
  */
-class ProcessException extends MException {}
+class ProcessException extends ABException {}
 
 ?>

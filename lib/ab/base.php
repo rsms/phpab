@@ -129,7 +129,7 @@ else {
 
 /** @ignore */
 function __exhandler($e) {
-	print MException::format($e, true, (ini_get('html_errors') != '0'));
+	print ABException::format($e, true, (ini_get('html_errors') != '0'));
 }
 set_exception_handler('__exhandler');
 
@@ -168,12 +168,12 @@ function __errhandler( $errno, $str, $file, $line )
 	
 	if(ini_get('html_errors') == '0') {
 		Utils::printError("FATAL: $str $fileLine\n\t"
-			. str_replace("\n","\n\t",MException::formatTrace(new Exception(), false, array('__errhandler')))
+			. str_replace("\n","\n\t",ABException::formatTrace(new Exception(), false, array('__errhandler')))
 			. "\n");
 	}
 	else {
 		Utils::printError("<div class=\"err\"><b>FATAL:</b> $str <span class=\"file\">$fileLine</span>\n"
-			. '<div class="trace">' . MException::formatTrace(new Exception(), true, array('__errhandler')) . '</div>'
+			. '<div class="trace">' . ABException::formatTrace(new Exception(), true, array('__errhandler')) . '</div>'
 			. '</div>');
 	}
 	
