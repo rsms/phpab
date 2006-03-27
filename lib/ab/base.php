@@ -11,6 +11,8 @@
 error_reporting(E_ALL);
 #ini_set('display_errors', '1');
 #ini_set('log_errors', '0');
+ini_set('html_errors', '0');
+ini_set('docref_root', '');
 ini_set('ignore_repeated_errors', '1');
 
 /**
@@ -70,17 +72,10 @@ class AB {
 		return false;
 	}
 	
-	/** @ignore */
-	public static function onAutoloadFailure($classname) {
-		$t = debug_backtrace();
-		array_shift($t);
-		$msg = 'Failed to load class '.$classname . ".<br/>\n"
-			.'Include path: "' . ini_get('include_path') . "\"<br/>";
-		
-		if(ini_get('html_errors') == '0')
-			$msg = strip_tags($msg);
-		
-		trigger_error($msg, E_USER_ERROR);
+	/** @return bool */
+	public static function isCLI() {
+		$n = php_sapi_name();
+		return ($n == 'cli' || $n == 'cgi');
 	}
 	
 	/**
@@ -112,9 +107,20 @@ class AB {
 		return false;
 	}
 	
-	/**
-	 * @ignore
-	 */
+	/** @ignore */
+	public static function onAutoloadFailure($classname) {
+		$t = debug_backtrace();
+		array_shift($t);
+		$msg = 'Failed to load class '.$classname . ".<br/>\n"
+			.'Include path: "' . ini_get('include_path') . "\"<br/>";
+		
+		if(ini_get('html_errors') == '0')
+			$msg = strip_tags($msg);
+		
+		trigger_error($msg, E_USER_ERROR);
+	}
+	
+	/** @ignore */
 	public static function onPHPError( $errno, $str, $file, $line )
 	{	
 		# if something was prepended by @, errlevel will be 0
@@ -139,14 +145,14 @@ class AB {
 				break;
 			case E_NOTICE:
 			case E_USER_NOTICE:
-				if(ini_get('html_errors') == '0')
+				if(self::isCLI())
 					print "WARNING: $str $fileLine";
 				else
-					print "<span class=\"warning\"><b>WARNING:</b> $str <span class=\"file\">$fileLine</span></span>";
+					print "<span class=\"warning\"><b>WARNING:</b> $str <span class=\"file\">$fileLine</span></span><br />";
 				return;
 		}
 		
-		if(ini_get('html_errors') == '0') {
+		if(self::isCLI()) {
 			Utils::printError("FATAL: $str $fileLine\n\t"
 				. str_replace("\n","\n\t",ABException::formatTrace(new Exception(), false, array('__errhandler')))
 				. "\n");
@@ -184,6 +190,7 @@ else {
 		}
 	}
 }
+ini_set('unserialize_callback_func', '__autoload');
 
 /** @ignore */
 function __exhandler($e) { print ABException::format($e, true, (ini_get('html_errors') != '0')); }
@@ -225,7 +232,7 @@ function c( $name, $default = null ) {
  * Localization
  * @ignore
  */
-require_once 'lcs.php';
+#require_once 'lcs.php';
 
 AB::$dir = dirname(__FILE__);
 AB::addClasspath(AB::$dir);
@@ -239,6 +246,34 @@ else {
 			AB::$basedir = dirname(realpath($_SERVER['argv'][0]));
 	if(!AB::$basedir)
 		AB::$basedir = getcwd();
+}
+
+
+/** @ignore */
+$_l2h = array('a'=>'A','b'=>'B','c'=>'C','d'=>'D','e'=>'E','f'=>'F','g'=>'G','h'=>'H','i'=>'I','j'=>'J','k'=>'K','l'=>'L','m'=>'M','n'=>'N','o'=>'O','p'=>'P','q'=>'Q','r'=>'R','s'=>'S','t'=>'T','u'=>'U','v'=>'V','w'=>'W','x'=>'X','y'=>'Y','z'=>'Z',"\xe5"=>"\xc5","\xe4"=>"\xc4","\xf6"=>"\xd6","\xe6"=>"\xc6","\xf8"=>"\xd8","\xe9"=>"\xc9","\xe8"=>"\xc8","\xe1"=>"\xc1","\xe0"=>"\xc0","\xfc"=>"\xdc","\xfb"=>"\xdb","\xf4"=>"\xd4","\xe7"=>"\xc7");
+/** @ignore */
+$_h2l = array('A'=>'a','B'=>'b','C'=>'c','D'=>'d','E'=>'e','F'=>'f','G'=>'g','H'=>'h','I'=>'i','J'=>'j','K'=>'k','L'=>'l','M'=>'m','N'=>'n','O'=>'o','P'=>'p','Q'=>'q','R'=>'r','S'=>'s','T'=>'t','U'=>'u','V'=>'v','W'=>'w','X'=>'x','Y'=>'y','Z'=>'z',"\xc5"=>"\xe5","\xc4"=>"\xe4","\xd6"=>"\xf6","\xc6"=>"\xe6","\xd8"=>"\xf8","\xc9"=>"\xe9","\xc8"=>"\xe8","\xc1"=>"\xe1","\xc0"=>"\xe0","\xdc"=>"\xfc","\xdb"=>"\xfb","\xd4"=>"\xf4","\xc7"=>"\xe7");
+
+/**
+ * @param  char
+ * @return char
+ */
+function chrtolower($ch) {
+	global $_h2l;
+	if(isset($_h2l[$ch]))
+		return $_h2l[$ch];
+	return $ch;
+}
+
+/**
+ * @param  char
+ * @return char
+ */
+function chrtoupper($ch) {
+	global $_l2h;
+	if(isset($_l2h[$ch]))
+		return $_l2h[$ch];
+	return $ch;
 }
 
 ?>

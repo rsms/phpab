@@ -7,6 +7,10 @@
  */
 class BenchmarkTimer {
 	
+	/** @var bool */
+	public static $utf8 = true;
+	
+	/** @ignore */
 	public static $HAVE_RUSAGE = 1;
 	
 	private $buff = array(0,0,0,0);
@@ -19,8 +23,13 @@ class BenchmarkTimer {
 		$this->rus(false);
 	}
 	
-	public function stop() {
+	public function stop($divideTimeBy = 1) {
 		$this->rus(true);
+		if($divideTimeBy > 1) {
+			$this->utime /= $divideTimeBy;
+			$this->stime /= $divideTimeBy;
+			$this->rtime /= $divideTimeBy;
+		}
 		return $this->toString();
 	}
 	
@@ -105,7 +114,7 @@ class BenchmarkTimer {
 			if( $mins > 0 ) $ret .= "$mins min, ";
 			if( $secs > 0 ) $ret .= "$secs sec, ";
 			if( $ms > 0 ) $ret .= "$ms ms, ";
-			if( $mi > 0 ) $ret .= "$mi µs, ";
+			if( $mi > 0 ) $ret .= "$mi ".(self::$utf8 ? "\xc2" : "\xb5").'s, ';
 			$ret .= "$ns ns";
 			
 			return $ret;
@@ -132,8 +141,8 @@ class BenchmarkTimer {
 			if( ($sec > 0.001 && $what == null) || $what == 'ms' )
 				return round($sec * 1000, 2).' ms';
 			
-			if( ($sec > 0.000001 && $what == null) || $what == 'mi' || $what == 'µs' )
-				return round($sec * 1000000, 2).' µs';
+			if( ($sec > 0.000001 && $what == null) || $what == 'mi' || $what == "\xb5s" || $what == "\xc2s" )
+				return round($sec * 1000000, 2).' '.(self::$utf8 ? "\xc2" : "\xb5").'s';
 			
 			return intval($sec * 1000000000).' ns';
 		}

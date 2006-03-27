@@ -198,23 +198,6 @@ class Utils {
     	if(@file_put_contents($file, $data) === false)
         	throw new IOException('Failed to write serialized data to file "' . $file . '"');
     }
-	
-	/**
-	 * Scandinavian case conversion
-	 */
-	public static function strToLower($str, $utf8 = true) {
-		if($utf8)
-			return utf8_encode(strtr(strtolower(utf8_decode($str)),"\xc5\xc4\xd6\xc6\xd1\xd8\xd5\xdc\xc9\xca","\xe5\xe4\xf6\xe6\xf1\xf8\xf5\xfc\xe9\xea"));
-		else
-			return strtr(strtolower($str),"\xc5\xc4\xd6\xc6\xd1\xd8\xd5\xdc\xc9\xca","\xe5\xe4\xf6\xe6\xf1\xf8\xf5\xfc\xe9\xea");
-	}
-	
-	/**
-	 * Scandinavian case conversion
-	 */
-	public static function strToUpper($str) {
-		return strtr(strtoupper($str),"\xe5\xe4\xf6\xe6\xf1\xf8\xf5\xfc\xe9\xea","\xc5\xc4\xd6\xc6\xd1\xd8\xd5\xdc\xc9\xca");
-	}
     
     /**
      * Escape attribute value
@@ -266,6 +249,54 @@ class Utils {
 	public static function mimeStringDecode( $str ) {
 		$s = imap_mime_header_decode($str);
 		return utf8_encode($s[0]->text);
+	}
+	
+	private static $l2h = array('a'=>'A','b'=>'B','c'=>'C','d'=>'D','e'=>'E','f'=>'F','g'=>'G','h'=>'H','i'=>'I','j'=>'J','k'=>'K','l'=>'L','m'=>'M','n'=>'N','o'=>'O','p'=>'P','q'=>'Q','r'=>'R','s'=>'S','t'=>'T','u'=>'U','v'=>'V','w'=>'W','x'=>'X','y'=>'Y','z'=>'Z',"\xe5"=>"\xc5","\xe4"=>"\xc4","\xf6"=>"\xd6","\xe6"=>"\xc6","\xf8"=>"\xd8","\xe9"=>"\xc9","\xe8"=>"\xc8","\xe1"=>"\xc1","\xe0"=>"\xc0","\xfc"=>"\xdc","\xfb"=>"\xdb","\xf4"=>"\xd4","\xe7"=>"\xc7");
+
+	private static $h2l = array('A'=>'a','B'=>'b','C'=>'c','D'=>'d','E'=>'e','F'=>'f','G'=>'g','H'=>'h','I'=>'i','J'=>'j','K'=>'k','L'=>'l','M'=>'m','N'=>'n','O'=>'o','P'=>'p','Q'=>'q','R'=>'r','S'=>'s','T'=>'t','U'=>'u','V'=>'v','W'=>'w','X'=>'x','Y'=>'y','Z'=>'z',"\xc5"=>"\xe5","\xc4"=>"\xe4","\xd6"=>"\xf6","\xc6"=>"\xe6","\xd8"=>"\xf8","\xc9"=>"\xe9","\xc8"=>"\xe8","\xc1"=>"\xe1","\xc0"=>"\xe0","\xdc"=>"\xfc","\xdb"=>"\xfb","\xd4"=>"\xf4","\xc7"=>"\xe7");
+
+	
+	/**
+	 * @param  char
+	 * @return char
+	 */
+	public static function chrToLower($ch)
+	{
+		if(isset(self::$h2l[$ch]))
+			return self::$h2l[$ch];
+		return $ch;
+	}
+	
+	/**
+	 * @param  char
+	 * @return char
+	 */
+	public static function chrToUpper($ch)
+	{
+		if(isset(self::$l2h[$ch]))
+			return self::$l2h[$ch];
+		return $ch;
+	}
+	
+	/**
+	 * @param  string
+	 * @param  bool
+	 * @return string
+	 */
+	public static function strToLower($str, $utf8 = false) {
+		if($utf8)
+			return utf8_encode(strtr(strtolower(utf8_decode($str)),"\xc5\xc4\xd6\xc6\xd1\xd8\xd5\xdc\xc9\xca","\xe5\xe4\xf6\xe6\xf1\xf8\xf5\xfc\xe9\xea"));
+		else
+			return strtr(strtolower($str),"\xc5\xc4\xd6\xc6\xd1\xd8\xd5\xdc\xc9\xca","\xe5\xe4\xf6\xe6\xf1\xf8\xf5\xfc\xe9\xea");
+	}
+	
+	/**
+	 * @param  string
+	 * @return string
+	 */
+	public static function strToUpper($str, $length = -1)
+	{
+		return strtr(strtoupper($str),"\xe5\xe4\xf6\xe6\xf1\xf8\xf5\xfc\xe9\xea","\xc5\xc4\xd6\xc6\xd1\xd8\xd5\xdc\xc9\xca");
 	}
 }
 ?>
