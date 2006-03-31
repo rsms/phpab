@@ -11,15 +11,9 @@
 error_reporting(E_ALL);
 #ini_set('display_errors', '1');
 #ini_set('log_errors', '0');
-ini_set('html_errors', '0');
+#ini_set('html_errors', '0');
 ini_set('docref_root', '');
 ini_set('ignore_repeated_errors', '1');
-
-/**
- * Load exceptions
- * @ignore
- */
-require_once 'base_exceptions.php';
 
 /**
  * @version    $Id$
@@ -89,6 +83,12 @@ class AB {
 			$x = new SimpleXMLParser($file);
 			$x->loadFile($file);
 			self::$config = $x->toArray();
+		}
+		elseif($ext == 'ini' || $ext == 'properties' || $ext == 'conf') {
+			self::$config = parse_ini_file($file);
+		}
+		elseif($ext == 'dat' || $ext == 'ser' || $ext == 'serial' || $ext == 'obj') {
+			self::$config = Utils::unserializeFile($file);
 		}
 		else {
 			throw new IllegalFormatException('Can not load files of type "'.$ext.'"');
@@ -227,12 +227,6 @@ if(defined('DEBUG')) {
 function c( $name, $default = null ) {
 	return isset(AB::$config[$name]) ? AB::$config[$name] : $default;
 }
-
-/**
- * Localization
- * @ignore
- */
-#require_once 'lcs.php';
 
 AB::$dir = dirname(__FILE__);
 AB::addClasspath(AB::$dir);

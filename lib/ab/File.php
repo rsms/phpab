@@ -203,6 +203,26 @@ class File {
 	}
 	
 	/**
+	 * @return void
+	 * @throws IOException
+	 */
+	public function touch($time = null, $atime = null) {
+		try {
+			if($time === null)
+				touch($this->url->toString());
+			elseif($atime === null)
+				touch($this->url->toString(), $time);
+			else
+				touch($this->url->toString(), $time, $atime);
+		}
+		catch(PHPException $e) {
+			$e->rethrow('IOException', 'touch');
+		}
+	}
+	
+	/**
+	 * Create directory/ies
+	 *
 	 * @param  int
 	 * @param  bool
 	 * @return void
@@ -216,6 +236,18 @@ class File {
 		catch(PHPException $e) {
 			$e->rethrow('IOException', 'mkdir');
 		}
+	}
+	
+	/**
+	 * Create directories
+	 *
+	 * @param  int
+	 * @param  bool
+	 * @return void
+	 * @throws IOException
+	 */
+	public function mkdirs( $mode = 0775 ) {
+		$this->mkdir($mode, true);
 	}
 	
 	/**
@@ -255,6 +287,42 @@ class File {
 		}
 		catch(PHPException $e) {
 			$e->rethrow('IOException', 'copy');
+		}
+	}
+	
+	/**
+	 * Write data to file
+	 *
+	 * @param  string
+	 * @param  bool   Append instead of truncate
+	 * @param  bool   Acquire an exclusive lock
+	 * @return int    Amount of bytes that were written to the file
+	 * @throws IOException
+	 */
+	public function putContents( $data, $append = false, $lock = false ) {
+		try {
+			$flags = 0;
+			if($append) $flags |= FILE_APPEND;
+			if($lock) $flags |= LOCK_EX;
+			return file_put_contents($this->url->toString(), $data, $flags);
+		}
+		catch(PHPException $e) {
+			$e->rethrow('IOException', 'file_put_contents');
+		}
+	}
+	
+	/**
+	 * Read data from file
+	 *
+	 * @return string  Data
+	 * @throws IOException
+	 */
+	public function getContents() {
+		try {
+			return file_get_contents($this->url->toString());
+		}
+		catch(PHPException $e) {
+			$e->rethrow('IOException', 'file_get_contents');
 		}
 	}
 	
