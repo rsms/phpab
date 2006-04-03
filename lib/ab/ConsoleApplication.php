@@ -12,9 +12,6 @@ abstract class ConsoleApplication {
 	/** @var bool */
 	public $silent = false;
 	
-	/** @var bool */
-	public $debug = false;
-	
 	/** @var resource */
 	public $stderr = null;
 	

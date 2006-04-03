@@ -171,17 +171,27 @@ class File {
 	/**
 	 * Deletes the file or directory denoted by this abstract pathname.
 	 * If this pathname denotes a directory, then the directory must be empty 
-	 * in order to be deleted.
+	 * in order to be deleted or <samp>$recursive</samp> set to true.
 	 *
-	 * @param  int
 	 * @param  bool
 	 * @return void
 	 * @throws IOException
 	 */
-	public function delete() {
+	public function delete($recursive = false) {
 		try {
-			if(!($this->isDir() ? rmdir($this->url->toString()) : unlink($this->url->toString())))
-				throw new IOException('Failed to delete '.$this->url->toString());
+			$url = $this->url->toString();
+			if($this->isDir()) {
+				if($recursive)
+					foreach($this->getFiles() as $file)
+						$file->delete(true);
+				
+				if(!rmdir($url))
+					throw new IOException('Failed to delete directory: '.$url);
+			}
+			else {
+				if(!unlink($url))
+					throw new IOException('Failed to delete file: '.$url);
+			}
 		}
 		catch(PHPException $e) {
 			$e->rethrow('IOException', 'rmdir', 'unlink');
@@ -324,6 +334,27 @@ class File {
 		catch(PHPException $e) {
 			$e->rethrow('IOException', 'file_get_contents');
 		}
+	}
+	
+	/**
+	 * @param  string
+	 * @return File[]
+	 * @throws IOException
+	 */
+	public function getFiles()
+	{
+		$base_dir = rtrim($this->url->toString(),'/').'/';
+		$files = array();
+		$url = $this->url->toString();
+		
+		if(!($dh = opendir($url)))
+			throw new IOException('Failed to open directory for reading: '.$url);
+		
+		$basedir = $url . '/';
+		while(($filename = readdir($dh)) !== false)
+			$files[] = new File($basedir . $filename);
+		
+		return $files;
 	}
 	
 	/**

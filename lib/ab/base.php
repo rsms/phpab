@@ -146,21 +146,21 @@ class AB {
 			case E_NOTICE:
 			case E_USER_NOTICE:
 				if(self::isCLI())
-					print "WARNING: $str $fileLine";
+					Utils::printError("{$GLOBALS['argv'][0]}: WARNING: $str $fileLine\n");
 				else
 					print "<span class=\"warning\"><b>WARNING:</b> $str <span class=\"file\">$fileLine</span></span><br />";
 				return;
 		}
 		
 		if(self::isCLI()) {
-			Utils::printError("FATAL: $str $fileLine\n\t"
+			Utils::printError("{$GLOBALS['argv'][0]}: FATAL: $str $fileLine\n\t"
 				. str_replace("\n","\n\t",ABException::formatTrace(new Exception(), false, array('__errhandler')))
 				. "\n");
 		}
 		else {
-			Utils::printError("<div class=\"err\"><b>FATAL:</b> $str <span class=\"file\">$fileLine</span>\n"
+			print "<div class=\"err\"><b>FATAL:</b> $str <span class=\"file\">$fileLine</span>\n"
 				. '<div class="trace">' . ABException::formatTrace(new Exception(), true, array('__errhandler')) . '</div>'
-				. '</div>');
+				. '</div>';
 		}
 		
 		exit(1);
