@@ -26,8 +26,9 @@ class ABException extends Exception
 	{	
 		if($msg instanceof Exception) {
 			if(is_string($errno) && $file == null && $line == -1 && $cause == null) {
-				$msg = $errno;
 				$this->cause = $msg;
+				$msg = $errno;
+				$errno = 0;
 			}
 			else {
 				$line = $msg->getLine();
@@ -37,9 +38,9 @@ class ABException extends Exception
 			}
 		}
 		parent::__construct($msg, $errno);
-		if($file != null) $this->file = $file;
-		if($line != -1)   $this->line = $line;
-		$this->cause = $cause;
+		if($file != null)  $this->file = $file;
+		if($line != -1)    $this->line = $line;
+		if($cause != null) $this->cause = $cause;
 	}
 	
 	/**
@@ -105,8 +106,8 @@ class ABException extends Exception
 		# caused by...
 		if($e instanceof ABException && $e->cause && is_object($e->cause) && $e->cause instanceof Exception) {
 			if($html) {
-				$str .= '<br /><b>Caused by:</b><div style="margin-left:15px">'
-					. self::format($this->cause, $includingTrace, $html, $skip)
+				$str .= '<b>Caused by:</b><div style="margin-left:15px">'
+					. self::format($e->cause, $includingTrace, $html, $skip)
 					. '</div>';
 			}
 			else {
