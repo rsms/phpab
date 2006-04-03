@@ -8,23 +8,38 @@
  */
 class ABException extends Exception
 {	
+	/** @var Exception */
+	public $cause = null;
+	
 	/**
-	 * @param  int
-	 * @param  string
+	 * The constructor has three different combinations:
+	 *   - <samp>new ABException('A message', 12)</samp> Creates a new exception with the message "A message" and error code 12
+	 *   - <samp>new ABException($another_exception)</samp> Creates a copy of <samp>$another_exception</samp> using the specified class.
+	 *   - <samp>new ABException($caused_by_exception, 'No post found')</samp> Creates a new exception and sets <samp>$exception->cause</samp> to <samp>$caused_by_exception</samp>
+	 *
+	 * @param  mixed   <samp>string message</samp> or <samp>Exception cause</samp> or <samp>Exception inherith_from</samp>
+	 * @param  mixed   <samp>int errno</samp> or <samp>string message</samp>
 	 * @param  string
 	 * @param  int
 	 */
-	public function __construct($msg = null, $errno = 0, $file = null, $line = -1)
+	public function __construct($msg = null, $errno = 0, $file = null, $line = -1, $cause = null)
 	{	
 		if($msg instanceof Exception) {
-			$line = $msg->getLine();
-			$file = $msg->getFile();
-			$errno = $msg->getCode();
-			$msg = $msg->getMessage();
+			if(is_string($errno) && $file == null && $line == -1, $cause == null) {
+				$msg = $errno;
+				$this->cause = $msg;
+			}
+			else {
+				$line = $msg->getLine();
+				$file = $msg->getFile();
+				$errno = $msg->getCode();
+				$msg = $msg->getMessage();
+			}
 		}
 		parent::__construct($msg, $errno);
 		if($file != null) $this->file = $file;
 		if($line != -1)   $this->line = $line;
+		$this->cause = $cause;
 	}
 	
 	/**
@@ -87,7 +102,22 @@ class ABException extends Exception
 		if($includingTrace)
 			$str .= "\n" . self::formatTrace($e, $html, $skip);
 		
-		return $html ? $str . '</div>' : $str;
+		# caused by...
+		if($e instanceof ABException && $e->cause && is_object($e->cause) && $e->cause instanceof Exception) {
+			if($html) {
+				$str .= '<br /><b>Caused by:</b><div style="margin-left:15px">'
+					. self::format($this->cause, $includingTrace, $html, $skip)
+					. '</div>';
+			}
+			else {
+				$str .= "\nCaused by:\n" . str_replace("\n", "\n    ", self::format($this->cause, $includingTrace, $html, $skip));
+			}
+		}
+		
+		if($html)
+			$str .= '</div>';
+		
+		return $str;
 	}
 	
 	/**
