@@ -25,7 +25,7 @@ class ABException extends Exception
 	public function __construct($msg = null, $errno = 0, $file = null, $line = -1, $cause = null)
 	{	
 		if($msg instanceof Exception) {
-			if(is_string($errno) && $file == null && $line == -1, $cause == null) {
+			if(is_string($errno) && $file == null && $line == -1 && $cause == null) {
 				$msg = $errno;
 				$this->cause = $msg;
 			}
