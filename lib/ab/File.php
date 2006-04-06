@@ -262,28 +262,147 @@ class File {
 	/**
 	 * Change mode
 	 *
+	 * You can pass a octal int as mode (ie. 0755) or you might use a string,
+	 * in the common unix chmod format:
+	 *
+	 *   +x        make writable to world
+	 *   a-r       world can not read
+	 *   u+w,g+wr  make sure user and group can write and group can read
+	 *   =r        everyone can read, no one can write
+	 *
+	 *
 	 * <b>Note:</b> This method will not work on remote files as the file 
 	 * to be examined must be accessible via the servers filesystem.
 	 *
-	 * @param  int
+	 * @param  mixed  <samp>int octal mode</samp> or <samp>string mode</samp>
 	 * @return void
 	 * @throws IOException
 	 * @throws IllegalArgumentException  If $mode is not in octal form (ie. 0755)
 	 */
 	public function chmod( $mode )
 	{
-		if(substr("$mode",0,1) != '0')
-			throw new IllegalArgumentException('$mode must be octal. ie. 0755');
-			
 		try {
 			$url = $this->url->toString();
 			if(strcasecmp(substr($url,0,7), 'file://'))
 				$url = substr($url, 7);
-			chmod($url, $mode);
+			
+			if(is_int($mode))
+				chmod($url, $mode);
+			else
+				$this->chmodstr($url, $mode);
 		}
 		catch(PHPException $e) {
-			$e->rethrow('IOException', 'chmod');
+			$e->rethrow('IOException', 'chmod', 'fileperms');
 		}
+	}
+	
+	/**
+	 * Change mode, using string
+	 *
+	 * Examples:
+	 *   +x        make writable to world
+	 *   a-r       world can not read
+	 *   u+w,g+wr  make sure user and group can write and group can read
+	 *   =r        everyone can read, no one can write
+	 *
+	 * @param  string
+	 * @return void
+	 * @throws IOException
+	 */
+	protected function chmodstr($filename, $mode)
+	{
+		$orgmode = -1;
+		$mod = 0;
+		$m = array('r'=>0,'w'=>0,'x'=>0);
+		$action = '';
+		$ogu = '';
+		$flush = false;
+		
+		# load current mode
+		if(strpos($mode,'+') !== false || strpos($mode,'-') !== false)
+			$mod = fileperms($filename);
+		
+		$mode_len = strlen($mode);
+		for($i=0;$i<$mode_len;$i++)
+		{
+			$ch = $mode{$i};
+			switch($ch)
+			{
+				case 'u':
+				case 'g':
+				case 'o':
+				case 'a':
+					$ogu = $ch;
+					break;
+				
+				case 'r':
+					if($ogu == 'u')
+						$m['r'] |= 0x0100;
+					elseif($ogu == 'g')
+						$m['r'] |= 0x0020;
+					elseif($ogu == 'o')
+						$m['r'] |= 0x0004;
+					elseif($ogu == 'a')
+						$m['r'] |= 0x0124;
+					break;
+				
+				case 'w':
+					if($ogu == 'u')
+						$m['w'] |= 0x0080;
+					elseif($ogu == 'g')
+						$m['w'] |= 0x0010;
+					elseif($ogu == 'o')
+						$m['w'] |= 0x0002;
+					elseif($ogu == 'a')
+						$m['w'] |= 0x0092;
+					break;
+				
+				case 'x':
+					if($ogu == 'u')
+						$m['x'] |= 0x0040;
+					elseif($ogu == 'g')
+						$m['x'] |= 0x0008;
+					elseif($ogu == 'o')
+						$m['x'] |= 0x0001;
+					elseif($ogu == 'a')
+						$m['x'] |= 0x0049;
+					break;
+				
+				case '+':
+				case '-':
+				case '=':
+					$action = $ch;
+					if($ogu == '')
+						$ogu = 'a';
+				
+				default:
+					$flush = true;
+			}
+			
+			
+			# flush m to mod
+			if($flush || $i == $mode_len-1)
+			{
+				if($m && $action == '+') {
+					$mod |= $m['r'];
+					$mod |= $m['w'];
+					$mod |= $m['x'];
+				}
+				elseif($m && $action == '-') {
+					foreach($m as $v)
+						if(($mod & $v) == $v)
+							$mod -= $v;
+				}
+				elseif($action == '=') {
+					$mod = $m['r'] + $m['w'] + $m['x'];
+				}
+				
+				$flush = false;
+				$m = array('r'=>0,'w'=>0,'x'=>0);
+			}
+		}
+		
+		return chmod($file, $mod);
 	}
 	
 	/**
