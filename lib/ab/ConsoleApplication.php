@@ -63,13 +63,13 @@ abstract class ConsoleApplication {
 	
 	/**
 	 * @param  string
-	 * @param  int     if($exit > -1) exit($exit)
+	 * @param  int     if($exit > 0) exit($exit)
 	 * @return void
 	 */
-	public function triggerError($message, $exit = -1)
+	public function triggerError($message, $exit = 1)
 	{
 		$this->println($GLOBALS['argv'][0] . ': ' . rtrim($message), true);
-		if($exit > -1)
+		if($exit > 0)
 			exit($exit);
 	}
 	
@@ -113,7 +113,7 @@ abstract class ConsoleApplication {
 	 * @param  bool
 	 * @return array
 	 */
-	public function getopt($opAr = array(), $remove = true)
+	public function getopt($opAr, $remove = true)
 	{
 		$argv =& $GLOBALS['argv'];
 		$argc =& $GLOBALS['argc'];
@@ -144,8 +144,10 @@ abstract class ConsoleApplication {
 									// then skip it in the parser.
 									if (isset($argv[$argPos+1])) {
 										$return[$var] = $argv[++$argPos];
+										if($remove)
+											unset($argv[$argPos-1]);
 									} else {
-										$return[$var] = FALSE;     
+										$return[$var] = FALSE;
 									}
 								} else {
 									// just set the toggle
@@ -156,7 +158,8 @@ abstract class ConsoleApplication {
 							}
 						} // if accurate
 						if($remove) {
-							unset($argv[$argPos]);
+							isset($argv[$argPos]);
+								unset($argv[$argPos]);
 							#$new_argc--;
 						}
 					} // !isset already

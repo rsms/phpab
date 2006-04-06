@@ -249,16 +249,66 @@ class File {
 	}
 	
 	/**
-	 * Create directories
+	 * Recursively create directories
 	 *
 	 * @param  int
-	 * @param  bool
 	 * @return void
 	 * @throws IOException
 	 */
 	public function mkdirs( $mode = 0775 ) {
 		$this->mkdir($mode, true);
 	}
+	
+	/**
+	 * Change mode
+	 *
+	 * <b>Note:</b> This method will not work on remote files as the file 
+	 * to be examined must be accessible via the servers filesystem.
+	 *
+	 * @param  int
+	 * @return void
+	 * @throws IOException
+	 * @throws IllegalArgumentException  If $mode is not in octal form (ie. 0755)
+	 */
+	public function chmod( $mode )
+	{
+		if(substr("$mode",0,1) != '0')
+			throw new IllegalArgumentException('$mode must be octal. ie. 0755');
+			
+		try {
+			$url = $this->url->toString();
+			if(strcasecmp(substr($url,0,7), 'file://'))
+				$url = substr($url, 7);
+			chmod($url, $mode);
+		}
+		catch(PHPException $e) {
+			$e->rethrow('IOException', 'chmod');
+		}
+	}
+	
+	/**
+	 * Change owner
+	 *
+	 * <b>Note:</b> This method will not work on remote files as the file 
+	 * to be examined must be accessible via the servers filesystem.
+	 *
+	 * @param  mixed  <samp>string Username</samp> or <samp>int UID</samp>
+	 * @return void
+	 * @throws IOException
+	 */
+	public function chown( $user )
+	{
+		try {
+			$url = $this->url->toString();
+			if(strcasecmp(substr($url,0,7), 'file://'))
+				$url = substr($url, 7);
+			chown($url, $user);
+		}
+		catch(PHPException $e) {
+			$e->rethrow('IOException', 'chown');
+		}
+	}
+	
 	
 	/**
 	 * @param  mixed  string or <samp>File</samp>
