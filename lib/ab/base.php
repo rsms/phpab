@@ -117,7 +117,7 @@ class AB {
 		if(ini_get('html_errors') == '0')
 			$msg = strip_tags($msg);
 		
-		trigger_error($msg, E_USER_ERROR);
+		trigger_error($msg . ABException::formatTrace(new Exception(), false, array()), E_USER_ERROR);
 	}
 	
 	/** @ignore */
