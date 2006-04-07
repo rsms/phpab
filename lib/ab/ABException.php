@@ -111,7 +111,13 @@ class ABException extends Exception
 					. '</div>';
 			}
 			else {
-				$str .= "\nCaused by:\n" . str_replace("\n", "\n    ", self::format($e->cause, $includingTrace, $html, $skip));
+				
+				# never include trace from caused php exception, because it is the same as it's parent.
+				if($e->cause instanceof PHPException)
+					$includingTrace = false;
+				
+				$str .= "\n    Caused by:\n        " 
+					. str_replace("\n", "\n        ", self::format($e->cause, $includingTrace, $html, $skip))."\n";
 			}
 		}
 		
@@ -147,7 +153,7 @@ class ABException extends Exception
 			if($html)
 				$str .= "<div class=\"trace\"><pre>";
 			
-			if(is_array($skip)) {
+			if($skip) {
 				$traceTmp = $trace;
 				$trace = array();
 				foreach($traceTmp as $i => $ti) {
