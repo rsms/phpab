@@ -111,7 +111,7 @@ class ABException extends Exception
 					. '</div>';
 			}
 			else {
-				$str .= "\nCaused by:\n" . str_replace("\n", "\n    ", self::format($this->cause, $includingTrace, $html, $skip));
+				$str .= "\nCaused by:\n" . str_replace("\n", "\n    ", self::format($e->cause, $includingTrace, $html, $skip));
 			}
 		}
 		
