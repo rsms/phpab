@@ -277,12 +277,13 @@ class File {
 	 * @param  mixed  <samp>int octal mode</samp> or <samp>string mode</samp>
 	 * @return void
 	 * @throws IOException
+	 * @throws FileNotFoundException
 	 */
 	public function chmod( $mode )
 	{
 		try {
 			$url = $this->url->toString();
-			if(strcasecmp(substr($url,0,7), 'file://'))
+			if(strcasecmp(substr($url,0,7), 'file://') == 0)
 				$url = substr($url, 7);
 			
 			if(is_int($mode))
@@ -307,6 +308,7 @@ class File {
 	 * @param  string
 	 * @return void
 	 * @throws PHPException
+	 * @throws FileNotFoundException
 	 */
 	protected function chmodstr($filename, $mode)
 	{
@@ -318,8 +320,14 @@ class File {
 		$flush = false;
 		
 		# load current mode
-		if(strpos($mode,'+') !== false || strpos($mode,'-') !== false)
-			$mod = fileperms($filename);
+		if(strpos($mode,'+') !== false || strpos($mode,'-') !== false) {
+			try {
+				$mod = fileperms($filename);
+			}
+			catch(PHPException $e) {
+				throw new FileNotFoundException('Can not modify '.$filename);
+			}
+		}
 		
 		$mode_len = strlen($mode);
 		for($i=0;$i<$mode_len;$i++)
@@ -401,7 +409,7 @@ class File {
 			}
 		}
 		
-		return chmod($file, $mod);
+		return chmod($filename, $mod);
 	}
 	
 	/**
@@ -500,6 +508,7 @@ class File {
 			return file_get_contents($this->url->toString());
 		}
 		catch(PHPException $e) {
+			$e->setMessage($e->getMessage() . ' ' . $this->url->toString());
 			$e->rethrow('IOException', 'file_get_contents');
 		}
 	}
