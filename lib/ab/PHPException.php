@@ -6,6 +6,7 @@
  * @subpackage base
  */
 class PHPException extends ABException {
+	
 	/**
 	 * @param  string
 	 * @return void
@@ -15,9 +16,18 @@ class PHPException extends ABException {
 		if(func_num_args() > 1) {
 			$rem = func_get_args();
 			array_shift($rem);
-			$this->setMessage(preg_replace('/^('.implode('|',$rem).')\([^\)]*\): /', '', $this->getMessage()));
+			$this->stripFunctionNames($rem);
 		}
 		throw new $asClass($this);
+	}
+	
+	/**
+	 * @param  string[]
+	 * @return void
+	 */
+	public function stripFunctionNames($func_names) {
+		if($func_names)
+			$this->setMessage(preg_replace('/^('.implode('|',$func_names).')\([^\)]*\): /', '', $this->getMessage()));
 	}
 }
 ?>
