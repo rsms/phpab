@@ -292,6 +292,8 @@ class File {
 				$this->chmodstr($url, $mode);
 		}
 		catch(PHPException $e) {
+			if(!$this->exists())
+				throw new FileNotFoundException($e, $url);
 			$e->rethrow('IOException', 'chmod', 'fileperms');
 		}
 	}
@@ -325,7 +327,7 @@ class File {
 				$mod = fileperms($filename);
 			}
 			catch(PHPException $e) {
-				throw new FileNotFoundException('Can not modify '.$filename);
+				throw new FileNotFoundException($e, 'Can not modify '.$filename);
 			}
 		}
 		
