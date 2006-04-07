@@ -277,7 +277,6 @@ class File {
 	 * @param  mixed  <samp>int octal mode</samp> or <samp>string mode</samp>
 	 * @return void
 	 * @throws IOException
-	 * @throws IllegalArgumentException  If $mode is not in octal form (ie. 0755)
 	 */
 	public function chmod( $mode )
 	{
@@ -300,14 +299,14 @@ class File {
 	 * Change mode, using string
 	 *
 	 * Examples:
-	 *   +x        make writable to world
-	 *   a-r       world can not read
+	 *   +x        make executable for owner
+	 *   a-r       no one (world) can not read
 	 *   u+w,g+wr  make sure user and group can write and group can read
-	 *   =r        everyone can read, no one can write
+	 *   =r        user can read, nothing else
 	 *
 	 * @param  string
 	 * @return void
-	 * @throws IOException
+	 * @throws PHPException
 	 */
 	protected function chmodstr($filename, $mode)
 	{
@@ -373,7 +372,7 @@ class File {
 				case '=':
 					$action = $ch;
 					if($ogu == '')
-						$ogu = 'a';
+						$ogu = 'u';
 				
 				default:
 					$flush = true;
