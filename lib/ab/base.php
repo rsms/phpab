@@ -117,12 +117,13 @@ class AB {
 		if(ini_get('html_errors') == '0')
 			$msg = strip_tags($msg);
 		
-		trigger_error($msg . ABException::formatTrace(new Exception(), false, array()), E_USER_ERROR);
+		trigger_error($msg, E_USER_ERROR);
 	}
 	
 	/** @ignore */
-	public static function onPHPError( $errno, $str, $file, $line )
+	public static function onPHPError( $errno, $str, $file, $line, &$context )
 	{	
+		$line = 0;
 		# if something was prepended by @, errlevel will be 0
 		if(error_reporting() == 0)
 			return;
@@ -207,7 +208,9 @@ define('T_BOOL',	T_BOOLEAN_AND);/** @ignore */
 define('T_OBJECT',	40000);/** @ignore */
 define('T_RESOURCE',40001);/** @ignore */
 define('T_UNKNOWN',	40002);/** @ignore */
-define('T_NULL',	40003);
+define('T_NULL',	40003);/** @ignore */
+define('T_BINARY',	40004);/** @ignore */
+define('T_DATE',	40005);
 
 
 if(defined('DEBUG')) {

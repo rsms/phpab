@@ -75,10 +75,6 @@ class ABException extends Exception
 	 */
 	public static function format( Exception $e, $includingTrace = true, $html = true, $skip = null )
 	{
-		$file = Utils::relativePath($e->getFile(), AB::$basedir);
-		if($file{0} != '/')
-			$file = '/'.$file;
-		
 		if($html)
 		{
 			$str = '<div class="exception"><b>' .  get_class($e) . '</b><br /> '
@@ -87,17 +83,16 @@ class ABException extends Exception
 			if($e instanceof PDOException)
 				$str .= '<pre>' . trim(htmlentities($e->errorInfo)).'</pre>';
 			
-			$str .= '</span> '
-				. '<span class="file">on line '.$e->getLine()
-				. ' in '.$file."</span>";
+			$str .= '</span> <span class="file">on line '.$e->getLine().' in '.$e->getFile().'</span>';
 		}
 		else {
 			$str = get_class($e) . ': ' . $e->getMessage();
 			
-			if($e instanceof PDOException)
+			# extra info, used by PDOException, ActionDBException, etc
+			if(isset($e->errorInfo) && $e->errorInfo)
 				$str .= "\n".trim($e->errorInfo)."\n";
 			
-			$str .= ' on line ' . $e->getLine() . ' in ' . $file;
+			$str .= ' on line ' . $e->getLine() . ' in ' . $e->getFile();
 		}
 		
 		if($includingTrace)
@@ -144,9 +139,12 @@ class ABException extends Exception
 	 */
 	public static function formatTrace( Exception $e, $html = true, $skip = null )
 	{
-		$trace =& $e->getTrace();
+		$trace = $e->getTrace();
 		$traceLen = count($trace);
 		$str = '';
+		
+		if($e instanceof PHPException)
+			$skip = is_array($skip) ? array_merge($skip, array('PHPException::rethrow')) : array('PHPException::rethrow');
 		
 		if($traceLen > 0)
 		{

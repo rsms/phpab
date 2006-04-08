@@ -392,7 +392,6 @@ class File {
 					$flush = true;
 			}
 			
-			
 			# flush m to mod
 			if($flush || $i == $mode_len-1)
 			{
@@ -402,9 +401,9 @@ class File {
 					$mod |= $m['x'];
 				}
 				elseif($need_flush && $action == '-') {
-					foreach($m as $v)
-						if(($mod & $v) == $v)
-							$mod -= $v;
+					$mod = $mod & ~$m['r'];
+					$mod = $mod & ~$m['w'];
+					$mod = $mod & ~$m['x'];
 				}
 				elseif($need_flush && $action == '=') {
 					if($ogu == 'a') {
@@ -412,14 +411,14 @@ class File {
 						break; # a= is final
 					}
 					else {
-						# first, clear UGO bit, then set it again
+						# first, clear UGO bit
 						if($ogu == 'u')
 							$mod = $mod & ~0x1c0;
 						elseif($ogu == 'g')
 							$mod = $mod & ~0x38;
 						elseif($ogu == 'o')
 							$mod = $mod & ~0x7;
-						
+						# then, set it properly
 						$mod |= $m['r'] + $m['w'] + $m['x'];
 					}
 				}

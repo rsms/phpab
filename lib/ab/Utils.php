@@ -298,5 +298,30 @@ class Utils {
 	{
 		return strtr(strtoupper($str),"\xe5\xe4\xf6\xe6\xf1\xf8\xf5\xfc\xe9\xea","\xc5\xc4\xd6\xc6\xd1\xd8\xd5\xdc\xc9\xca");
 	}
+	
+	/**
+	 * @param  array  array
+	 * @param  string
+	 * @param  string
+	 * @return string "{key=>value, key=>value...}"
+	 */
+	public static function hash_to_string($array, $concator = '=>', $separator = ', ')
+	{
+		if(!is_array($array)) return '';
+		if(!$array)           return '{}';
+		$str = '{';
+		foreach($array as $k => $v) {
+			$str .= (is_int($k) || is_double($k)) ? $k : "'".strval($k)."'";
+			$str .= $concator;
+			if(is_array($v)) 
+				$str .= self::hash_to_string($v);
+			elseif(is_int($v) || is_double($v))
+				$str .= $v;
+			else
+				$str .= "'".strval($v)."'";
+			$str .= $separator;
+		}
+		return ($separator ? substr($str, 0, -strlen($separator)) : $str) . '}';
+	}
 }
 ?>
