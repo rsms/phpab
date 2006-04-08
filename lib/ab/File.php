@@ -320,6 +320,7 @@ class File {
 		$action = '';
 		$ogu = '';
 		$flush = false;
+		$need_flush = false;
 		
 		# load current mode
 		if(strpos($mode,'+') !== false || strpos($mode,'-') !== false) {
@@ -346,35 +347,38 @@ class File {
 				
 				case 'r':
 					if($ogu == 'u')
-						$m['r'] |= 0x0100;
+						$m['r'] |= 0x100;
 					elseif($ogu == 'g')
-						$m['r'] |= 0x0020;
+						$m['r'] |= 0x20;
 					elseif($ogu == 'o')
-						$m['r'] |= 0x0004;
+						$m['r'] |= 0x4;
 					elseif($ogu == 'a')
-						$m['r'] |= 0x0124;
+						$m['r'] |= 0x124;
+					$need_flush = true;
 					break;
 				
 				case 'w':
 					if($ogu == 'u')
-						$m['w'] |= 0x0080;
+						$m['w'] |= 0x80;
 					elseif($ogu == 'g')
-						$m['w'] |= 0x0010;
+						$m['w'] |= 0x10;
 					elseif($ogu == 'o')
-						$m['w'] |= 0x0002;
+						$m['w'] |= 0x2;
 					elseif($ogu == 'a')
-						$m['w'] |= 0x0092;
+						$m['w'] |= 0x92;
+					$need_flush = true;
 					break;
 				
 				case 'x':
 					if($ogu == 'u')
-						$m['x'] |= 0x0040;
+						$m['x'] |= 0x40;
 					elseif($ogu == 'g')
-						$m['x'] |= 0x0008;
+						$m['x'] |= 0x8;
 					elseif($ogu == 'o')
-						$m['x'] |= 0x0001;
+						$m['x'] |= 0x1;
 					elseif($ogu == 'a')
-						$m['x'] |= 0x0049;
+						$m['x'] |= 0x49;
+					$need_flush = true;
 					break;
 				
 				case '+':
@@ -392,21 +396,36 @@ class File {
 			# flush m to mod
 			if($flush || $i == $mode_len-1)
 			{
-				if($m && $action == '+') {
+				if($need_flush && $action == '+') {
 					$mod |= $m['r'];
 					$mod |= $m['w'];
 					$mod |= $m['x'];
 				}
-				elseif($m && $action == '-') {
+				elseif($need_flush && $action == '-') {
 					foreach($m as $v)
 						if(($mod & $v) == $v)
 							$mod -= $v;
 				}
-				elseif($action == '=') {
-					$mod = $m['r'] + $m['w'] + $m['x'];
+				elseif($need_flush && $action == '=') {
+					if($ogu == 'a') {
+						$mod = $m['r'] + $m['w'] + $m['x'];
+						break; # a= is final
+					}
+					else {
+						# first, clear UGO bit, then set it again
+						if($ogu == 'u')
+							$mod = $mod & ~0x1c0;
+						elseif($ogu == 'g')
+							$mod = $mod & ~0x38;
+						elseif($ogu == 'o')
+							$mod = $mod & ~0x7;
+						
+						$mod |= $m['r'] + $m['w'] + $m['x'];
+					}
 				}
 				
 				$flush = false;
+				$need_flush = false;
 				$m = array('r'=>0,'w'=>0,'x'=>0);
 			}
 		}
