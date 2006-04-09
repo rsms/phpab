@@ -300,7 +300,7 @@ class Utils {
 	}
 	
 	/**
-	 * @param  array  array
+	 * @param  array
 	 * @param  string
 	 * @param  string
 	 * @return string "{key=>value, key=>value...}"

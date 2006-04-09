@@ -80,8 +80,9 @@ class ABException extends Exception
 			$str = '<div class="exception"><b>' .  get_class($e) . '</b><br /> '
 				. '<span class="message">'.nl2br(htmlentities($e->getMessage()));
 			
-			if($e instanceof PDOException)
-				$str .= '<pre>' . trim(htmlentities($e->errorInfo)).'</pre>';
+			# extra info, used by PDOException, ActionDBException, etc
+			if(isset($e->errorInfo) && $e->errorInfo)
+				$str .= '<pre>' . trim(htmlentities(preg_replace('/[ \r\n\t]+/', ' ', $e->errorInfo))).'</pre>';
 			
 			$str .= '</span> <span class="file">on line '.$e->getLine().' in '.$e->getFile().'</span>';
 		}
@@ -90,7 +91,7 @@ class ABException extends Exception
 			
 			# extra info, used by PDOException, ActionDBException, etc
 			if(isset($e->errorInfo) && $e->errorInfo)
-				$str .= "\n".trim($e->errorInfo)."\n";
+				$str .= "\n".trim(preg_replace('/[ \r\n\t]+/', ' ', $e->errorInfo))."\n";
 			
 			$str .= ' on line ' . $e->getLine() . ' in ' . $e->getFile();
 		}
