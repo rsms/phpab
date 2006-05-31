@@ -1,0 +1,1 @@
+<? class RESTException extends IOException {} ?>
