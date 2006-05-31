@@ -1,5 +1,13 @@
 <?
-class RESTService {
+/**
+ * REST service client
+ * 
+ * @version    $Id$
+ * @author     Rasmus Andersson
+ * @package    hunch.ab
+ * @subpackage rest
+ */
+class RESTServiceClient {
 	
 	/** @var URL Service endpoint url */
 	protected $url = null;
