@@ -425,7 +425,7 @@ class SimpleXMLParser
 	}
 	
 	
-	private static function toArrayWalker($xml)
+	public static function toArrayWalker($xml)
 	{
 		# typecheck
 		if(!($xml instanceof SimpleXMLElement))

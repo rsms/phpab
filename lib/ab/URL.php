@@ -174,11 +174,26 @@ class URL {
 	
 	/**
 	 * Sets the query part of this <samp>URL</samp>.
-	 * @param  string
+	 * @param  mixed  string or array(string key => string value, ...)
 	 * @return void
 	 */
-	public function setQuery($query) {
-		$this->setPart('query', $query);
+	public function setQuery($query)
+	{
+		if(is_array($query))
+		{
+			$str = '';
+			
+			foreach($query as $k => $v)
+				$str .= urlencode($k).'='.urlencode($v).'&';
+			
+			if($str)
+				$str = substr($str, 0, -1);
+			
+			$this->setPart('query', $str);
+		}
+		else
+			$this->setPart('query', $query);
+		
 		$this->parsedQuery = null;
 	}
 	
