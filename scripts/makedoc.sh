@@ -13,7 +13,7 @@ cd ..
 TITLE="AbstractBase&nbsp;API&nbsp;Documentation"
 
 # name to use for the default package. If not specified, uses 'default'
-PACKAGES="contentd"
+PACKAGES="ab"
 
 # generate pdf? yes/no
 PDF=no
