@@ -1,20 +1,34 @@
-<?
+<? # http://www.upcoming.org/services/rest/?api_key=<API Key>&method=event.search&search_text=killers&metro_id=1
 /**
  * REST service client
+ *
+ * <b>Example</b>
+ * <code>
+ * $flickr = new RESTServiceAdapter('http://www.flickr.com/services/rest/');
+ * echo $flickr->call('flickr.test.echo', 
+ *   array('api_key' => '9b4439ce94de7e2ec2c2e6ffadc22bcf'));
+ * </code>
  * 
  * @version    $Id$
  * @author     Rasmus Andersson
  * @package    hunch.ab
  * @subpackage rest
  */
-class RESTServiceClient {
+class RESTServiceAdapter {
 	
-	/** @var URL Service endpoint url */
+	/** @var  URL  Service endpoint url */
 	protected $url = null;
 	
 	/**
+	 * @param  mixed  <samp>URL</samp> or <samp>string</samp>
+	 */
+	public function __construct($url) {
+		$this->url = URL::valueOf($url);
+	}
+	
+	/**
 	 * @param  string
-	 * @param  array  (string key => string value[, string key => string value[, ...]])
+	 * @param  array  (string key => string value[, ...])
 	 * @return RESTResponse
 	 */
 	public function call($method, $arguments = array())

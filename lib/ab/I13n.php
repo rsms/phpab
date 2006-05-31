@@ -1,5 +1,12 @@
 <?
-
+/**
+ * Represents a internationalisation domain for use in conjunction with the I13n class
+ * 
+ * @version    $Id$
+ * @author     Rasmus Andersson
+ * @package    hunch.ab
+ * @subpackage util
+ */
 class I13nDomain {
 	
 	/** @var string */

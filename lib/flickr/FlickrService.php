@@ -1,7 +1,26 @@
 <?
-class FlickrService extends RESTService {
+/**
+ * Flickr service
+ * 
+ * @version    $Id$
+ * @author     Rasmus Andersson
+ * @package    hunch.ab
+ * @subpackage flickr
+ */
+class FlickrService extends RESTServiceAdapter {
 	
-	/** @var FlickrService */
+	/**
+	 * A reference to the last instantiated FlickrService object.
+	 * 
+	 * <b>Example:</b>
+	 * <code>
+	 * $flickr = new FlickrService('mykey');
+	 * ...
+	 * FlickrService::$instance->call('some.method');
+	 * </code>
+	 * 
+	 * @var FlickrService
+	 */
 	public static $instance = null;
 	
 	/** @var string */
@@ -29,7 +48,7 @@ class FlickrService extends RESTService {
 	public function call($method, $arguments = array())
 	{
 		$res = parent::call($method, $arguments);
-		if($res->dom['@']['stat'] == 'fail')
+		if($res->getStatus() == 'fail')
 			throw new RESTException($res->dom['err'][0]['@']['msg'], intval($res->dom['err'][0]['@']['code']));
 		return $res;
 	}

@@ -1,6 +1,8 @@
 <? 
 /**
  * CLI (Command Line Interface) application
+ *
+ * <b>Work In Progress</b>
  * 
  * @version    $Id$
  * @author     Rasmus Andersson

@@ -1,4 +1,12 @@
 <?
+/**
+ * A Flickr photo set
+ * 
+ * @version    $Id$
+ * @author     Rasmus Andersson
+ * @package    hunch.ab
+ * @subpackage flickr
+ */
 class FlickrPhotoSet {
 	
 	/** @var FlickrPhotoSet[] */

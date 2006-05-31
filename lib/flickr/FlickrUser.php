@@ -1,4 +1,12 @@
 <?
+/**
+ * A Flickr user
+ * 
+ * @version    $Id$
+ * @author     Rasmus Andersson
+ * @package    hunch.ab
+ * @subpackage flickr
+ */
 class FlickrUser {
 	
 	protected static $instance_cache = array();

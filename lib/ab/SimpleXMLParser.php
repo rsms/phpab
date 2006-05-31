@@ -103,9 +103,6 @@ class SimpleXMLParser
 			$this->predictedEncoding = self::predictEncodingOfFile($file);
 		}
 		
-		if(!file_exists($file))
-			throw new FileNotFoundException($file);
-		
 		try {
 			if(self::$libxmlHasFlagSupport) {
 				$this->xml = simplexml_load_file($file, 'SimpleXMLElement', $this->libxmlFlags);
@@ -116,6 +113,8 @@ class SimpleXMLParser
 			self::checkLoaded($this->xml, 'Unknown');
 		}
 		catch(PHPException $e) {
+			if(stripos($e->getMessage(),'not found') !== false)
+				throw new FileNotFoundException($file);
 			throw new XmlParserException($e);
 		}
 		return $this->xml;
@@ -424,7 +423,10 @@ class SimpleXMLParser
 		return substr($str, $s, $e-$s);
 	}
 	
-	
+	/**
+	 * @param  SimpleXMLDocument
+	 * @return array  DOM structure
+	 */
 	public static function toArrayWalker($xml)
 	{
 		# typecheck
@@ -456,6 +458,82 @@ class SimpleXMLParser
 		
 		
 		return $node;
+	}
+	
+	
+	/**
+	 * @param  array   DOM structure
+	 * @param  string
+	 * @param  string
+	 * @param  string
+	 * @return DOMDocument
+	 */
+	public static function arrayToXML($a, $rootNode = 'root', $version = '1.0', $encoding = null)
+	{
+		# typecheck
+		if(!is_array($a))
+			throw new IllegalStateException('$dom argument must be an array');
+		
+		# create document
+		$doc = new DOMDocument($version, $encoding);
+		
+		# create root node
+		$root = $doc->createElement($rootNode);
+		$doc->appendChild($root);
+		
+		# walk
+		self::arrayToXMLWalker($a, $root, $doc);
+		
+		# always set this to true. It costs nothing and is probably wanted later on.
+		$doc->formatOutput = true;
+		
+		return $doc;
+	}
+	
+	
+	protected static function arrayToXMLWalker(&$a, DOMElement $n, DOMDocument $doc)
+	{
+		# add any attributes
+		if(isset($a['@']))
+		{
+			if(is_array($a['@']))
+				foreach($a['@'] as $k => $v)
+					$n->setAttribute($k, $v);
+			unset($a['@']);
+		}
+		
+		
+		# process child nodes:
+		
+		$childNames = array_keys($a);
+		$childNames_count = count($childNames);
+		
+		for($x=0;$x<$childNames_count;$x++)
+		{
+			# we're saving memory. hurray!
+			$childName =& $childNames[$x];
+			$childs =& $a[$childName];
+			
+			# handle node value
+			if($childName == '#')
+			{
+				$n->appendChild($doc->createTextNode($a['#']));
+				unset($a['#']);
+			}
+			# handle child node
+			else
+			{
+				$childs_count = count($childs);
+				
+				for($i=0;$i<$childs_count;$i++)
+				{
+					$childData =& $childs[$i];
+					$childElement = $doc->createElement($childName);
+					$n->appendChild($childElement);
+					self::arrayToXMLWalker($childData, $childElement, $doc);
+				}
+			}
+		}
 	}
 	
 	

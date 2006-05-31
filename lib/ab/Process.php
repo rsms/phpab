@@ -3,7 +3,7 @@
  * @version    $Id$
  * @author     Rasmus Andersson
  * @package    hunch.ab
- * @subpackage base
+ * @subpackage io
  */
 class Process {
 	

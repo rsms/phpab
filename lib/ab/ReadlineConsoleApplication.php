@@ -1,5 +1,15 @@
 <?
-class ReadlineConsoleApplication extends CLIApplication {
+/**
+ * Readline-based console application
+ *
+ * <b>Work In Progress</b>
+ * 
+ * @version    $Id$
+ * @author     Rasmus Andersson
+ * @package    hunch.ab
+ * @subpackage util
+ */
+class ReadlineConsoleApplication extends ConsoleApplication {
 	
 	public $running = true;
 	public $stdin = null;
