@@ -51,7 +51,7 @@ class Inflector {
      *  Pluralize a word according to English rules
      *
      *  Convert a lower-case singular word to plural form.
-     *  @param  string $word  Word to be pluralized
+     *  @param  string  Word to be pluralized
      *  @return string  Plural of $word
      */
     function pluralize($word) {
@@ -66,7 +66,7 @@ class Inflector {
     /**
      *  Singularize a word according to English rules 
      *
-     *  @param  string $word  Word to be singularized
+     *  @param  string  Word to be singularized
      *  @return string  Singular of $word
      */
     function singularize($word) {
@@ -81,8 +81,8 @@ class Inflector {
     /**
      *  Capitalize a word making it all lower case with first letter uppercase 
      *
-     *  @param  string $word  Word to be capitalized
-     *  @return string Capitalized $word
+     *  @param  string  Word to be capitalized
+     *  @return string  Capitalized $word
      */
     function capitalize($word) {
         return ucfirst(strtolower($word));     
@@ -92,8 +92,7 @@ class Inflector {
      *  Convert a phrase from the lower case and underscored form
      *  to the camel case form
      *
-     *  @param string $lower_case_and_underscored_word  Phrase to
-     *                                                  convert
+     *  @param  string  Phrase to convert
      *  @return string  Camel case form of the phrase
      */
     function camelize($lower_case_and_underscored_word) {
@@ -105,10 +104,10 @@ class Inflector {
 
     /**
      *  Convert a phrase from the camel case form to the lower case
-     *  and underscored form
+     *  and underscored form.
      *
-     *  @param string $camel_cased_word  Phrase to convert
-     *  @return string Lower case and underscored form of the phrase
+     *  @param  string  Phrase to convert
+     *  @return string  Lower case and underscored form of the phrase
      */
     function underscore($camel_cased_word) {
         $camel_cased_word = preg_replace('/([A-Z]+)([A-Z])/','\1_\2',$camel_cased_word);
@@ -118,10 +117,9 @@ class Inflector {
     /**
      *  Generate a more human version of a lower case underscored word
      *
-     *  @param string $lower_case_and_underscored_word  A word or phrase in
-     *                                           lower_case_underscore form
-     *  @return string The input value with underscores replaced by
-     *  blanks and the first letter of each word capitalized
+     *  @param  string  A word or phrase in lower_case_underscore form
+     *  @return string  The input value with underscores replaced by blanks and 
+     *                  the first letter of each word capitalized
      */
     function humanize($lower_case_and_underscored_word) {
         return ucwords(str_replace("_"," ",$lower_case_and_underscored_word));
@@ -133,8 +131,9 @@ class Inflector {
      *  The class name is a singular word or phrase in CamelCase.
      *  By convention it corresponds to a table whose name is a plural
      *  word or phrase in lower case underscore form.
-     *  @param string $class_name  Name of {@link ActiveRecord} sub-class
-     *  @return string Pluralized lower_case_underscore form of name
+     * 
+     *  @param  string  Name of Model class
+     *  @return string  Pluralized lower_case_underscore form of name
      */
     function tableize($class_name) {
         return self::pluralize(self::underscore($class_name));
@@ -143,8 +142,8 @@ class Inflector {
     /**
      *  Convert a table name to the corresponding class name
      *
-     *  @param string $table_name Name of table in the database
-     *  @return string Singular CamelCase form of $table_name
+     *  @param  string  Name of table in the database
+     *  @return string  Singular CamelCase form of $table_name
      */
     function classify($table_name) {
         return self::camelize(self::singularize($table_name));
@@ -153,11 +152,10 @@ class Inflector {
     /**
      *  Get foreign key column corresponding to a table name
      *
-     *  @param string $table_name Name of table referenced by foreign
-     *    key
-     *  @return string Column name of the foreign key column
+     *  @param  string  Name of table referenced by foreign key
+     *  @return string  Column name of the foreign key column
      */
-    function foreign_key($class_name) {
+    function foreignKey($class_name) {
         return self::underscore($class_name) . "_id";
     }
     
