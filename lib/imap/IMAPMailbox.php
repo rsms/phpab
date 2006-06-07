@@ -1,69 +1,97 @@
 <?
 class IMAPMailbox {
 	
-	private $name = 'Untitled';
-	private $path = 'INBOX.Untitled';
-	private $delimiter = '.';
-	private $flags = 0;
-	private $details = null;
+	protected $name = 'Untitled';
+	protected $path = 'INBOX.Untitled';
+	protected $delimiter = '.';
+	protected $flags = 0;
+	
+	/** @var IMAPConnection  The connection which created this mailbox, or null if none */
+	protected $connection = null;
+	
+	// These are loaded by calling IMAPConnection->getMailboxStatus($this->getPath(true))
+	/** @var int  Total number of messages */
+	protected $messages = -1;
+	
+	/** @var int  Number of unread messages */
+	protected $recent = -1;
+	
+	/** @var int  Number of new/unseen, unread messages */
+	protected $unseen = -1;
+	
 	
 	/**
 	 * @param  int
 	 * @param  string
+	 * @param  IMAPConnection
 	 */
-	public function __construct( $path, $name ) {
+	public function __construct( $path, $name, $connection = null ) {
 		$this->path = $path;
 		$this->name = $name;
+		$this->connection = $connection;
 	}
 	
 	/**
 	 * @return int
 	 */
 	public function getNumMessages() {
-		$this->fetchDetailsIfNeeded();
-		return $this->details->Nmsgs;
+		if($this->messages == -1)
+			$this->fetchDetails();
+		return $this->messages;
 	}
 	
 	/**
 	 * @return int
 	 */
 	public function getNumUnreadMessages() {
-		$this->fetchDetailsIfNeeded();
-		return $this->details->Unread;
+		if($this->unseen == -1)
+			$this->fetchDetails();
+		return $this->unseen;
 	}
 	
 	/**
 	 * @return int
 	 */
 	public function getNumRecentMessages() {
-		$this->fetchDetailsIfNeeded();
-		return $this->details->Recent;
+		if($this->recent == -1)
+			$this->fetchDetails();
+		return $this->recent;
 	}
 	
 	/**
 	 * @return void
 	 */
-	private function fetchDetailsIfNeeded()
+	public function fetchDetailsIfNeeded()
 	{
-		if(is_object($this->details))
-			return;
+		if($this->messages == -1)
+			$this->fetchDetails();
+	}
+	
+	/**
+	 * @return void
+	 */
+	protected function fetchDetails()
+	{
+		# Create new connection if it's missing
+		if(!$this->connection) {
+			$this->connection = new IMAPConnection();
+			$this->connection->open($this->getPath(true), null, null, OP_HALFOPEN);
+		}
 		
-		$conn = new IMAPConnection();
-		
-		// OP_READONLY gor sa att recent inte andras, men datumet-senast-accessed 
-		// andras hur som, sa det ar menlost.
-		$conn->open($this->getPath(true), c('imap.user.name'), c('imap.user.password'), OP_READONLY);
-		
-		$this->details = $conn->fetchMailboxInfo();
+		$nfo = $this->connection->getMailboxStatus($this->getPath(true), SA_MESSAGES|SA_RECENT|SA_UNSEEN);
+		$this->messages = $nfo->messages;
+		$this->recent = $nfo->recent;
+		$this->unseen = $nfo->unseen;
 	}
 	
 	
 	/**
 	 * @param  array
+	 * @param  IMAPConnection
 	 * @return Mailbox[]
 	 * @usedby ImapConnection->getMailboxes()
 	 */
-	public static function fromList( $list )
+	public static function fromList( $list, $connection = null )
 	{	
 		$boxes = array();
 		
@@ -74,7 +102,7 @@ class IMAPMailbox {
 			$p = strrpos($path, $m->delimiter);
 			$name = ($p===false) ? $path : substr($path, $p+1);
 			
-			$mb = new self($path, $name);
+			$mb = new self($path, $name, $connection);
 			$mb->delimiter = $m->delimiter;
 			$mb->flags = $m->attributes;
 			
@@ -89,9 +117,10 @@ class IMAPMailbox {
 	
 	/** @return string */
 	public function getPath( $imapEncoded = false ) {
-		if(!$imapEncoded)
+		if($imapEncoded)
+			return mb_convert_encoding($this->path, 'UTF7-IMAP', 'UTF-8');
+		else
 			return $this->path;
-		return mb_convert_encoding($this->path, 'UTF7-IMAP', 'UTF-8');
 	}
 	
 	
