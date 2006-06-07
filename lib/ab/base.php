@@ -9,9 +9,6 @@
  */
 
 error_reporting(E_ALL);
-#ini_set('display_errors', '1');
-#ini_set('log_errors', '0');
-#ini_set('html_errors', '0');
 ini_set('docref_root', '');
 ini_set('ignore_repeated_errors', '1');
 
@@ -122,8 +119,7 @@ class AB {
 	
 	/** @ignore */
 	public static function onPHPError( $errno, $str, $file, $line, &$context )
-	{	
-		$line = 0;
+	{
 		# if something was prepended by @, errlevel will be 0
 		if(error_reporting() == 0)
 			return;
