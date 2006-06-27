@@ -15,7 +15,7 @@ final class IMAP {
 	 */
 	public static function mimeStringDecode( $str ) {
 		$s = imap_mime_header_decode($str);
-		return utf8_encode($s[0]->text);
+		$s[0]->text;
 	}
 }
 ?>
