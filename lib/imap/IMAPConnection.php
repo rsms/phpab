@@ -4,6 +4,9 @@ class IMAPConnection {
 	/** @var resource */
 	public $mbox = false;
 	
+	/** @var string */
+	public static $OUTPUT_ENCODING = 'ISO-8859-1';
+	
 	/**
 	 * Open connection
 	 * 
@@ -101,10 +104,13 @@ class IMAPConnection {
 	 * @param  string     Mailbox path. ie "INBOX.Stuff"
 	 * @param  int        What info to be fetched
 	 * @return stdObject  Object with properties: int messages, int recent, int unseen, string uidnext, int uidvalidity
+	 * @throws IMAPException
 	 */
 	public function getMailboxStatus($path, $what = SA_ALL) {
 		$this->checkConnected();
-		return imap_status($this->mbox, $this->getIMAPURL($path), $what);
+		if(!($stat = imap_status($this->mbox, $this->getIMAPURL($path), $what)))
+			throw new IMAPException('imap_status(conn, "'.$this->getIMAPURL($path).'", '.$what.') failed. ' . imap_last_error());
+		return $stat;
 	}
 	
 	
@@ -171,6 +177,11 @@ class IMAPConnection {
 		$e = imap_errors();
 		if(is_array($e))
 			throw new ConnectException(end($e));
+	}
+	
+	/** @return string Ouptut encoding (ie. ISO-8859-1 or UTF-8) */
+	public static function getEncoding() {
+		return c('imap.encoding');
 	}
 	
 	/**

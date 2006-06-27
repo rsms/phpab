@@ -96,8 +96,12 @@ class IMAPMailboxCollection {
 			if($hasMbox)
 				$str .= $prettyPrint ? ">\n" : '>';
 			
-			foreach($data as $k => $n)
-				$str .= $this->toXMLWalker($n, $prettyPrint, $level+1);
+			foreach($data as $k => $n) {
+				try {
+					$str .= $this->toXMLWalker($n, $prettyPrint, $level+1);
+				}
+				catch(IMAPException $e) { /* Skip errors */ }
+			}
 			
 			# avsluta node
 			if($hasMbox)

@@ -3,6 +3,7 @@ class IMAPMailbox {
 	
 	protected $name = 'Untitled';
 	protected $path = 'INBOX.Untitled';
+	protected $encoded_path = 'INBOX.Untitled';
 	protected $delimiter = '.';
 	protected $flags = 0;
 	
@@ -21,14 +22,17 @@ class IMAPMailbox {
 	
 	
 	/**
-	 * @param  int
+	 * @param  string
 	 * @param  string
 	 * @param  IMAPConnection
 	 */
-	public function __construct( $path, $name, $connection = null ) {
-		$this->path = $path;
-		$this->name = $name;
+	public function __construct( $encoded_path, $connection = null ) {
+		$this->path = mb_convert_encoding($encoded_path, IMAPConnection::getEncoding(), 'UTF7-IMAP');
+		$this->encoded_path = $encoded_path;
 		$this->connection = $connection;
+		
+		$p = strrpos($this->path, $this->delimiter);
+		$this->name = ($p===false) ? $this->path : substr($this->path, $p+1);
 	}
 	
 	/**
@@ -79,6 +83,8 @@ class IMAPMailbox {
 		}
 		
 		$nfo = $this->connection->getMailboxStatus($this->getPath(true), SA_MESSAGES|SA_RECENT|SA_UNSEEN);
+		if(!is_object($nfo))
+			var_dump($nfo);
 		$this->messages = $nfo->messages;
 		$this->recent = $nfo->recent;
 		$this->unseen = $nfo->unseen;
@@ -88,26 +94,27 @@ class IMAPMailbox {
 	/**
 	 * @param  array
 	 * @param  IMAPConnection
-	 * @return Mailbox[]
+	 * @return Mailbox[]  Multi dimensional map, keyed by imap-encoded path's
 	 * @usedby ImapConnection->getMailboxes()
 	 */
 	public static function fromList( $list, $connection = null )
 	{	
-		$boxes = array();
+		$boxes_temp = array();
 		
 		foreach($list as $i => $m)
 		{	
-			$path = mb_convert_encoding(substr($m->name, strpos($m->name,'}')+1), 'UTF-8', 'UTF7-IMAP');
-			
-			$p = strrpos($path, $m->delimiter);
-			$name = ($p===false) ? $path : substr($path, $p+1);
-			
-			$mb = new self($path, $name, $connection);
+			$mb = new self(substr($m->name, strpos($m->name,'}')+1), $connection);
 			$mb->delimiter = $m->delimiter;
 			$mb->flags = $m->attributes;
-			
-			$r = explode($m->delimiter, $path);
-			
+			$boxes_temp[$mb->getPath()] = $mb;
+		}
+		
+		# Sort
+		$boxes = array();
+		ksort($boxes_temp);
+		foreach($boxes_temp as $mb)
+		{
+			$r = explode($m->delimiter, $mb->getPath(true));
 			eval('$boxes[\'' . implode('\'][\'', $r) . '\'][\'#\'] = $mb;');
 		}
 		
@@ -118,7 +125,7 @@ class IMAPMailbox {
 	/** @return string */
 	public function getPath( $imapEncoded = false ) {
 		if($imapEncoded)
-			return mb_convert_encoding($this->path, 'UTF7-IMAP', 'UTF-8');
+			return $this->encoded_path;
 		else
 			return $this->path;
 	}
@@ -154,13 +161,11 @@ class IMAPMailbox {
 	public function toXMLStartTag( $tagName = 'box' )
 	{	
 		$this->fetchDetailsIfNeeded();
-		return '<' . $tagName . ' messages="' . $this->details->Nmsgs 
-			. '" unread="' . $this->details->Unread
-			. '" recent="' . $this->details->Recent
-			. '" size="' . $this->details->Size
-			. '" deleted="' . $this->details->Deleted
+		return '<' . $tagName . ' messages="' . $this->messages 
+			. '" unread="' . $this->unseen
+			. '" recent="' . $this->recent
 			. '" name="' . Utils::xmlEscape($this->getName()) 
-			. '" path="' . Utils::xmlEscape($this->getPath()) . '"';
+			. '" path="' . Utils::xmlEscape($this->getPath(true)) . '"';
 	}
 }
 
