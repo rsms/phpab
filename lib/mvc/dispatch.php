@@ -46,7 +46,24 @@ if(MVC_DEV_MODE) {
 	BenchmarkTimer::$utf8 = 0;
 	$benchmarkTimer->start();
 	
+	$_mvc_dev_can_print = null;
+	
+	/** @return bool */
+	function mvc_dev_can_print() {
+		global $_mvc_dev_can_print;
+		if($_mvc_dev_can_print !== null)
+			return $_mvc_dev_can_print;
+		foreach(headers_list() as $h)
+			if(strcasecmp(substr($h,0,12), 'content-type') == 0)
+				if(stripos($h, 'text/html') === false)
+					return $_mvc_dev_can_print = false;
+		return $_mvc_dev_can_print = true;
+	}
+	
+	/** @return void */
 	function benchmark_timer_stop() {
+		if(!mvc_dev_can_print())
+			return;
 		global $benchmarkTimer;
 		print ' - '.$benchmarkTimer->stop().', '.intval(1.0 / $benchmarkTimer->getRealTime()).' requests/second';
 	}
