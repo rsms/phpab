@@ -4,7 +4,7 @@
  *
  * @version    $Id$
  * @author     Rasmus Andersson
- * @package    hunch.ab
+ * @package    ab
  * @subpackage base
  */
 
@@ -15,7 +15,7 @@ ini_set('ignore_repeated_errors', '1');
 /**
  * @version    $Id$
  * @author     Rasmus Andersson  http://hunch.se/
- * @package    hunch.ab
+ * @package    ab
  * @subpackage base
  */
 class AB {
