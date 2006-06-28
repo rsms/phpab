@@ -5,7 +5,7 @@
 # Sanity checks
 
 PHPDOC=`which phpdoc`
-cd `dirname $0`/..
+cd `dirname $0`
 PWD=`pwd`
 
 if [ ! -x $PHPDOC ]; then
@@ -39,7 +39,7 @@ INCLUDE_FILES=
 EXCLUDE=_arb/,old/,_test/
 
 # where documentation will be put
-PATH_DOCS=$PWD/docs/api
+PATH_DOCS=$PWD/../docs/api
 if [ "$1" != "" ]; then
 	PATH_DOCS="$1"
 fi
