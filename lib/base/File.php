@@ -34,7 +34,7 @@ class File {
 	 * @return string
 	 */
 	public function getName() {
-		return basename($this->url->getPath());
+		return basename($this->getPath());
 	}
 	
 	/**
@@ -50,8 +50,8 @@ class File {
 	 * @return File
 	 */
 	public function getAbsolutePath() {
-		if(($p = realpath($this->url->getPath())) === false)
-			return $this->url->getPath();
+		if(($p = realpath($this->getPath())) === false)
+			return $this->getPath();
 		return $p;
 	}
 	
@@ -60,7 +60,7 @@ class File {
 	 * @return string
 	 */
 	public function getDirname() {
-		return dirname($this->url->getPath());
+		return dirname($this->getPath());
 	}
 	
 	/**
@@ -100,7 +100,7 @@ class File {
 		if(($p = strrpos($name, '.')) !== false)
 			$this->url->setPath($this->getDirname().'/'.substr($name, 0, $p+1).$ext);
 		else
-			$this->url->setPath($this->url->getPath().'.'.$ext);
+			$this->url->setPath($this->getPath().'.'.$ext);
 	}
 	
 	/**
