@@ -3,7 +3,7 @@
  * Abstract Base exception
  *
  * @author     Rasmus Andersson
- * @package    hunch.ab
+ * @package    ab
  * @subpackage base
  */
 class ABException extends Exception
@@ -12,6 +12,8 @@ class ABException extends Exception
 	public $cause = null;
 	
 	/**
+	 * Create a new ABException
+	 *
 	 * The constructor has three different combinations:
 	 *   - <samp>new ABException('A message', 12)</samp> Creates a new exception with the message "A message" and error code 12
 	 *   - <samp>new ABException($another_exception)</samp> Creates a copy of <samp>$another_exception</samp> using the specified class.
@@ -133,8 +135,6 @@ class ABException extends Exception
 	 * @param  Exception
 	 * @param  bool       Include call trace in the output
 	 * @param  bool       Return nicely formatted HTML instead of plain text
-	 * @param  string[]   An array of function (or Class::method) names to remove from trace 
-	 *                    prior to rendering it. Specify null to disable.
 	 * @return string
 	 * @see    format()
 	 */
@@ -186,7 +186,7 @@ class ABException extends Exception
 				if(isset($ti['line']))
 					$str .= ' on line '.$ti['line'];
 				if(isset($ti['file'])) {
-					$file = Utils::relativePath($ti['file'], AB::$basedir);
+					$file = Utils::relativePath($ti['file'], $_SERVER['DOCUMENT_ROOT']);
 					if($file{0} != '/')
 						$file = '/'.$file;
 					$str .= ' in ' . $file;

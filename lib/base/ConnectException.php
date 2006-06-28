@@ -1,8 +1,8 @@
 <?
 /**
  * Thrown to indicate a connection exception
- * @package    hunch.ab
- * @subpackage io
+ * @package    ab
+ * @subpackage net
  */
 class ConnectException extends IOException {}
 ?>

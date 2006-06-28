@@ -1,7 +1,7 @@
 <?
 /**
  * Thrown to indicate a I/O exception
- * @package    hunch.ab
+ * @package    ab
  * @subpackage io
  */
 class IOException extends ABException {}

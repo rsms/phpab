@@ -2,7 +2,7 @@
 /**
  * @version    $Id$
  * @author     Rasmus Andersson
- * @package    hunch.ab
+ * @package    ab
  * @subpackage io
  */
 class StringOutputStream implements OutputStream {

@@ -1,8 +1,8 @@
 <?
 /**
  * Thrown to indicate an XML parsing error
- * @package    hunch.ab
- * @subpackage base
+ * @package    ab
+ * @subpackage xml
  */
-class XmlParserException extends ParseException {}
+class XMLParserException extends ParseException {}
 ?>

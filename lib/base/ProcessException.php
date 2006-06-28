@@ -1,6 +1,6 @@
 <?
 /**
- * @package    hunch.ab
+ * @package    ab
  * @subpackage io
  */
 class ProcessException extends ABException {}

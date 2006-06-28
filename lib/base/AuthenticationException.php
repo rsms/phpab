@@ -1,8 +1,8 @@
 <?
 /**
  * Thrown to indicate an auth error
- * @package    hunch.ab
- * @subpackage io
+ * @package    ab
+ * @subpackage util
  */
 class AuthenticationException extends IOException {}
 ?>

@@ -13,8 +13,8 @@
  *
  * @version    $Id$ (050325)
  * @author     Rasmus Andersson
- * @package    hunch.ab
- * @subpackage util
+ * @package    ab
+ * @subpackage xml
  */
 class SimpleXMLParser
 {	
@@ -93,7 +93,7 @@ class SimpleXMLParser
 	 * Loads a file.
 	 *
 	 * @return SimpleXMLElement or null if not loaded
-	 * @throws XmlParserException
+	 * @throws XMLParserException
 	 * @throws CacheException if cache storage fails
 	 * @see    enableCaching()
 	 */
@@ -115,7 +115,7 @@ class SimpleXMLParser
 		catch(PHPException $e) {
 			if(stripos($e->getMessage(),'not found') !== false)
 				throw new FileNotFoundException($file);
-			throw new XmlParserException($e);
+			throw new XMLParserException($e);
 		}
 		return $this->xml;
 	}
@@ -123,7 +123,7 @@ class SimpleXMLParser
 	
 	/**
 	 * @return SimpleXMLElement or null if not loaded
-	 * @throws XmlParserException
+	 * @throws XMLParserException
 	 */
 	public function loadString( $string )
 	{
@@ -338,7 +338,7 @@ class SimpleXMLParser
 	 * @param  mixed   If defined, return will be strval(first-found-node's-child-node) or $asString
 	 * @param  string  ie: 'default' Will be used in third try like xpath($exp1 . $fallback . $exp2)
 	 * @return mixed  if $returnStrValue is false, SimpleXMLElement, false or array(0) will be returned.
-	 * @throws XmlParserException if $xml is invalid
+	 * @throws XMLParserException if $xml is invalid
 	 */
 	public static function xpathLCs( SimpleXMLElement $xml, $locale, $fbLocale, $exp1, $exp2 = '', 
 	                                  $asString = false, $fallbackExp = '*' )
@@ -369,7 +369,7 @@ class SimpleXMLParser
 	
 	/**
 	 * @see xpathLCs()
-	 * @throws XmlParserException if no xml is loaded
+	 * @throws XMLParserException if no xml is loaded
 	 */
 	public function xpathLC( $locale, $fbLocale, $exp1, $exp2 = '', $asString = false, $fallbackExp = '*' )
 	{
@@ -382,7 +382,7 @@ class SimpleXMLParser
 	 * @param  mixed
 	 * @return mixed  boolean false on error, array(0) if no match and 
 	 *                array(...){SimpleXMLElement, ...} on match
-	 * @throws XmlParserException if no xml is loaded
+	 * @throws XMLParserException if no xml is loaded
 	 */
 	public function xpath( $expr, $asString = false )
 	{
@@ -639,7 +639,7 @@ class SimpleXMLParser
 			$errstr = explode("\n",trim(strip_tags($errstr)));
 			$errstr = preg_replace('/^(Warning|Error):/', '', 
 				preg_replace('/in [^ ]+ on line [0-9]+/', '', is_array($errstr)?$errstr[0]:$errstr));
-			throw new XmlParserException("XML Parse error: $errstr");
+			throw new XMLParserException("XML Parse error: $errstr");
 		}
 		else {
 			self::checkNotNull($xml);
@@ -650,7 +650,7 @@ class SimpleXMLParser
 	private static function checkNotNull( &$xml )
 	{
 		if($xml === null) {
-			throw new XmlParserException('XML Parse error: Document not loaded');
+			throw new XMLParserException('XML Parse error: Document not loaded');
 		}
 	}
 	
@@ -661,7 +661,7 @@ class SimpleXMLParser
 	 * @param  SimpleXMLElement
 	 * @return array (string => string, ...)
 	 */
-	public static function attributesAsArray( &$node )
+	public static function attributesAsArray( SimpleXMLElement $node )
 	{
 		$atts = $node->attributes();
 		$attributes = array();

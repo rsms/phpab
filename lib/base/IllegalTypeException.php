@@ -1,6 +1,6 @@
 <?
 /**
- * @package    hunch.ab
+ * @package    ab
  * @subpackage base
  */
 class IllegalTypeException extends IllegalArgumentException {}

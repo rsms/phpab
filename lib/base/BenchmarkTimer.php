@@ -1,8 +1,17 @@
 <?
 /**
+ * Measure code execution
+ *
+ * <b>Example:</b><code>
+ * $timer = new BenchmarkTimer(true);
+ * for($i=0;$i<10000;$i++)
+ *     $dummy = 4337*(1337/89024)*23;
+ * print $timer->stop();
+ * </code>
+ *
  * @version    $Id$
  * @author     Rasmus Andersson  http://hunch.se/
- * @package    hunch.ab
+ * @package    ab
  * @subpackage util
  */
 class BenchmarkTimer {
@@ -18,11 +27,29 @@ class BenchmarkTimer {
 	private $stime = 0.0;
 	private $rtime = 0.0;
 	
+	/**
+	 * @param bool
+	 */
+	public function __construct($startImmediately = false) {
+		if($startImmediately)
+			$this->start();
+	}
+	
+	/**
+	 * Start the timer
+	 *
+	 * @return void
+	 */
 	public function start() {
 		$this->reset();
 		$this->rus(false);
 	}
 	
+	/**
+	 * Stop the timer
+	 *
+	 * @return string  Returns the value of $timer->toString()
+	 */
 	public function stop($divideTimeBy = 1) {
 		$this->rus(true);
 		if($divideTimeBy > 1) {
@@ -33,6 +60,11 @@ class BenchmarkTimer {
 		return $this->toString();
 	}
 	
+	/**
+	 * Reset the timer
+	 *
+	 * @return void
+	 */
 	public function reset() {
 		$this->utime = 0.0;
 		$this->stime = 0.0;
@@ -64,6 +96,10 @@ class BenchmarkTimer {
 	}
 	
 	/**
+	 * Return formatted time consumed
+	 *
+	 * Format: <samp>User: TIME, System: TIME, Real: TIME</samp>
+	 *
 	 * @return string
 	 */
 	public function toString() {

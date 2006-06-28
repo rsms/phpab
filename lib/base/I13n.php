@@ -1,11 +1,17 @@
 <?
 /**
+ * @package    ab
+ * @subpackage util
+ */
+ 
+/**
  * Represents a internationalisation domain for use in conjunction with the I13n class
  * 
  * @version    $Id$
  * @author     Rasmus Andersson
- * @package    hunch.ab
+ * @package    ab
  * @subpackage util
+ * @access     protected
  */
 class I13nDomain {
 	
@@ -62,7 +68,7 @@ class I13nDomain {
  * 
  * @version    $Id$
  * @author     Rasmus Andersson
- * @package    hunch.ab
+ * @package    ab
  * @subpackage util
  */
 class I13n {

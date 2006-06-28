@@ -1,55 +1,49 @@
 <?
 /**
- * @version    $Id$
- * @author     Rasmus Andersson  http://hunch.se/
- * @package    hunch.ab
- * @subpackage base
+ * General utilities
+ * 
+ * @version	$Id$
+ * @author	 Rasmus Andersson  http://hunch.se/
+ * @package	ab
+ * @subpackage util
+ * @deprecated Replaced & decentralised (see method details for information about what you should use instead)
  */
 class Utils {
 	
-	private static $stderrFD = false;
-	private static $xtbl = array('&'=>'&#38;','"'=>'&#34;','<'=>'&#60;','>'=>'&#62;');
-    private static $xtblt = array('&'=>'&#38;','<'=>'&#60;','>'=>'&#62;');
-	
 	/**
-     * Convert absolute path to a relative path, based in <samp>$relativeToBase</samp>
-     *
-     * <b>Example</b>
-     * <code>
-     * print  Utils::relativePath('/absolute/path/to/foo.bar', '/absolute/path');
-     * prints "to/foo.bar"
-     * </code>
-     * 
-     * @param  string
-     * @param  string
-     * @return string
-     */
-    public static function relativePath( $absolutePath, $relativeToBase )
-    {
-        $len = strlen($relativeToBase);
-		if($len) {
-	        if(substr($absolutePath, 0, $len) == $relativeToBase)
-	            return substr($absolutePath, $len + (($relativeToBase{$len-1} != '/') ? 1 : 0));
-		}
-        return $absolutePath;
-    }
+	 * Convert absolute path to a relative path, based in <samp>$relativeToBase</samp>
+	 *
+	 * <b>Example</b>
+	 * <code>
+	 * print  Utils::relativePath('/absolute/path/to/foo.bar', '/absolute/path');
+	 * prints "to/foo.bar"
+	 * </code>
+	 * 
+	 * @param  string
+	 * @param  string
+	 * @return string
+	 * @deprecated	Use {@link File::relativePath()} instead
+	 */
+	public static function relativePath( $absolutePath, $relativeToBase ) {
+		return File::relativePath($absolutePath, $relativeToBase);
+	}
 
 	/**
 	 * Print something to stderr
 	 *
 	 * @param  mixed
 	 * @return void
+	 * @deprecated Use {@link IO::writeError()} instead
 	 */
 	public static function printError( $str )
 	{
-		if(!self::$stderrFD)
-			self::$stderrFD = fopen('php://stderr', 'w');
-		fwrite(self::$stderrFD, $str);
+		IO::writeError($str);
 	}
-    
+	
 	
 	/**
 	 * Print a dump of something
+	 * @deprecated Will be removed in future version
 	 */
 	public static function dump( $data, $indentLevel = 0 ) {
 		self::dumpWalker($data, $indentLevel+1);
@@ -57,15 +51,16 @@ class Utils {
 	
 	/**
 	 * Print a dump of the stack
+	 * @deprecated Will be removed in future version
 	 */
 	private static function dumpWalker(&$v, $level) {
 		if(is_array($v)) {
 			print 'Array(' . count($v) . ") {\n";
 			foreach($v as $k => $v2) {
-				print str_repeat('    ', $level) . '[' . self::getType($k) . ' ' . var_export($k,1) . '] = ';
+				print str_repeat('	', $level) . '[' . self::getType($k) . ' ' . var_export($k,1) . '] = ';
 				self::dumpWalker($v[$k], $level+1);
 			}
-			print str_repeat('    ', $level-1) . '}';
+			print str_repeat('	', $level-1) . '}';
 		}
 		else {
 			print self::getType($v) . ' ';
@@ -94,11 +89,12 @@ class Utils {
 	 * 
 	 * @param  mixed
 	 * @return string
+	 * @deprecated Will be removed in future version
 	 */
 	public static function getType( $v ) {
 		if(is_object($v))
 			return get_class($v);
-        return self::normalizeTypeName(gettype($v));
+		return self::normalizeTypeName(gettype($v));
 	}
 	
 	/**
@@ -106,24 +102,25 @@ class Utils {
 	 * 
 	 * @param  string
 	 * @return string
+	 * @deprecated Will be removed in future version
 	 */
 	public static function normalizeTypeName( $t ) {
 		$t = strtolower(substr($t,0,3));
-        switch($t) {
-            case 'str': return 'string';
-            case 'int': return 'integer';
-            case 'flo':
-            case 'dou':
-            case 'rea': return 'double';
-            case 'voi': return 'void';
-            case 'boo': return 'boolean';
-            case 'mix': return 'mixed';
-            case 'arr': return 'array';
-            case 'obj': return 'object';
-            case 'res': return 'resource';
-            case 'nul': return 'null';
-        }
-        return $t;
+		switch($t) {
+			case 'str': return 'string';
+			case 'int': return 'integer';
+			case 'flo':
+			case 'dou':
+			case 'rea': return 'double';
+			case 'voi': return 'void';
+			case 'boo': return 'boolean';
+			case 'mix': return 'mixed';
+			case 'arr': return 'array';
+			case 'obj': return 'object';
+			case 'res': return 'resource';
+			case 'nul': return 'null';
+		}
+		return $t;
 	}
 	
 	/**
@@ -131,28 +128,22 @@ class Utils {
 	 *
 	 * @param  object
 	 * @param  classname
-	 * @return object     object of new class
+	 * @return object
 	 * @throws ClassCastException
+	 * @deprecated Use {@link PHP::classcast()} instead
 	 */
 	public static function classcast($obj, $toClassName) {
-		$o = @unserialize(preg_replace('/^O:[0-9]+:"[^"]+":/i','O:'.strlen($toClassName).":\"$toClassName\":",serialize($obj)));
-		if($o == false)
-			throw new ClassCastException('Failed to convert ' . $obj . ' to class ' . $toClassName);
-		return $o;
+		return PHP::classcast($obj, $toClassName);
 	}
 	
 	/**
 	 * @param  mixed
 	 * @param  string Any string value accepted by PHP settype()
 	 * @return bool   Success
+	 * @deprecated	Use {@link PHP::typecast()} instead
 	 */
-	public static function typecast( $v, $type )
-	{
-		if(($type == 'bool' || $type == 'boolean') && is_string($v)) {
-			return (stripos($v,'true')!==false || stripos($v,'yes')!==false || stripos($v,'on')!==false || strpos($v,'1')!==false) ? true : false;
-		}
-		@settype($v, $type);
-		return $v;
+	public static function typecast($v, $type) {
+		PHP::typecast($v, $type);
 	}
 	
 	/**
@@ -160,93 +151,90 @@ class Utils {
 	 * 
 	 * @param  string
 	 * @return array XMLDOM
+	 * @deprecated Will be removed in future version. Considering using the convenience functions provided by {@link SimpleXMLParser}
 	 */
 	public static function loadXML( $file ) {
 		$xp = new SimpleXMLParser();
 		$xp->loadFile($file);
 		return $xp->toArray();
 	}
-    
-    /**
-     * Load and unserialize file
-     * 
-     * @param  string
-     * @return mixed
-     * @throws IOException
-     */
-    public static function unserializeFile( $file ) {
-        if(($dat = @file_get_contents($file)) === false)
-        	throw new IOException('Failed to read file "' . $file . '"');
-        if(($d = @unserialize($dat)) === false) {
-        	if($dat !== serialize(false))
-				throw new IOException('Failed to unserialize file "' . $file . '"');
-        }
-        return $d;
-    }
-    
-    /**
-     * Serialize data and write it to a file
-     * 
-     * @param  mixed
-     * @param  string
-     * @return void
-     * @throws IOException
-     */
-    public static function serializeToFile( $data, $file ) {
-    	if(($data = @serialize($data)) === false)
-    		throw new IOException('Failed to serialize data');
-    	if(@file_put_contents($file, $data) === false)
-        	throw new IOException('Failed to write serialized data to file "' . $file . '"');
-    }
-    
-    /**
-     * Escape attribute value
-     * 
-     * @param  string
-     * @return string
-     * @see    xmlUnescape
-     */
-    public static function xmlEscape($str) {
-        return strtr($str,self::$xtbl);
-    }
-    
-    /**
-     * Unescape attribute value
-     * 
-     * @param  string
-     * @return string
-     * @see    xmlEscape
-     */
-    public static function xmlUnescape($str) {
-        return strtr($str,array_flip(self::$xtbl));
-    }
-    
-    /**
-     * Escape text node
-     * 
-     * @param  string
-     * @return string
-     * @see    xmlUnescapeText
-     */
-    public static function xmlEscapeText($str) {
-        return strtr($str,self::$xtblt);
-    }
-    
-    /**
-     * Unescape text node
-     * 
-     * @param  string
-     * @return string
-     * @see    xmlEscapeText
-     */
-    public static function xmlUnescapeText($str) {
-        return strtr($str,array_flip(self::$xtblt));
-    }
 	
 	/**
-	 * =?utf-8?Q?Mikael_Berggren?=  ->  Mikael Berggren
+	 * Load and unserialize file
+	 * 
+	 * @param  string
+	 * @return mixed
+	 * @throws IOException
+	 * @deprecated Use {@link IO::unserializeFile()} instead
+	 */
+	public static function unserializeFile( $file ) {
+		return IO::unserializeFile($file);
+	}
+	
+	/**
+	 * Serialize data and write it to a file
+	 * 
+	 * @param  mixed
+	 * @param  string
+	 * @return void
+	 * @throws IOException
+	 * @deprecated Use {@link IO::serialize()} instead
+	 */
+	public static function serializeToFile( $data, $file ) {
+		IO::serialize($data, $file);
+	}
+	
+	/**
+	 * Escape attribute value
+	 * 
+	 * @param  string
+	 * @return string
+	 * @deprecated Use {@link XML::escape()} instead
+	 */
+	public static function xmlEscape($str) {
+		return XML::escape($str);
+	}
+	
+	/**
+	 * Unescape attribute value
+	 * 
+	 * @param  string
+	 * @return string
+	 * @deprecated Use {@link XML::unescape()} instead
+	 */
+	public static function xmlUnescape($str) {
+		return XML::unescape($str);
+	}
+	
+	/**
+	 * Escape text node
+	 * 
+	 * @param  string
+	 * @return string
+	 * @deprecated Use {@link XML::escapeText()} instead
+	 */
+	public static function xmlEscapeText($str) {
+		return XML::escapeText($str);
+	}
+	
+	/**
+	 * Unescape text node
+	 * 
+	 * @param  string
+	 * @return string
+	 * @deprecated Use {@link XML::escapeText()} instead
+	 */
+	public static function xmlUnescapeText($str) {
+		return XML::unescapeText($str);
+	}
+	
+	/**
+	 * @param      string
+	 * @return     string
+	 * @deprecated Use {@link IMAP::mimeStringDecode()} instead
 	 */
 	public static function mimeStringDecode( $str ) {
+		# we can't just redirect to IMAP::mimeStringDecode() because that's a separate library.
 		$s = imap_mime_header_decode($str);
 		return utf8_encode($s[0]->text);
 	}
@@ -259,6 +247,7 @@ class Utils {
 	/**
 	 * @param  char
 	 * @return char
+	 * @deprecated Will be removed in future version.
 	 */
 	public static function chrToLower($ch)
 	{
@@ -270,6 +259,7 @@ class Utils {
 	/**
 	 * @param  char
 	 * @return char
+	 * @deprecated Will be removed in future version.
 	 */
 	public static function chrToUpper($ch)
 	{
@@ -282,6 +272,7 @@ class Utils {
 	 * @param  string
 	 * @param  bool
 	 * @return string
+	 * @deprecated Will be removed in future version.
 	 */
 	public static function strToLower($str, $utf8 = false) {
 		if($utf8)
@@ -293,6 +284,7 @@ class Utils {
 	/**
 	 * @param  string
 	 * @return string
+	 * @deprecated Will be removed in future version.
 	 */
 	public static function strToUpper($str, $length = -1)
 	{
@@ -304,11 +296,12 @@ class Utils {
 	 * @param  string
 	 * @param  string
 	 * @return string "{key=>value, key=>value...}"
+	 * @deprecated Will be removed in future version.
 	 */
 	public static function hash_to_string($array, $concator = '=>', $separator = ', ')
 	{
 		if(!is_array($array)) return '';
-		if(!$array)           return '{}';
+		if(!$array)		   return '{}';
 		$str = '{';
 		foreach($array as $k => $v) {
 			$str .= (is_int($k) || is_double($k)) ? $k : "'".strval($k)."'";

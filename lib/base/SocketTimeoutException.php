@@ -1,8 +1,8 @@
 <?
 /**
  * Signals that a timeout has occurred on a socket read or accept.
- * @package    hunch.ab
- * @subpackage io
+ * @package    ab
+ * @subpackage net
  */
 class SocketTimeoutException extends IOException {}
 ?>

@@ -7,7 +7,7 @@
  * @version    $Id$
  * @author     Rasmus Andersson
  * @author     John Peterson
- * @package    hunch.ab
+ * @package    ab
  * @subpackage util
  */
 class Inflector {

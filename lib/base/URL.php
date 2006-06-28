@@ -4,8 +4,8 @@
  * 
  * @version    $Id$
  * @author     Rasmus Andersson
- * @package    hunch.ab
- * @subpackage util
+ * @package    ab
+ * @subpackage net
  */
 class URL {
 	

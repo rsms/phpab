@@ -6,7 +6,7 @@
  * 
  * @version    $Id$
  * @author     Rasmus Andersson
- * @package    hunch.ab
+ * @package    ab
  * @subpackage util
  */
 class ReadlineConsoleApplication extends ConsoleApplication {
@@ -20,7 +20,7 @@ class ReadlineConsoleApplication extends ConsoleApplication {
 	/**
 	 * @return int exit status
 	 */
-	public function main()
+	public function main(&$argc, &$argv)
 	{
 		$this->openConsole();
 		return 0;

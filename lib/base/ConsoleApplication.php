@@ -6,7 +6,7 @@
  * 
  * @version    $Id$
  * @author     Rasmus Andersson
- * @package    hunch.ab
+ * @package    ab
  * @subpackage util
  */
 abstract class ConsoleApplication {

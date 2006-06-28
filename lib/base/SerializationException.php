@@ -1,7 +1,7 @@
 <?
 /**
  * Thrown to indicate a serialization process failed
- * @package    hunch.ab
+ * @package    ab
  * @subpackage io
  */
 class SerializationException extends IOException {}

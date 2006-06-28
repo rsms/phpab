@@ -4,7 +4,7 @@
  * 
  * @version    $Id$
  * @author     Rasmus Andersson  http://hunch.se/
- * @package    hunch.ab
+ * @package    ab
  * @subpackage base
  */
 

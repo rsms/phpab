@@ -2,7 +2,7 @@
 /**
  * @version    $Id$
  * @author     Rasmus Andersson
- * @package    hunch.ab
+ * @package    ab
  * @subpackage io
  */
 class File {
@@ -194,6 +194,7 @@ class File {
 			}
 		}
 		catch(PHPException $e) {
+			$e->setMessage($e->getMessage() . ': ' . $this->getURL()->toString());
 			$e->rethrow('IOException', 'rmdir', 'unlink');
 		}
 	}
@@ -479,20 +480,74 @@ class File {
 	
 	/**
 	 * @param  mixed  string or <samp>File</samp>
+	 * @param  bool
+	 * @param  int
+	 * @param  bool
 	 * @return void
 	 * @throws IllegalArgumentException  on protocol mismatch
 	 * @throws IOException
 	 */
-	public function copyTo( $where )
+	public function copyTo( $where, $recursive = false, $recDirMode = 0775, $recOverwrite = false)
 	{
 		$where = File::valueOf($where);
+		$from = $this->url->toString();
+		$to = $where->url->toString();
 		
 		try {
-			if(!copy($this->url->toString(), $where->url->toString()))
-				throw new IOException('Failed to copy "'.$this->url->toString().'" to "'.$where->url->toString().'"');
+			if(!$recursive) {
+				copy($from, $to);
+			}
+			else {
+				if($this->isDir()) {
+					try { $where->mkdirs($recDirMode); } catch(Exception $e) {}
+					$from = rtrim($from,'/');
+					$to = rtrim($to,'/');
+					$this->_copyDir($from, $to, $recOverwrite, $recDirMode);
+				}
+				else {
+					try { $where->getParent()->mkdirs($recDirMode); } catch(Exception $e) {}
+					copy($from, $to);
+				}
+			}
 		}
 		catch(PHPException $e) {
-			$e->rethrow('IOException', 'copy');
+			throw new IOException($e, 'Copy failed');
+		}
+	}
+	
+	/**
+	 * @param  string
+	 * @param  string
+	 * @param  bool
+	 * @param  bool
+	 * @return void
+	 */
+	private function _copyDir( $from, $to, $overwrite, $dirMode )
+	{
+		if($d = opendir($from)) {
+			while(($file = readdir($d)) !== false) {
+				if($file != '.' && $file != '..')
+				{
+					$fromPath = $from . '/' . $file;
+					$toPath = $to . '/' . $file;
+					
+					if(is_dir($fromPath)) {
+						mkdir($toPath, $dirMode);
+						@chown($toPath, fileowner($fromPath));
+						$this->_copyDir($fromPath, $toPath, $overwrite, $dirMode);
+					}
+					elseif(is_file($fromPath) || is_link($fromPath)) {
+						if($overwrite || !file_exists($toPath)) {
+							copy($fromPath, $toPath);
+							@chmod($toPath, fileperms($fromPath));
+							@chown($toPath, fileowner($fromPath));
+						}
+					}
+				}
+			}
+		}
+		else {
+			throw new IOException('Failed to open directory for listing: '.$from);
 		}
 	}
 	
@@ -534,22 +589,21 @@ class File {
 	}
 	
 	/**
-	 * @param  string
 	 * @return File[]
 	 * @throws IOException
 	 */
 	public function getFiles()
 	{
-		$base_dir = rtrim($this->url->toString(),'/').'/';
+		$dir = rtrim($this->url->toString(),'/') . '/';
+		
+		if(!($dh = @opendir($dir)))
+			throw new IOException('Failed to open directory for reading: '.$dir);
+		
 		$files = array();
-		$url = $this->url->toString();
 		
-		if(!($dh = opendir($url)))
-			throw new IOException('Failed to open directory for reading: '.$url);
-		
-		$basedir = $url . '/';
-		while(($filename = readdir($dh)) !== false)
-			$files[] = new File($basedir . $filename);
+		while(($file = readdir($dh)) !== false)
+			if($file != '.' && $file != '..')
+				$files[] = new self($dir.$file);
 		
 		return $files;
 	}
@@ -557,18 +611,14 @@ class File {
 	/**
 	 * @param  string  fn-pattern
 	 * @param  int     See the File::SORT_-constants. 0 = don't sort
-	 * @param  string
 	 * @return File[]
 	 */
-	public function listFiles( $pattern = '', $sort = 0, $class = '' )
+	public function listFiles( $pattern = '', $sort = 0)
 	{
-		if(!$class)
-			$class = get_class($this);
-		
-		$base_dir = rtrim($this->url->toString(),'/').'/';
+		$dir = rtrim($this->url->toString(),'/').'/';
 		$files = array();
-		foreach($this->ls($pattern) as $file)
-			$files[] = new $class($base_dir.$file);
+		foreach($this->ls($pattern, $sort) as $file)
+			$files[] = new self($dir.$file);
 		return $files;
 	}
 	
@@ -618,9 +668,43 @@ class File {
 	 * @param  string
 	 * @return File
 	 */
-	public static function createTempFile($prefix = '', $suffix = '', $inDir = '/tmp') {
-		return new File(tempnam($inDir, $prefix).$suffix);
+	public static function createTempFile($prefix = '', $suffix = '', $inDir = '/tmp', $deleteOnExit = true)
+	{
+		if(($file = tempnam($inDir, $prefix).$suffix) === false)
+			throw new IOException('Failed to create temporary file ' . $file);
+		
+		$file = new File($file);
+		@$file->touch();
+		@$file->chmod(0664);
+		
+		if($deleteOnExit)
+			$file->deleteOnExit();
+		
+		return $file;
 	}
+	
+	/**
+     * Convert absolute path to a relative path, based in <samp>$relativeToBase</samp>
+     *
+     * <b>Example</b>
+     * <code>
+     * print File::relativePath('/absolute/path/to/foo.bar', '/absolute/path');
+	 * // output: "to/foo.bar"
+     * </code>
+     * 
+     * @param  string
+     * @param  string
+     * @return string
+     */
+    public static function relativePath( $path, $basePath )
+    {
+		if($basePath) {
+			$len = strlen($basePath);
+	        if(substr($path, 0, $len) == $basePath)
+	            return substr($path, $len + (($basePath{$len-1} != '/') ? 1 : 0));
+		}
+        return $path;
+    }
 	
 	/**
 	 * @param  mixed  string, File or URL

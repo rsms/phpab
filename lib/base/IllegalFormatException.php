@@ -1,7 +1,7 @@
 <?
 /**
  * Thrown to indicate errornous format
- * @package    hunch.ab
+ * @package    ab
  * @subpackage base
  */
 class IllegalFormatException extends IllegalArgumentException {}

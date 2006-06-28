@@ -1,8 +1,8 @@
 <?
 /**
  * Thrown to indicate a configuration error
- * @package    hunch.ab
- * @subpackage base
+ * @package    ab
+ * @subpackage util
  */
 class ConfigurationException extends ABException {}
 ?>
