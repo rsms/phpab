@@ -1,4 +1,9 @@
 <?
+/**
+ * @version    $Id$
+ * @package    ab
+ * @subpackage mvc
+ */
 
 $html = '<pre>'.strip_tags(get_class($e) . " from " . $e->getFile().':'.$e->getLine().': '.$e->getMessage());
 $errmsg = "Killed by ".strip_tags(get_class($e) . " from " . $e->getFile().':'.$e->getLine().': '.$e->getMessage());

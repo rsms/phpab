@@ -1,4 +1,10 @@
 <?
+/**
+ * @version    $Id$
+ * @package    ab
+ * @subpackage mvc
+ */
+
 if(!$title)
 	$title = $status;
 

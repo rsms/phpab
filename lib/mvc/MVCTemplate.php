@@ -2,13 +2,19 @@
 /**
  * @version    $Id$
  * @author     Rasmus Andersson
- * @package    hunch.ab
+ * @package    ab
  * @subpackage mvc
  */
 class MVCTemplate {
 	
+	/** @var bool */
 	public static $has_rendered = false;
 	
+	/**
+	 * @param  string
+	 * @param  array
+	 * @return void
+	 */
 	public static function render($action, $params = 0)
 	{
 		self::$has_rendered = true;

@@ -1,4 +1,9 @@
 <?
+/**
+ * @version    $Id$
+ * @package    ab
+ * @subpackage mvc
+ */
 $path = $_SERVER['REQUEST_URI'];
 if(($p = strpos($path, '?')) !== false)
 	$path = substr($path, 0, $p);

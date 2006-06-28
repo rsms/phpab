@@ -1,4 +1,9 @@
 <?
+/**
+ * @version    $Id$
+ * @package    ab
+ * @subpackage mvc
+ */
 $html = '<p>'.$e->getMessage().'</p>';
 
 if(MVC_DEV_MODE)

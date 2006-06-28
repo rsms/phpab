@@ -1,4 +1,11 @@
 <?
+/**
+ * MVC request handler
+ *
+ * @version    $Id$
+ * @package    ab
+ * @subpackage mvc
+ */
 ########################################################################
 # Helpers
 

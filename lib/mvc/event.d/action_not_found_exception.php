@@ -1,4 +1,10 @@
 <?
+/**
+ * @version    $Id$
+ * @package    ab
+ * @subpackage mvc
+ */
+
 $html = '<p>No action responded to '.(MVCRouter::$controller ? MVCRouter::$controller->action_name : 'index').'</p>';
 
 if(MVC_DEV_MODE)
