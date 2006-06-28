@@ -2,7 +2,7 @@
 /**
  * @version    $Id$
  * @author     Rasmus Andersson
- * @package    hunch.ab
+ * @package    ab
  * @subpackage db
  */
 class DBException extends ABException {

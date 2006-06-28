@@ -6,7 +6,7 @@ define('DB_FETCH_BOTH', 2);
 /**
  * @version    $Id$
  * @author     Rasmus Andersson
- * @package    hunch.ab
+ * @package    ab
  * @subpackage db
  */
 class DBResult {
