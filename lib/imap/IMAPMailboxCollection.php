@@ -1,4 +1,10 @@
 <?
+/**
+ * @version    $Id$
+ * @author     Rasmus Andersson
+ * @package    ab
+ * @subpackage imap
+ */
 class IMAPMailboxCollection {
 	
 	/** @var IMAPMAilbox[] */

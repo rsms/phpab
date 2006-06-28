@@ -1,6 +1,6 @@
 <?
 /**
- * @version    $Rev$
+ * @version    $Id$
  * @author     Rasmus Andersson
  * @package    ab
  * @subpackage imap
