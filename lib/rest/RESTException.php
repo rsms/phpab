@@ -4,7 +4,7 @@
  * 
  * @version    $Id$
  * @author     Rasmus Andersson
- * @package    hunch.ab
+ * @package    ab
  * @subpackage rest
  */
 class RESTException extends IOException {}

@@ -1,4 +1,4 @@
-<? # http://www.upcoming.org/services/rest/?api_key=<API Key>&method=event.search&search_text=killers&metro_id=1
+<?
 /**
  * REST service client
  *
@@ -11,7 +11,7 @@
  * 
  * @version    $Id$
  * @author     Rasmus Andersson
- * @package    hunch.ab
+ * @package    ab
  * @subpackage rest
  */
 class RESTServiceAdapter {
