@@ -1,8 +1,8 @@
 <?
 /**
  * Thrown to indicate an unexpected HTTP response/request
- * @package    hunch.ab
- * @subpackage io
+ * @package    ab
+ * @subpackage net
  */
-class HttpException extends IOException {}
+class HTTPException extends IOException {}
 ?>
