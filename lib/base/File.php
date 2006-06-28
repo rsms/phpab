@@ -156,7 +156,7 @@ class File {
 	}
 	
 	/**
-	 * @return string
+	 * @return int Timestamp
 	 * @throws IOException
 	 */
 	public function lastModified() {
