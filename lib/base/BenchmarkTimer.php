@@ -17,7 +17,7 @@
 class BenchmarkTimer {
 	
 	/** @var bool */
-	public static $utf8 = true;
+	public static $utf8 = false;
 	
 	/** @ignore */
 	public static $HAVE_RUSAGE = 1;

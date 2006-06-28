@@ -14,12 +14,12 @@
  *
  * There are several ways of bootstrapping your AbstractBase based application. 
  * One of them is to simply put 
- * <samp>require_once '/path/to/ab/base/boot.php';</samp> atop your principal scripts.
+ * <samp>require '/path/to/ab/base/boot.php';</samp> atop your principal scripts.
  *
  * Another way doing this is to alter <samp>include_path</samp> in php.ini to include 
  * the absolute path to the directory in which boot.php resides in. Later, you can 
  * boot AbstractBase without having to know where you keep the libraries:
- * <samp>require_once 'boot.php';</samp>
+ * <samp>require 'boot.php';</samp>
  * 
  *
  * <br><b>Performance</b>
