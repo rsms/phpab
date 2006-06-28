@@ -1,0 +1,37 @@
+body 
+{ 
+	background-color: #ccc; 
+	margin: 0px; 
+	padding: 0px;
+}
+
+/* Banner (top bar) classes */
+
+.banner {  }
+
+.banner-menu 
+{ 
+	clear: both;
+	padding: .5em;
+}
+
+.banner-title 
+{ 
+	text-align: center; 
+	font-size: 14pt; 
+	font-weight: bold; 
+	padding: .2em;
+	background-color: #777;
+	color: #EEE;
+}
+
+.package-selector 
+{ 
+	background-color: #AAAADD; 
+	border: 1px solid black; 
+	color: yellow;
+}
+
+A {
+	color: #000;
+}
