@@ -197,6 +197,9 @@ set_exception_handler('__exhandler');
 
 /** @ignore */
 function __errhandler($errno, $str, $file, $line, &$context) {
+	# if something was prepended by @, errlevel will be 0
+	if(error_reporting() == 0)
+		return;
 	require_once 'event.d/php_error.php';
 }
 set_error_handler('__errhandler', E_ALL);
