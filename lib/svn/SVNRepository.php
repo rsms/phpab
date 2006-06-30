@@ -8,11 +8,15 @@
  * @subpackage svn
  */
 class SVNRepository {
-	
-	
+
+	/** @var int Youngest revision */
+	protected $youngestRev = 0;
 	
 	/** @var string */
 	protected $path = '';
+	
+	/** @var string */
+	protected $uuid = '';
 	
 	/**
 	 * @param string  Physical path to repository
@@ -21,82 +25,149 @@ class SVNRepository {
 		$this->path = $path;
 	}
 	
-	protected function getFilesCacheKey() {
-		return 'ab.svn.rep.'.md5($this->path);
+	/**
+	 * Physical path
+	 * 
+	 * @return string
+	 */
+	public function getPath() {
+		return $this->path;
 	}
 	
 	/**
-	 * @return SVNFile[]
+	 * @return string
 	 */
-	public function getFiles()
+	public function getUUID() {
+		if(!$this->uuid)
+			$this->uuid = trim($this->look('uuid'));
+		return $this->uuid;
+	}
+	
+	/**
+	 * @param  string
+	 * @param  string
+	 * @param  string
+	 * @return string
+	 */
+	public function look($command, $path = '', $arguments = '') {
+		return SVN::look("$command $arguments '".$this->path."'".($path ? " '$path'" : ''));
+	}
+	
+	/** @return string */
+	public function getCacheKey($path = '', $revision = 0) {
+		#return 'ab.svn.rep.'.md5($this->path);
+		return 'svnrep'.str_replace('/','.',$this->path.$path).($revision ? '.r'.$revision : '');
+	}
+	
+	/** @return int */
+	public function youngestRev() {
+		if(!$this->youngestRev)
+			$this->youngestRev = intval(trim($this->look('youngest')));
+		return $this->youngestRev;
+	}
+	
+	/**
+	 * Get a file
+	 *
+	 * The results of this method is  NOT cached.
+	 * 
+	 * @param  string
+	 * @param  int      Specific revision of file
+	 * @return SVNFile  Returns null if the file specified does not exist or if the path points to a directory
+	 */
+	public function getFile($path, $revision = 0)
 	{
-		if(SVN::$apcEnabled) {
-			$apcKey = $this->getFilesCacheKey();
-			if(($root = apc_fetch($apcKey)) !== false)
-				return $root;
-		}
+		# Query
+		$line = trim($this->look('tree', $path, '--full-paths --show-ids'.($revision ? " -r $revision" : '')));
 		
-		$tree = explode("\n", SVN::look("tree '".$this->path."'"));
-		$tempNode = new SVNDirectory('', $this);
-		$fromIndex = 0;
-		$this->getFilesWalker($tree, $tempNode, $fromIndex, count($tree));
-		$root = $tempNode->firstChild();
-		$root->parent = null;
+		if(!$line)
+			return null;
 		
-		if(SVN::$apcEnabled)
-		{
-			$tmpfile = '/tmp/'.$apcKey.'.lock';
-			
-			if(!($fp = fopen($tmpfile,'w')))
-				throw new IOException("Failed to create lock file '$tmpfile'");
-			
-			flock($fp, LOCK_EX);
-			# check AGAIN after we get the lock.
-			# If someone was faster than us
-			if(apc_fetch($apcKey) !== false) {
-				fclose($fp);
+		$rev = 0;
+		$inode = 0;
+		$line = self::parseTreeFileInfo($line, $rev, $inode);
+		
+		if(substr($line,-1) == '/')
+			return null;
+		
+		return SVNFile::fromData($line, $rev, $inode, $this);
+	}
+	
+	/**
+	 * Get all files and directories in a directory for one level down
+	 *
+	 * The results of this method is cached using APC in memory.
+	 * 
+	 * @param  string
+	 * @param  int           Show files for a specific revision. 0 = newest revision
+	 * @param  bool
+	 * @return SVNDirectory  Returns null if the directory specified does not exist
+	 */
+	public function getFiles($path = '/', $revision = 0, $noCache = false)
+	{
+		$path = rtrim($path, '/').'/';
+		
+		# Load mem cached data
+		if(SVN::$apcEnabled && !$noCache) {
+			$apcKey = $this->getCacheKey($path, $revision);
+			if(($root = apc_fetch($apcKey)) !== false) {
+				#print 'cache hit';
 				return $root;
 			}
-			apc_store($apcKey, $root, SVN::$apcTTL);
-			fclose($fp);
-			@unlink($tmpfile);
 		}
+		
+		
+		# Query
+		$tree = trim(SVN::look("tree --full-paths --show-ids".($revision ? " -r $revision" : '')." '".$this->path."' '$path'"
+			. '|'.SVN::grepBin()." -E '^".str_replace(array('?','+'),array('\?','\+'),$path)."[^/]+/? *<'"));
+		
+		if(!$tree)
+			return null;
+		
+		# Generate data
+		$tree = explode("\n", $tree);
+		$len = count($tree);
+		$root = null;
+		
+		for($i=0; $i<$len; $i++)
+		{
+			$rev = 0;
+			$inode = 0;
+			$line = self::parseTreeFileInfo($tree[$i], $rev, $inode);
+			
+			if(!$root) {
+				$root = SVNDirectory::fromData($line, $rev, $inode, $this);
+			}
+			elseif(substr($line,-1) == '/') {
+				$root->appendChild(SVNDirectory::fromData($line, $rev, $inode));
+			}
+			else {
+				$root->appendChild(SVNFile::fromData($line, $rev, $inode));
+			}
+		}
+		
+		
+		# Save cache at request/response-session end
+		if(SVN::$apcEnabled && !$noCache)
+			SVN::scheduleCacheWrite($apcKey, $root);
+		
 		return $root;
 	}
 	
-	/**
-	 * @return void
-	 */
-	private function getFilesWalker(&$tree, $parent, &$fromIndex, $toIndex, $entryLevel = 0)
+	/** @return string line */
+	private static function parseTreeFileInfo($line, &$rev, &$inode)
 	{
-		$file = null;
+		$p = strpos($line, '<');
+		$info = substr($line, $p);
+		$line = substr($line, 0, $p-1);
 		
-		for(; $fromIndex < $toIndex; $fromIndex++)
-		{
-			$line =& $tree[$fromIndex];
-			$level = strspn($line, ' ');
-			
-			if($level < $entryLevel)
-			{
-				$fromIndex--;
-				break;
-			}
-			elseif($level == $entryLevel)
-			{
-				$slash = $parent->parent ? '/' : '';
-				
-				if(substr($line,-1) == '/')
-					$file = new SVNDirectory($parent->getPath() . $slash . trim($line,' /'));
-				else
-					$file = new SVNFile($parent->getPath() . $slash . substr($line,$level));
-				
-				$parent->appendChild($file);
-			}
-			elseif($level > $entryLevel)
-			{
-				$this->getFilesWalker($tree, $file, $fromIndex, $toIndex, $level);
-			}
-		}
+		# parse quick info
+		$p = strpos($info, '/');
+		$inode = intval(substr($info, $p+1, -1));
+		$x = strrpos($info, 'r');
+		$rev = intval(substr($info, $x+1, $p-$x-1));
+		return $line;
 	}
+	
 }
 ?>

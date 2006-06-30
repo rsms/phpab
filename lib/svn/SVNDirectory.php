@@ -28,6 +28,28 @@ class SVNDirectory extends SVNFile {
 	}
 	
 	/**
+	 * Always returns 0 for directories
+	 *
+	 * @return int (unsigned)
+	 */
+	public function size() {
+		return 0;
+	}
+	
+	/**
+	 * @param  string
+	 * @param  int
+	 * @param  int
+	 * @param  SVNRepository
+	 * @return SVNDirectory
+	 */
+	public static function fromData($path, $rev, $inode, $repository = null) {
+		$f = new self($path, $repository);
+		$f->rev = $rev;
+		return $f;
+	}
+	
+	/**
 	 * Read data from file
 	 *
 	 * Will throw an IllegalOperationException, since you cant read contents of a directory.
