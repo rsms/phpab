@@ -29,6 +29,14 @@ class Process {
 		return self::$resolvedBinariesCache[$name];
 	}
 	
+	/** 
+	 * @param  string
+	 * @return string
+	 */
+	public static function escapeArg($argument) {
+		return escapeshellarg($argument);
+	}
+	
 	/**
 	 * @param  string
 	 * @return string  output
@@ -39,9 +47,8 @@ class Process {
 		if(isset(self::$resolvedBinariesCache[$program]))
 			$program = self::$resolvedBinariesCache[$program];
 		
-		$program = $program;
 		for($i=1;$i<func_num_args();$i++)
-			$program .= ' ' . escapeshellarg(func_get_arg($i));
+			$program .= ' ' . func_get_arg($i);
 		$program .= ' 2>&1';
 		
 		try {
