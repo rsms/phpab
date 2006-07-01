@@ -141,6 +141,18 @@ abstract class Cipher {
 			default:                  return $data;
 		}
 	}
-
+	
+	
+	/** @ignore */
+	public static function __test()
+	{
+		$cipher = new self('abcdefghijklmnop');
+		$dataClear = 'En kanin hittade en rotliknande sork';
+		assert($dataEncrypted = $cipher->encrypt($dataClear));
+		assert($dataEncrypted != $dataClear);
+		assert($dataClearAgain = $cipher->decrypt($dataEncrypted));
+		assert($dataClearAgain != $dataEncrypted);
+		assert($dataClearAgain == $dataClear);
+	}
 }
 ?>
