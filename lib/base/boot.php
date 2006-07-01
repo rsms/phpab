@@ -198,7 +198,6 @@ if(!defined('SAFEMODE')) {
  *
  * @param  string Path to a directory
  * @return void
- * @deprecated Use {@link import()} instead
  */
 function import( $dirpath ) {
 	ini_set('include_path', ini_get('include_path') . ':' . $dirpath);
