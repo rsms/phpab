@@ -1,5 +1,8 @@
 <?
 /**
+ * Please understand that calling this method is VERY expensive.
+ * So, if you got any warnings (E_NOTICE) at all, fix them!
+ * 
  * @version    $Id$
  * @package    ab
  * @subpackage base
@@ -7,18 +10,14 @@
 
 #onPHPError( $errno, $str, $file, $line, &$context )
 
-# if something was prepended by @, errlevel will be 0
-if(error_reporting() == 0)
-	return;
-
 if($errno == E_WARNING || $errno == E_USER_WARNING)
 	throw new PHPException($str, $errno, $file, $line);
 
 $fileLine = "on line $line in ";
 if(isset($_SERVER['DOCUMENT_ROOT']))
-	$fileLine .= Utils::relativePath($file, $_SERVER['DOCUMENT_ROOT']);
+	$fileLine .= File::relativePath($file, $_SERVER['DOCUMENT_ROOT']);
 elseif(isset($GLOBALS['argv'][0]))
-	$fileLine .= Utils::relativePath($file, dirname($GLOBALS['argv'][0]));
+	$fileLine .= File::relativePath($file, dirname($GLOBALS['argv'][0]));
 else
 	$fileLine .= $file;
 
@@ -30,14 +29,14 @@ switch($errno) {
 	case E_NOTICE:
 	case E_USER_NOTICE:
 		if(PHP::isCLI())
-			Utils::printError("{$GLOBALS['argv'][0]}: WARNING: $str $fileLine\n");
+			IO::writeError("{$GLOBALS['argv'][0]}: WARNING: $str $fileLine\n");
 		else
 			print "<span class=\"warning\"><b>WARNING:</b> $str <span class=\"file\">$fileLine</span></span><br />";
 		return;
 }
 
 if(PHP::isCLI()) {
-	Utils::printError("{$GLOBALS['argv'][0]}: FATAL: $str $fileLine\n\t"
+	IO::writeError("{$GLOBALS['argv'][0]}: FATAL: $str $fileLine\n\t"
 		. str_replace("\n","\n\t",ABException::formatTrace(new Exception(), false, array('__errhandler')))
 		. "\n");
 }

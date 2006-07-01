@@ -35,7 +35,7 @@ class Utils {
 	 * @return void
 	 * @deprecated Use {@link IO::writeError()} instead
 	 */
-	public static function printError( $str )
+	public static function printError($str)
 	{
 		IO::writeError($str);
 	}
