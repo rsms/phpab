@@ -34,6 +34,20 @@
  * <b>Dont use {@link http://trac.lighttpd.net/xcache/ xcache}</b>, it 
  * still has some issues with PHP 5.0/5.1.
  *
+ * <b>Bootstrap calltree</b>
+ * <pre>
+ * 0.00 ms   main                                     0.000 ms
+ * 1.24 ms   | ini_get                                1.240 ms
+ * 1.28 ms   | dirname                                0.036 ms
+ * 1.30 ms   | ini_set                                0.024 ms
+ * 1.32 ms   | defined                                0.022 ms
+ * 1.35 ms   | ini_set                                0.024 ms
+ * 1.37 ms   | set_exception_handler                  0.026 ms
+ * 1.40 ms   | set_error_handler                      0.026 ms
+ * 
+ * (Times show are user + system)
+ * </pre>
+ *
  *
  * <br><b>The event.d directory</b>
  *
@@ -100,9 +114,10 @@ class PHP {
 	 *
 	 * @param  string path
 	 * @return void
+	 * @deprecated Use {@link import()} instead
 	 */
 	public static function addClasspath( $path ) {
-		ini_set('include_path', ini_get('include_path') . ':' . rtrim($path,'/'));
+		import($path);
 	}
 	
 	/**
@@ -172,18 +187,35 @@ class PHP {
 	}
 }
 
-# Append base lib to include path
+# add baselib to cp
 ini_set('include_path', ini_get('include_path') . ':' . dirname(__FILE__));
+
+
+if(!defined('SAFEMODE')) {
+
+/**
+ * Add a path to be searched for classes by the classloader
+ *
+ * @param  string Path to a directory
+ * @return void
+ * @deprecated Use {@link import()} instead
+ */
+function import( $dirpath ) {
+	ini_set('include_path', ini_get('include_path') . ':' . $dirpath);
+}
 
 /** @ignore */
 function __autoload($c) {
-	if((@include_once $c . '.php') === false) {
+	# we use include instead of include_once since it's alot faster
+	# and the probability of including an allready included file is
+	# very small.
+	if((@include $c . '.php') === false) {
 		$t = debug_backtrace();
 		if(@$t[1]['function'] != 'class_exists') {
 			require_once 'event.d/autoload_failure.php';
 		}
 	}
-}
+} }
 # TODO: Spray: move into php.ini?
 ini_set('unserialize_callback_func', '__autoload');
 
@@ -198,7 +230,7 @@ set_exception_handler('__exhandler');
 /** @ignore */
 function __errhandler($errno, $str, $file, $line, &$context) {
 	# if something was prepended by @, errlevel will be 0
-	if(error_reporting() == 0)
+	if(error_reporting() === 0)
 		return;
 	require_once 'event.d/php_error.php';
 }

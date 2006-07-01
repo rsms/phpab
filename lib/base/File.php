@@ -10,27 +10,50 @@ class File {
 	const SORT_ASC  = 1;
 	const SORT_DESC = 2;
 	
+	/** @var string */
+	protected $path;
+	
 	/** @var URL */
 	protected $url;
 	
+	/** @var array */
 	private static $deleteOnExit = array();
 	
+	
 	/**
-	 * @param mixed  <samp>URL</samp>, <samp>File</samp> or <samp>string</samp>
+	 * @param  mixed  <samp>string</samp>, <samp>URL</samp> or <samp>File</samp>
+	 * @throws IllegalArgumentException if the class of $path is not convertable
+	 * @see    valueOf()
 	 */
-	public function __construct($url) {
-		$this->url = URL::valueOf($url);
-		$this->url->setQuery(null);
-		$this->url->setRef(null);
+	public function __construct($path)
+	{
+		if(is_object($path)) {
+			if($path instanceof URL) {
+				$this->url = $path;
+				$this->path = $path->toString();
+			}
+			elseif($path instanceof File) {
+				# copy path and url right of the instance
+				$this->path = $path->path;
+				$this->url = $path->url;
+			}
+			else {
+				throw new IllegalArgumentException('Can not convert a '.get_class($path).' to a File');
+			}
+		}
+		else
+			$this->path = $path;
 	}
 	
-	/** @return string */
+	/** @return URL */
 	public function getURL() {
+		if(!$this->url)
+			$this->url = new URL($this->path);
 		return $this->url;
 	}
 	
 	/**
-	 * ftp://localhost/foo/bar -> bar
+	 * ftp://localhost/foo/bar.txt -> bar.txt
 	 * @return string
 	 */
 	public function getName() {
@@ -38,11 +61,19 @@ class File {
 	}
 	
 	/**
+	 * ftp://localhost/foo/bar -> /foo
+	 * @return string
+	 */
+	public function getDirname() {
+		return dirname($this->getPath());
+	}
+	
+	/**
 	 * ftp://localhost/foo/../bar -> /foo/../bar
 	 * @return File
 	 */
 	public function getPath() {
-		return $this->url->getPath();
+		return $this->url ? $this->url->getPath() : $this->path;
 	}
 	
 	/**
@@ -56,28 +87,19 @@ class File {
 	}
 	
 	/**
-	 * ftp://localhost/foo/bar -> /foo
-	 * @return string
-	 */
-	public function getDirname() {
-		return dirname($this->getPath());
-	}
-	
-	/**
 	 * ftp://localhost/foo/bar -> ftp://localhost/foo
 	 * @return File
 	 */
 	public function getParent() {
 		$class = get_class($this);
-		return new $class(dirname(rtrim($this->url->toString(),'/\\')));
+		return new $class(dirname(rtrim($this->toString(),'/\\')));
 	}
 	
 	/**
 	 * @return string
 	 */
 	public function toString() {
-		#return get_class($this).'<'.$this->url->toString().'>';
-		return $this->url->toString();
+		return $this->url ? $this->url->toString() : $this->path;
 	}
 	
 	/**
@@ -97,10 +119,13 @@ class File {
 	 */
 	public function setExtension($ext) {
 		$name = $this->getName();
+		$p = strrpos($name, '.');
+		$url = $this->getURL();
+		
 		if(($p = strrpos($name, '.')) !== false)
-			$this->url->setPath($this->getDirname().'/'.substr($name, 0, $p+1).$ext);
+			$url->setPath($this->getDirname().'/'.substr($name, 0, $p+1).$ext);
 		else
-			$this->url->setPath($this->getPath().'.'.$ext);
+			$url->setPath($this->getPath().'.'.$ext);
 	}
 	
 	/**
@@ -109,7 +134,7 @@ class File {
 	 */
 	public function isFile() {
 		try {
-			return is_file($this->url->toString());
+			return is_file($this->toString());
 		}
 		catch(PHPException $e) {
 			$e->rethrow('IOException', 'is_file');
@@ -122,7 +147,7 @@ class File {
 	 */
 	public function isDir() {
 		try {
-			return is_dir($this->url->toString());
+			return is_dir($this->toString());
 		}
 		catch(PHPException $e) {
 			$e->rethrow('IOException', 'is_dir');
@@ -135,7 +160,7 @@ class File {
 	 */
 	public function exists() {
 		try {
-			return file_exists($this->url->toString());
+			return file_exists($this->toString());
 		}
 		catch(PHPException $e) {
 			$e->rethrow('IOException', 'file_exists');
@@ -148,7 +173,7 @@ class File {
 	 */
 	public function size() {
 		try {
-			return filesize($this->url->toString());
+			return filesize($this->toString());
 		}
 		catch(PHPException $e) {
 			$e->rethrow('IOException', 'filesize');
@@ -161,7 +186,7 @@ class File {
 	 */
 	public function lastModified() {
 		try {
-			return filemtime($this->url->toString());
+			return filemtime($this->toString());
 		}
 		catch(PHPException $e) {
 			$e->rethrow('IOException', 'filemtime');
@@ -179,7 +204,7 @@ class File {
 	 */
 	public function delete($recursive = false) {
 		try {
-			$url = $this->url->toString();
+			$url = $this->toString();
 			if($this->isDir()) {
 				if($recursive)
 					foreach($this->getFiles() as $file)
@@ -194,7 +219,7 @@ class File {
 			}
 		}
 		catch(PHPException $e) {
-			$e->setMessage($e->getMessage() . ': ' . $this->getURL()->toString());
+			$e->setMessage($e->getMessage() . ': ' . $this->toString());
 			$e->rethrow('IOException', 'rmdir', 'unlink');
 		}
 	}
@@ -203,14 +228,17 @@ class File {
 	 * Requests that the file or directory denoted by this <samp>File</samp> be deleted
 	 * when the current PHP process/session terminates.
 	 *
-	 * <b>Note:</b> Once deletion has been requested, it is not possible to cancel the request.
+	 * <b>Note:</b> Once deletion has been requested, it is not possible to cancel the 
+	 *              request. The only option is to change the path/url of the file to 
+	 *              point to a non-existent file, for example 
+	 *              <samp>$file->getURL()->set("/tmp/notinghere")</samp>
 	 * 
 	 * @return void
 	 */
 	public function deleteOnExit() {
 		if(!self::$deleteOnExit)
 			register_shutdown_function(array('File','__deleteOnExit'));
-		self::$deleteOnExit[] = clone $this;
+		self::$deleteOnExit[] = /*clone*/ $this;
 	}
 	
 	/**
@@ -220,11 +248,11 @@ class File {
 	public function touch($time = null, $atime = null) {
 		try {
 			if($time === null)
-				touch($this->url->toString());
+				touch($this->toString());
 			elseif($atime === null)
-				touch($this->url->toString(), $time);
+				touch($this->toString(), $time);
 			else
-				touch($this->url->toString(), $time, $atime);
+				touch($this->toString(), $time, $atime);
 		}
 		catch(PHPException $e) {
 			$e->rethrow('IOException', 'touch');
@@ -241,8 +269,8 @@ class File {
 	 */
 	public function mkdir( $mode = 0775, $recursive = false ) {
 		try {
-			if(!mkdir($this->url->toString(), $mode, $recursive))
-				throw new IOException('Failed to create directory: '.$this->url->toString());
+			if(!mkdir($this->toString(), $mode, $recursive))
+				throw new IOException('Failed to create directory: '.$this->toString());
 		}
 		catch(PHPException $e) {
 			$e->rethrow('IOException', 'mkdir');
@@ -283,7 +311,7 @@ class File {
 	public function chmod( $mode )
 	{
 		try {
-			$url = $this->url->toString();
+			$url = $this->toString();
 			if(strcasecmp(substr($url,0,7), 'file://') == 0)
 				$url = substr($url, 7);
 			
@@ -446,7 +474,7 @@ class File {
 	public function chown( $user )
 	{
 		try {
-			$url = $this->url->toString();
+			$url = $this->toString();
 			if(strcasecmp(substr($url,0,7), 'file://'))
 				$url = substr($url, 7);
 			chown($url, $user);
@@ -470,8 +498,8 @@ class File {
 			throw new IllegalArgumentException('Protocol mismatch: Old and New destinations must use the same protocol');
 		
 		try {
-			if(!rename($this->url->toString(), $what->url->toString()))
-				throw new IOException('Failed to rename "'.$this->url->toString().'" to "'.$what->url->toString().'"');
+			if(!rename($this->toString(), $what->toString()))
+				throw new IOException('Failed to rename "'.$this->toString().'" to "'.$what->toString().'"');
 		}
 		catch(PHPException $e) {
 			$e->rethrow('IOException', 'rename');
@@ -490,8 +518,8 @@ class File {
 	public function copyTo( $where, $recursive = false, $recDirMode = 0775, $recOverwrite = false)
 	{
 		$where = File::valueOf($where);
-		$from = $this->url->toString();
-		$to = $where->url->toString();
+		$from = $this->toString();
+		$to = $where->toString();
 		
 		try {
 			if(!$recursive) {
@@ -565,7 +593,7 @@ class File {
 			$flags = 0;
 			if($append) $flags |= FILE_APPEND;
 			if($lock) $flags |= LOCK_EX;
-			return file_put_contents($this->url->toString(), $data, $flags);
+			return file_put_contents($this->toString(), $data, $flags);
 		}
 		catch(PHPException $e) {
 			$e->rethrow('IOException', 'file_put_contents');
@@ -580,10 +608,10 @@ class File {
 	 */
 	public function getContents() {
 		try {
-			return file_get_contents($this->url->toString());
+			return file_get_contents($this->toString());
 		}
 		catch(PHPException $e) {
-			$e->setMessage($e->getMessage() . ' ' . $this->url->toString());
+			$e->setMessage($e->getMessage() . ' ' . $this->toString());
 			$e->rethrow('IOException', 'file_get_contents');
 		}
 	}
@@ -594,7 +622,7 @@ class File {
 	 */
 	public function getFiles()
 	{
-		$dir = rtrim($this->url->toString(),'/') . '/';
+		$dir = rtrim($this->toString(),'/') . '/';
 		
 		if(!($dh = @opendir($dir)))
 			throw new IOException('Failed to open directory for reading: '.$dir);
@@ -615,7 +643,7 @@ class File {
 	 */
 	public function listFiles( $pattern = '', $sort = 0)
 	{
-		$dir = rtrim($this->url->toString(),'/').'/';
+		$dir = rtrim($this->toString(),'/').'/';
 		$files = array();
 		foreach($this->ls($pattern, $sort) as $file)
 			$files[] = new self($dir.$file);
@@ -630,7 +658,7 @@ class File {
 	public function ls( $pattern = '', $sort = 0 )
 	{
 		try {
-			if ($dh = opendir($this->url->toString())) {
+			if ($dh = opendir($this->toString())) {
 				$files = array();
 				while(($file = readdir($dh)) !== false) {
 					if($pattern)
@@ -648,7 +676,7 @@ class File {
 				return $files;
 			}
 			else {
-				throw new IOException('Failed to open dir for listing: '.$this->url->toString());
+				throw new IOException('Failed to open dir for listing: '.$this->toString());
 			}
 		} catch(PHPException $e) {
 			$e->rethrow('IOException', 'opendir');
@@ -659,7 +687,9 @@ class File {
 	 * @return bool
 	 */
 	public function isLocal() {
-		return ($this->url->isProtocol('file') || $this->url->isProtocol(''));
+		if(!$this->url && strpos($this->path, ':') === false)
+			return true;
+		return ($this->getURL()->isProtocol('file') || $this->getURL()->isProtocol(''));
 	}
 	
 	/**
@@ -715,24 +745,7 @@ class File {
 	{
 		if($file instanceof File)
 			return $file;
-		
-		if(!($file instanceof URL) && is_string($file))
-			$file = URL::valueOf($file);
-		
-		if($file instanceof URL) {
-			if($file->isProtocol('ftp') || $file->isProtocol('ftps')) {
-				if(AB::libraryIsLoaded('ftp')) {
-					return new FTPFile($file);
-				}
-			}
-			return new File($file);
-		}
-		
-		$t = gettype($file);
-		if($t == 'object')
-			$t = get_class($file);
-		
-		throw new IllegalArgumentException('Can not convert '.$t.' to a File object');
+		return new self($file);
 	}
 	
 	/** @ignore */
