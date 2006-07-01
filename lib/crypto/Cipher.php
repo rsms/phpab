@@ -1,18 +1,4 @@
 <?
-
-# Flags
-define('CIPH_BASE64ENCODE', 1);
-define('CIPH_HEXENCODE',	2);
-
-/**
- * Encryption Block Mode constants
- *
- * @const MODE_ECB ecb mode
- * @const MODE_CBC cbc mode
- */
-define("CIPH_MODE_ECB", 4);
-define("CIPH_MODE_CBC", 8);
-
 /**
  * Cipher baseclass
  *
@@ -40,25 +26,9 @@ abstract class Cipher {
 	
 	
 	/**
-	 * Encryption Block Mode
-	 */
-	const MODE_ECB = 4;
-	
-	/**
-	 * Encryption Block Mode
-	 */
-	const MODE_CBC = 8;
-	
-	
-	/**
 	 * @var int
 	 */
 	protected $encoding = 2;
-	
-	/**
-	 * @var int bits
-	 */
-	protected $secretLength = 512;
 	
 	/**
 	 * @var string
@@ -94,24 +64,6 @@ abstract class Cipher {
 	 */
 	protected function getEncoding() {
 		return $this->encoding;
-	}
-	
-	/**
-	 * Key "strength". Size in bits. Set to even octals. Try to pass a key of the appropriate length.
-	 * Ie: if you specify 512 bits key strength, use a 64 character key. (512/8=64)
-	 *
-	 * @param  int  bits
-	 * @return void
-	 */
-	public function setKeyLength ( $len ) {
-		$this->keyLength = $len;
-	}
-	
-	/**
-	 * @return int  bits
-	 */
-	public function getKeyLength ( $len ) {
-		return $this->keyLength;
 	}
 	
 	/**
@@ -166,12 +118,11 @@ abstract class Cipher {
 	 */
 	protected function postFilterData( &$data )
 	{	
-		if ($this->hasFlag(self::ENCODE_BASE64))
-			return base64_encode($data);
-		elseif ($this->hasFlag(self::ENCODE_BASE16))
-			return bin2hex($data);
-		else
-			return $data;
+		switch($this->encoding) {
+			case self::ENCODE_BASE64: return base64_encode($data);
+			case self::ENCODE_BASE16: return bin2hex($data);
+			default:                  return $data;
+		}
 	}
 	
 	
@@ -183,26 +134,13 @@ abstract class Cipher {
 	 * @return string
 	 */
 	protected function preFilterData( &$data )
-	{	
-		if ($this->flags & self::ENCODE_BASE64)
-			return base64_decode($data);
-		elseif ($this->hasFlag(self::ENCODE_BASE16))
-			return self::hex2bin($data);
-		else
-			return $data;
+	{
+		switch($this->encoding) {
+			case self::ENCODE_BASE64: return base64_decode($data);
+			case self::ENCODE_BASE16: return pack('H'.strlen($data), $data);
+			default:                  return $data;
+		}
 	}
-	
-	
-	/**
-	 *  Convert a hexadecimal string to a binary string (e.g. convert "616263" to "abc").
-	 *
-	 *  @param  string  $str	Hexadecimal string to convert to binary string.
-	 *  @return string		  Binary string.
-	 */
-	protected static function hex2bin ( $str ) {
-		return pack('H'.strlen($str), $str);
-	}
-
 
 }
 ?>
