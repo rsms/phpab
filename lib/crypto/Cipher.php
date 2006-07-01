@@ -144,15 +144,16 @@ abstract class Cipher {
 	
 	
 	/** @ignore */
-	public static function __test()
+	public static function __test($instance = null)
 	{
-		$cipher = new self('abcdefghijklmnop');
-		$dataClear = 'En kanin hittade en rotliknande sork';
-		assert($dataEncrypted = $cipher->encrypt($dataClear));
-		assert($dataEncrypted != $dataClear);
-		assert($dataClearAgain = $cipher->decrypt($dataEncrypted));
-		assert($dataClearAgain != $dataEncrypted);
-		assert($dataClearAgain == $dataClear);
+		if($instance) {
+			$dataClear = 'En kanin hittade en rotliknande sork';
+			assert(strlen($dataEncrypted = $instance->encrypt($dataClear)));
+			assert($dataEncrypted != $dataClear);
+			assert(strlen($dataClearAgain = $instance->decrypt($dataEncrypted)));
+			assert($dataClearAgain != $dataEncrypted);
+			assert($dataClearAgain == $dataClear);
+		}
 	}
 }
 ?>

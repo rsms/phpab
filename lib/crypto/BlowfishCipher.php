@@ -519,6 +519,12 @@ class BlowfishCipher extends Cipher {
     
     /** @var ptr[] */
     private $ctxSB = array();
+	
+	
+	/** @ignore */
+	public static function __test() {
+		parent::__test(new self('tr7raxe5apHeTr2v'));
+	}
 }
 
 ?>

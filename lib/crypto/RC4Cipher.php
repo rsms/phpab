@@ -156,7 +156,11 @@ class RC4Cipher extends Cipher {
 		}
 		$this->i = $this->j = 0;
 	}
-
-
+	
+	
+	/** @ignore */
+	public static function __test() {
+		parent::__test(new self('abcdefghijklmnop'));
+	}
 }
 ?>

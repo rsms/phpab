@@ -376,5 +376,11 @@ class TEACipher extends Cipher {
 		
 		return $result;
 	}
+	
+	
+	/** @ignore */
+	public static function __test() {
+		parent::__test(new self('abcdefghijklmnop'));
+	}
 }
 ?>
