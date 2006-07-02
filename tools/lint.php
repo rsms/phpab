@@ -22,7 +22,7 @@ foreach($lib->getFiles(true) as $file)
 			print '<span style="color:#8c8">'.$shortPath.'</span><br />';
 		}
 		else {
-			print '<span style="color:#8c8">'.$shortPath.'</span><br />'
+			print '<span style="color:#a00">'.$shortPath.'</span><br />'
 				. '<pre style="border:1px solid #ddd;padding:7px;margin-bottom:10px;">'
 				. htmlentities($out)
 				. '</pre>';
