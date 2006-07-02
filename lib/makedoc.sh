@@ -8,7 +8,7 @@ PHPDOC=`which phpdoc`
 cd `dirname $0`
 PWD=`pwd`
 
-if [ ! -x $PHPDOC ]; then
+if [ ! -x "$PHPDOC" ]; then
 	echo "Can't find phpdoc in PATH."
 	echo "   You need to add phpdocumentor/phpdoc to your PATH,"
 	echo "   or create a symlink to it in an existing path in PATH."

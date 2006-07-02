@@ -73,7 +73,9 @@ class File {
 	 * @return File
 	 */
 	public function getPath() {
-		return $this->url ? $this->url->getPath() : $this->path;
+		if(!$this->url && strpos($this->path, ':') === false)
+			return $this->path;
+		return $this->getURL()->getPath();
 	}
 	
 	/**
@@ -151,6 +153,24 @@ class File {
 		}
 		catch(PHPException $e) {
 			$e->rethrow('IOException', 'is_dir');
+		}
+	}
+	
+	/**
+	 * Check if the file or directory is readable
+	 *
+	 * If you want to make sure a file or directory exists, use the 
+	 * much faster {@link exists()} method instead.
+	 * 
+	 * @return bool
+	 * @throws IOException
+	 */
+	public function isReadable() {
+		try {
+			return is_readable($this->toString());
+		}
+		catch(PHPException $e) {
+			$e->rethrow('IOException', 'is_readable');
 		}
 	}
 	
@@ -617,29 +637,77 @@ class File {
 	}
 	
 	/**
+	 * @param  bool    Include subdirectories and their content
 	 * @return File[]
 	 * @throws IOException
 	 */
-	public function getFiles()
+	public function getFiles($recursive = false)
 	{
-		$dir = rtrim($this->toString(),'/') . '/';
-		
-		if(!($dh = @opendir($dir)))
-			throw new IOException('Failed to open directory for reading: '.$dir);
-		
+		$dir = rtrim($this->toString(), '/') . '/';
 		$files = array();
 		
-		while(($file = readdir($dh)) !== false)
-			if($file != '.' && $file != '..')
-				$files[] = new self($dir.$file);
+		if($recursive) {
+			$this->getFilesR($files, $dir);
+		}
+		else {
+			if(!($dh = @opendir($dir)))
+				throw new IOException('Failed to open directory for reading: '.$dir);
+			
+			try {
+				while(($file = readdir($dh)) !== false)
+					if($file != '.' && $file != '..')
+						$files[] = new self($dir.$file);
+				closedir($dh);
+			}
+			catch(Exception $e) {
+				closedir($dh);
+				throw $e;
+			}
+		}
 		
 		return $files;
 	}
 	
 	/**
+	 * @param  File[]
+	 * @param  string
+	 * @param  bool
+	 * @return void
+	 * @throws IOException
+	 */
+	private function getFilesR(&$files, $dir)
+	{
+		if(!($dh = @opendir($dir)))
+			throw new IOException('Failed to open directory for reading: '.$dir);
+		
+		try {
+			while(($file = readdir($dh)) !== false) {
+				if($file != '.' && $file != '..') {
+					$f = new self($dir.'/'.$file);
+					$files[] = $f;
+					if($f->isDir())
+						$this->getFilesR($files, $f->toString());
+				}
+			}
+			closedir($dh);
+		}
+		catch(Exception $e) {
+			closedir($dh);
+			throw $e;
+		}
+		
+		
+	}
+	
+	/**
+	 * Get files in directory matching pattern
+	 *
+	 * Runs {@link ls() File->ls()} and create File isntances
+	 *
 	 * @param  string  fn-pattern
 	 * @param  int     See the File::SORT_-constants. 0 = don't sort
 	 * @return File[]
+	 * @see    ls()
 	 */
 	public function listFiles( $pattern = '', $sort = 0)
 	{
@@ -654,6 +722,7 @@ class File {
 	 * @param  string  fn-pattern
 	 * @param  int     See the File::SORT_-constants. 0 = don't sort
 	 * @return string[]
+	 * @see    listFiles()
 	 */
 	public function ls( $pattern = '', $sort = 0 )
 	{
@@ -753,6 +822,16 @@ class File {
 		foreach(self::$deleteOnExit as $file) {
 			try { $file->delete(); } catch(Exception $e) {}
 		}
+	}
+	
+	/** @ignore */
+	public static function __test()
+	{
+		$file = new File(__FILE__);
+		assert($file->exists());
+		assert($file->isFile());
+		assert(!$file->isDir());
+		assert($file->isReadable());
 	}
 }
 ?>

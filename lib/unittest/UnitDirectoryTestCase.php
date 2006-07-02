@@ -18,6 +18,9 @@ class UnitDirectoryTestCase extends UnitTestCase {
 	/** @var UnitTestCase[] */
 	protected $cases = array();
 	
+	/** @var bool */
+	private $allCasesPassed = true;
+	
 	
 	/**
 	 * @param string
@@ -93,7 +96,6 @@ class UnitDirectoryTestCase extends UnitTestCase {
 			}
 			elseif($this->recursive && is_dir($filepath) && is_readable($filepath))
 			{
-				# Recurse down the alley...
 				$this->findPHPFiles($filepath, $files);
 			}
 		}

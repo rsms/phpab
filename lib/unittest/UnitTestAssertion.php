@@ -102,20 +102,26 @@ class UnitTestAssertion {
 	{
 		$lines = $this->getLines($this->lineNo-1, $this->lineNo+1);
 		
-		return '<div class="line"><code>'
-			. str_replace(' ','&nbsp;',sprintf('% -6d',$this->lineNo-1))
-			. preg_replace('/style="color:\s*[^;"]+/', 'style="', $lines[$this->lineNo-1])
-			. '</code></div>'
+		$str = '';
+		
+		if(isset($lines[$this->lineNo-1]))
+			$str .= '<div class="line"><code>'
+				. str_replace(' ','&nbsp;',sprintf('% -6d',$this->lineNo-1))
+				. preg_replace('/style="color:\s*[^;"]+/', 'style="', $lines[$this->lineNo-1])
+				. '</code></div>';
 			
-			. '<div class="line important"><code>'
+		$str .= '<div class="line important"><code>'
 			. str_replace(' ','&nbsp;',sprintf('% -6d',$this->lineNo)).'</code>'
-			. $lines[$this->lineNo]
-			. '</div>'
-			
-			. '<div class="line"><code>'
-			. str_replace(' ', '&nbsp;', sprintf('% -6d',$this->lineNo+1))
-			. preg_replace('/style="color:\s*[^;"]+/', 'style="', $lines[$this->lineNo+1])
-			. '</code></div>';
+			. @$lines[$this->lineNo]
+			. '</div>';
+		
+		if(isset($lines[$this->lineNo+1]))
+			$str .= '<div class="line"><code>'
+				. str_replace(' ', '&nbsp;', sprintf('% -6d',$this->lineNo+1))
+				. preg_replace('/style="color:\s*[^;"]+/', 'style="', $lines[$this->lineNo+1])
+				. '</code></div>';
+		
+		return $str;
 	}
 }
 ?>

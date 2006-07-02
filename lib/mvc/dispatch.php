@@ -55,7 +55,10 @@ if(MVC_DEV_MODE) {
 	
 	$_mvc_dev_can_print = null;
 	
-	/** @return bool */
+	/**
+	 * @return bool
+	 * @ignore
+	 */
 	function mvc_dev_can_print() {
 		global $_mvc_dev_can_print;
 		if($_mvc_dev_can_print !== null)
@@ -67,7 +70,10 @@ if(MVC_DEV_MODE) {
 		return $_mvc_dev_can_print = true;
 	}
 	
-	/** @return void */
+	/**
+	 * @return void
+	 * @ignore
+	 */
 	function benchmark_timer_stop() {
 		if(!mvc_dev_can_print())
 			return;

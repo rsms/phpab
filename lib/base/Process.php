@@ -17,8 +17,6 @@ class Process {
 	public static function resolveBinary($name)
 	{
 		if(!isset(self::$resolvedBinariesCache[$name])) {
-			if(AB::$isSafemode)
-				throw new IllegalStateException('Safe-mode active. Unable to run command');
 			$r = trim(`which "$name"`);
 			if($r) {
 				self::$resolvedBinariesCache[$name] = $r;

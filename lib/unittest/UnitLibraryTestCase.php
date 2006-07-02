@@ -14,7 +14,7 @@ class UnitLibraryTestCase extends UnitDirectoryTestCase {
 	 * @param bool
 	 */
 	public function __construct($path, $recursive = true) {
-		$this->path = $path;
+		$this->path = realpath($path);
 		$this->recursive = $recursive;
 	}
 	
@@ -27,6 +27,7 @@ class UnitLibraryTestCase extends UnitDirectoryTestCase {
 	protected function performTests()
 	{
 		# Import all class definitions
+		$this->importLibrary($this->path);
 		$this->importClassFiles($this->path);
 		
 		# Aquire declared classes
@@ -38,16 +39,46 @@ class UnitLibraryTestCase extends UnitDirectoryTestCase {
 			# Has __test method?
 			if(is_callable(array($class, '__test'), false))
 			{
-				# Roots from this library path?
 				$classInfo = new ReflectionClass($class);
+				
+				# Roots from this library path?
 				$declaredInFile = $classInfo->getFileName();
 				if(substr($declaredInFile, 0, strlen($this->path)) == $this->path)
 				{
+				
+					# Only include __test()s explicitly defined in sublcasses
+					$hasItsOwnTest = true;
+					
+					if($classInfo->getParentClass()) {
+						foreach($classInfo->getMethods() as $method) {
+							if($method->getName() == '__test' && $method->getDeclaringClass() != $classInfo) {
+								$hasItsOwnTest = false;
+								break;
+							}
+						}
+					}
+				
 					# Create and execute test
-					$this->executeTest(new UnitClassTestCase($class, $classInfo));
+					if($hasItsOwnTest)
+						$this->executeTest(new UnitClassTestCase($class, $classInfo));
 				}
 			}
 		}
+	}
+	
+	
+	/**
+	 * @param  string
+	 * @return void
+	 */
+	protected function importLibrary($path)
+	{
+		if(substr($path,-2) != '.d')
+			import($path);
+		
+		foreach(File::valueOf($path)->getFiles(true) as $file)
+			if($this->recursive && $file->isDir() && $file->isReadable())
+				$this->importLibrary($file->getPath());
 	}
 	
 	
@@ -69,18 +100,12 @@ class UnitLibraryTestCase extends UnitDirectoryTestCase {
 					continue;
 				
 				$guessedClass = substr($file, 0, -4);
-				if(class_exists($guessedClass))
-					continue;
-				
-				require_once $filepath;
+				if(!class_exists($guessedClass) && !interface_exists($guessedClass))
+					die('FATAL: Unthrowable error: '.__FILE__.':'.(__LINE__-1)
+						." Unable to find probable class $guessedClass");
 			}
 			elseif($this->recursive && is_dir($filepath) && is_readable($filepath))
 			{
-				# Make sure all classes are available for autoloading, in case
-				# we import a sublcass before we import it's superclass
-				if(!PHP::libraryIsLoaded($filepath))
-					PHP::addClasspath($filepath);
-				
 				# Recurse down the alley...
 				$this->importClassFiles($filepath);
 			}

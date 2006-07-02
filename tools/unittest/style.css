@@ -1,0 +1,64 @@
+body {
+	font-family:tahoma;
+	font-size:11px;
+}
+h1, h2, h3, h4 { font-family:arial,helvetica; }
+h1 { font-size:22px; }
+h2 { font-size:16px; }
+h3 { font-size:13px; }
+
+div.case {
+	margin-bottom:20px;
+}
+div.case h3 { margin-top:10px; margin-bottom:0; }
+div.case h2.header {
+	margin:0;
+	padding: 0 4px;
+	border-top:1px solid #884;
+	border-left:1px solid #aa6;
+	border-right:1px solid #aa6;
+}
+div.case h2.header.failed {
+	background-color:#f44;
+	color:#fff;
+	border-top-color:#a33;
+	border-left-color:#844;
+	border-right-color:#844;
+}
+div.case h2.header.passed {
+	background-color:#9d7;
+	color:#030;
+	border-top-color:#3a3;
+	border-left-color:#484;
+	border-right-color:#484;
+}
+div.case div.body { 
+	padding: 7px 10px; 
+	background-color:#ffe;
+	border-left:1px solid #aa9;
+	border-right:1px solid #aa9;
+	border-bottom:1px solid #887;
+}
+div.case div.assertion.html { 
+	border-top:1px solid #c9c9aa;
+	border-right:1px solid #eaeacc;
+	border-left:1px solid #eaeacc;
+	border-bottom:1px solid #ececcc;
+	margin-top:10px;
+	margin-bottom:15px; 
+	background-color:#fff;
+}
+div.case div.assertion.html div.line {
+	color:#999;
+	padding: 2px 3px;
+}
+div.case div.assertion.html div.line.important {
+	color:#a00;
+	background-color:#fdd;
+	font-weight:bold;
+}
+div.case div.body div.exception { margin-top: 10px; }
+div.case div.body div.exception b {
+	font-size: 14px;
+	font-family: arial,helvetica;
+}
