@@ -34,16 +34,22 @@
  * <b>Dont use {@link http://trac.lighttpd.net/xcache/ xcache}</b>, it 
  * still has some issues with PHP 5.0/5.1.
  *
- * <b>Bootstrap calltree</b>
+ * Loading and executing this bootstrap takes about <b>0.01 ms, or 10 microseconds 
+ * of user time</b> (on a celeron 2 Ghz/512 MB, debian sarge w php 5.1.4/apc 3.0.10)
+ * 
+ *
+ * Bootstrap calltree from {@link http://pecl.php.net/package/apd APD} profiling:
  * <pre>
- * 0.00 ms   main                                     0.000 ms
- * 1.24 ms   | ini_get                                1.240 ms
- * 1.28 ms   | dirname                                0.036 ms
- * 1.30 ms   | ini_set                                0.024 ms
- * 1.32 ms   | defined                                0.022 ms
- * 1.35 ms   | ini_set                                0.024 ms
- * 1.37 ms   | set_exception_handler                  0.026 ms
- * 1.40 ms   | set_error_handler                      0.026 ms
+ * 0.00 ms   main                        0.000 ms
+ * 0.00 ms   | apd_set_pprof_trace       0.000 ms
+ * 0.18 ms   | require_once('boot.php')  0.182 ms
+ * 0.18 ms   | | ini_get                 0.182 ms
+ * 0.34 ms   | | dirname                 0.154 ms
+ * 0.36 ms   | | ini_set                 0.022 ms
+ * 0.38 ms   | | defined                 0.019 ms
+ * 0.40 ms   | | ini_set                 0.021 ms
+ * 0.42 ms   | | set_exception_handler   0.021 ms
+ * 0.44 ms   | | set_error_handler       0.021 ms
  * 
  * (Times show are user + system)
  * </pre>
@@ -51,7 +57,7 @@
  *
  * <br><b>The event.d directory</b>
  *
- * This directory contains partial code that is not known to be used in every session. 
+ * This directory contain partial code that is known to be rarly used.
  * It's is automatically loaded upon first request. Logic using this sort of 
  * optimisation includes error handling and exception handling, as it is sparsely used.
  *
@@ -68,14 +74,14 @@
  * Have a look at {@link log_setup()} for more details.
  *
  *
- * <br><b>PHP setup</b>
+ * <br><b>PHP in Safe Mode</b>
  *
  * If you are running PHP in safe mode, you need to include {@link safeboot.php} 
  * instead of this file. You should know that it is slower to run in safe mode than 
  * running in free mode. If you can, set <samp>safe_mode = Off</samp> in php.ini.
- * <br><br>
  *
- * Recommended php.ini settings:
+ *
+ * <br><b>Recommended runtime settings:</b>
  *  - docref_root = ""
  *  - ignore_repeated_errors = 1
  *  - allow_call_time_pass_reference = Off
@@ -83,6 +89,7 @@
  *  - zend.ze1_compatibility_mode = Off
  *  - asp_tags = Off
  *  - output_buffering = Off
+ * That is, settings in the <i>php.ini</i> file.
  *
  *
  * @package    ab
@@ -198,6 +205,7 @@ if(!defined('SAFEMODE')) {
  *
  * @param  string Path to a directory
  * @return void
+ * @deprecated Use {@link import()} instead
  */
 function import( $dirpath ) {
 	ini_set('include_path', ini_get('include_path') . ':' . $dirpath);
@@ -240,7 +248,7 @@ set_error_handler('__errhandler', E_ALL);
  * Setup the logging system
  *
  * If you want to use the built-in logging system, you need to 
- * call this function once, in order to load the logging logic.
+ * call this function at least once, in order to load the logging logic.
  * You might customize logging properties by providing custom
  * arguments. If you don't, default values are used. (see below)
  *
@@ -263,6 +271,9 @@ set_error_handler('__errhandler', E_ALL);
  *                 1 = only log_error, 2 = log_error and log_warn, 3+ = everything.
  *                 (null = use defaults)
  * @return void
+ * @see    log_info()
+ * @see    log_warn()
+ * @see    log_error()
  */
 function log_setup($dir = null, $defaultLogfile = null, $level = null) {
 	require_once 'event.d/log.php';
