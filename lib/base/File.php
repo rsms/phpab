@@ -807,7 +807,7 @@ class File {
 	
 	/**
 	 * @param  mixed  string, File or URL
-	 * @param  File
+	 * @return File
 	 * @throws IllegalArgumentException
 	 */
 	public static function valueOf($file)
