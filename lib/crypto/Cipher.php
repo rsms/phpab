@@ -33,22 +33,22 @@ abstract class Cipher {
 	/**
 	 * @var string
 	 */
-	protected $secret = null;
+	protected $key = null;
 	
 
 	/**
 	 * @param  string
 	 * @return void
 	 */
-	public function setSecret($secret) {
-		$this->secret = $secret;
+	public function setKey($key) {
+		$this->key = $key;
 	}
 	
 	/**
 	 * @return string
 	 */
-	protected function getSecret() {
-		return $this->secret;
+	protected function getKey() {
+		return $this->key;
 	}
 	
 	/**
@@ -72,7 +72,7 @@ abstract class Cipher {
 	* @param   string  Data to encrypt
 	* @return  string  Encrypted data
 	*/
-	public function encrypt ( $data ) {
+	public function encrypt( $data ) {
 		return '';
 	}
 	
@@ -82,12 +82,14 @@ abstract class Cipher {
 	* @param   string  Data to decrypt
 	* @return  string  Decrypted data
 	*/
-	public function decrypt ( $data ) {
+	public function decrypt( $data ) {
 		return '';
 	}
 	
 	/**
 	 * Encrypt a file
+	 *
+	 * Default implementation reads whole file into memory and passes it to encrypt.
 	 *
 	 * @param  string  File to encrypt
 	* @return  string  Encrypted data
@@ -98,6 +100,8 @@ abstract class Cipher {
 	
 	/**
 	 * Decrypt a file
+	 *
+	 * Default implementation reads whole file into memory and passes it to decrypt.
 	 *
 	 * @param  string  File to decrypt
 	 * @return string  Decrypted data

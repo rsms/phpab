@@ -20,7 +20,7 @@
  * @subpackage crypto
  * @author     Rasmus Andersson <http://hunch.se/>
  */
-class TEACipher extends Cipher {
+class TEACompatCipher extends TEACipher {
 	
 	/** @var int */
 	private $iterations;

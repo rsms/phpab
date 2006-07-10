@@ -29,7 +29,7 @@
  * @author	 Dave Mertens <dmertens.AT.zyprexia.com>
  * @author	 Damien Miller <djm.AT.mindrot.org>
  */
-class RC4Cipher extends Cipher {
+class RC4CompatCipher extends RC4Cipher {
 
 	/** @access private */
 	private $s = array();

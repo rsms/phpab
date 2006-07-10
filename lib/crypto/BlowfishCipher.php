@@ -45,7 +45,7 @@
  * @subpackage crypto
  * @author     Rasmus Andersson {@link http://hunch.se/}
  */
-class BlowfishCipher extends Cipher {
+class BlowfishCompatCipher extends BlowfishCipher {
 	
 	/**
 	 * Block mode ECB
@@ -75,7 +75,7 @@ class BlowfishCipher extends Cipher {
 	 * 
 	 * @param string
 	 */
-	public function __construct($secret, $blockMode = self::MODE_ECB)
+	public function __construct($key, $blockMode = self::MODE_ECB)
 	{	
 		$this->blockMode = $blockMode;
 		$this->ctxP =& self::$parray;
@@ -83,7 +83,7 @@ class BlowfishCipher extends Cipher {
 		$this->ctxSB[1] =& self::$sbox1;
 		$this->ctxSB[2] =& self::$sbox2;
 		$this->ctxSB[3] =& self::$sbox3;
-		$this->setSecret($secret);
+		$this->setKey($key);
 	}
 	
 	
@@ -185,7 +185,7 @@ class BlowfishCipher extends Cipher {
 	 * @param  string
 	 * @return void
 	 */
-	public function setSecret($secret)
+	public function setKey($secret)
 	{
 		// unpack binary string in unsigned chars
 		$secret  = array_values(unpack("C*",$secret));
