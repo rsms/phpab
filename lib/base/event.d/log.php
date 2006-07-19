@@ -90,6 +90,6 @@ if(!$dir) {
 	}
 }
 
-if(!$defaultLogfile)
+if(!$logfile)
 	ABLog::$defaultFile = 'web';
 ?>

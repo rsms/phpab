@@ -54,7 +54,7 @@ class Inflector {
      *  @param  string  Word to be pluralized
      *  @return string  Plural of $word
      */
-    function pluralize($word) {
+    public static function pluralize($word) {
         $original = $word;
         foreach(self::$plural_rules as $rule => $replacement) {
             $word = preg_replace($rule,$replacement,$word);
@@ -69,7 +69,7 @@ class Inflector {
      *  @param  string  Word to be singularized
      *  @return string  Singular of $word
      */
-    function singularize($word) {
+    public static function singularize($word) {
         $original = $word;
         foreach(self::$singular_rules as $rule => $replacement) {
             $word = preg_replace($rule,$replacement,$word);
@@ -84,7 +84,7 @@ class Inflector {
      *  @param  string  Word to be capitalized
      *  @return string  Capitalized $word
      */
-    function capitalize($word) {
+    public static function capitalize($word) {
         return ucfirst(strtolower($word));     
     }
 
@@ -95,7 +95,7 @@ class Inflector {
      *  @param  string  Phrase to convert
      *  @return string  Camel case form of the phrase
      */
-    function camelize($lower_case_and_underscored_word) {
+    public static function camelize($lower_case_and_underscored_word) {
     	if(strpos($lower_case_and_underscored_word, '_') === false)
 			return ucfirst($lower_case_and_underscored_word);
 		else
@@ -109,7 +109,7 @@ class Inflector {
      *  @param  string  Phrase to convert
      *  @return string  Lower case and underscored form of the phrase
      */
-    function underscore($camel_cased_word) {
+    public static function underscore($camel_cased_word) {
         $camel_cased_word = preg_replace('/([A-Z]+)([A-Z])/','\1_\2',$camel_cased_word);
         return strtolower(preg_replace('/([a-z])([A-Z])/','\1_\2',$camel_cased_word));
     }
@@ -121,7 +121,7 @@ class Inflector {
      *  @return string  The input value with underscores replaced by blanks and 
      *                  the first letter of each word capitalized
      */
-    function humanize($lower_case_and_underscored_word) {
+    public static function humanize($lower_case_and_underscored_word) {
         return ucwords(str_replace("_"," ",$lower_case_and_underscored_word));
     }
 
@@ -135,7 +135,7 @@ class Inflector {
      *  @param  string  Name of Model class
      *  @return string  Pluralized lower_case_underscore form of name
      */
-    function tableize($class_name) {
+    public static function tableize($class_name) {
         return self::pluralize(self::underscore($class_name));
     }
 
@@ -145,7 +145,7 @@ class Inflector {
      *  @param  string  Name of table in the database
      *  @return string  Singular CamelCase form of $table_name
      */
-    function classify($table_name) {
+    public static function classify($table_name) {
         return self::camelize(self::singularize($table_name));
     }
 
@@ -155,7 +155,7 @@ class Inflector {
      *  @param  string  Name of table referenced by foreign key
      *  @return string  Column name of the foreign key column
      */
-    function foreignKey($class_name) {
+    public static function foreignKey($class_name) {
         return self::underscore($class_name) . "_id";
     }
     

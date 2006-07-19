@@ -263,10 +263,10 @@ set_error_handler('__errhandler', E_ALL);
  *   - Level is 1 (only errors) if only E_ERROR is included in error reporting
  *   - Level is 0 (nothing) if neither E_NOTICE, E_WARNING or E_ERROR is included in error reporting.
  *
- * @param  string  Absoulte path to a directory in which the web server can create 
- *                 files. (null = use defaults)
  * @param  string  NAME of log file. Correct: "my_log", Wrong: "my_log.log". ".log" 
  *                 is prepended to name and written to $dir. (null = use defaults)
+ * @param  string  Absoulte path to a directory in which the web server can create 
+ *                 files. (null = use defaults)
  * @param  int     Decides which messages acctually get written. 0 = none,
  *                 1 = only log_error, 2 = log_error and log_warn, 3+ = everything.
  *                 (null = use defaults)
@@ -275,10 +275,10 @@ set_error_handler('__errhandler', E_ALL);
  * @see    log_warn()
  * @see    log_error()
  */
-function log_setup($dir = null, $defaultLogfile = null, $level = null) {
+function log_setup($logfile = null, $dir = null, $level = null) {
 	require_once 'event.d/log.php';
 	if($level !== null) ABLog::$level = $level;
 	if($dir) ABLog::$dir = rtrim($dir,'/').'/';
-	if($defaultLogfile) ABLog::$defaultFile = $defaultLogfile;
+	if($logfile) ABLog::$defaultFile = $logfile;
 }
 ?>

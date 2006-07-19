@@ -300,6 +300,8 @@ class File {
 	/**
 	 * Recursively create directories
 	 *
+	 * Delegates to <samp>File->mkdir($mode, true);</samp>
+	 *
 	 * @param  int
 	 * @return void
 	 * @throws IOException
@@ -514,7 +516,7 @@ class File {
 	public function renameTo( $what ) {
 		$what = File::valueOf($what);
 		
-		if(!$this->url->isProtocol($what->url->getProtocol()))
+		if(!$this->getURL()->isProtocol($what->getURL()->getProtocol()))
 			throw new IllegalArgumentException('Protocol mismatch: Old and New destinations must use the same protocol');
 		
 		try {
@@ -531,11 +533,12 @@ class File {
 	 * @param  bool
 	 * @param  int
 	 * @param  bool
+	 * @param  string Filename match filter of files to skip. Only applies to recursive copy.
 	 * @return void
 	 * @throws IllegalArgumentException  on protocol mismatch
 	 * @throws IOException
 	 */
-	public function copyTo( $where, $recursive = false, $recDirMode = 0775, $recOverwrite = false)
+	public function copyTo( $where, $recursive = false, $recDirMode = 0775, $recOverwrite = false, $excludeFilter = null)
 	{
 		$where = File::valueOf($where);
 		$from = $this->toString();
@@ -547,10 +550,11 @@ class File {
 			}
 			else {
 				if($this->isDir()) {
-					try { $where->mkdirs($recDirMode); } catch(Exception $e) {}
+					if(!$where->exists())
+						$where->mkdirs($recDirMode);
 					$from = rtrim($from,'/');
 					$to = rtrim($to,'/');
-					$this->_copyDir($from, $to, $recOverwrite, $recDirMode);
+					$this->_copyDir($from, $to, $recOverwrite, $recDirMode, $excludeFilter);
 				}
 				else {
 					try { $where->getParent()->mkdirs($recDirMode); } catch(Exception $e) {}
@@ -570,12 +574,15 @@ class File {
 	 * @param  bool
 	 * @return void
 	 */
-	private function _copyDir( $from, $to, $overwrite, $dirMode )
+	private function _copyDir( $from, $to, $overwrite, $dirMode, $excludeFilter )
 	{
 		if($d = opendir($from)) {
 			while(($file = readdir($d)) !== false) {
 				if($file != '.' && $file != '..')
 				{
+					if($excludeFilter && fnmatch($excludeFilter, $file))
+						continue;
+					
 					$fromPath = $from . '/' . $file;
 					$toPath = $to . '/' . $file;
 					
