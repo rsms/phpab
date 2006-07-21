@@ -1,28 +1,26 @@
 <?
-class PObjectStorage {
+/**
+ * @version    $Id$
+ * @author     Rasmus Andersson
+ * @package    ab
+ * @subpackage persistence
+ */
+abstract class PObjectStorage {
 	
-	# TODO: temporary
-	public static $db = null;
+	/** @var PObject */
+	private static $refObjs = array();
+	
+	/** @var string */
+	private static $storageClassCache = array();
+	
+	/** @var string[] */
+	protected static $phpTypes = array('str','int','dou','boo','NUL','arr','obj');
 	
 	/**
 	 * Map php types to native DB types
 	 * @var array
 	 */
-	public static $nativeTypes = array(
-		'boo' => 'INTEGER',
-		'int' => 'INTEGER',
-		'dou' => 'REAL',
-		'str' => 'TEXT',
-		'tex' => 'TEXT',
-		'bin' => 'BLOB',
-		'arr' => 'TEXT',
-		'obj' => 'TEXT');
-	
-	/** @var PObject */
-	protected static $refObjs = array();
-	
-	/** @var string[] */
-	protected static $phpTypes = array('str','int','dou','boo','NUL','arr','obj');
+	public $nativeTypes = array();
 	
 	
 	/**
@@ -41,14 +39,56 @@ class PObjectStorage {
 	 * should be used to store objects. If not defined, the Inflator will 
 	 * generate a plural, lower case variant of the class name.
 	 *
-	 * @param  string
+	 * @param  string  PHP classname
 	 * @return string
 	 */
 	public static function storageClass($class) {
-		if(!isset(self::storageClasses[$class]))
-			self::storageClasses[$class] = Inflector::tableize($class);
-		return self::storageClasses[$class];
+		if(!isset(self::$storageClassCache[$class]))
+			self::$storageClassCache[$class] = Inflector::tableize($class);
+		return self::$storageClassCache[$class];
 	}
+	
+	/**
+	 * @param  ReflectionProperty
+	 * @param  array (string => string)
+	 * @param  string
+	 * @return string
+	 */
+	public function getNativePropertyType(ReflectionProperty $prop, &$defaults, &$type)
+	{
+		$name = $prop->getName();
+		if($doc = trim($prop->getDocComment(), " \t\r\n*/")) {
+			if(preg_match('/@var[ \t]+([a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*)\s*(:?\[[\s0-9]*\]|)/', $doc, $m)) {
+				if($m[2]) {
+					$type = 'arr';
+				}
+				else {
+					$type = substr(strtolower($m[1]), 0, 3);
+					if($type == 'mix')
+						$type = 'str';
+					elseif(!in_array($type, self::$phpTypes))
+						$type = 'obj';
+				}
+			}
+		}
+		
+		if(!$type)
+			$type = substr(gettype(self::referenceObj($prop->getDeclaringClass()->getName())->$name), 0, 3);
+		
+		$nativeType = $this->nativeTypes[$type == 'str' ? (strlen(''.$defaults[$name]) > 255 ? 'tex' : 'str') : $type];
+		
+		if(!$nativeType)
+			throw new IllegalTypeException('Unstorable type: '.$type.' for property: '.$name);
+		
+		return $nativeType;
+	}
+	
+	
+	/**
+	 * @param  PObject
+	 * @return PObjectSchema
+	 */
+	abstract public function schemaForObject(PObject $obj);
 	
 	
 	/**
@@ -56,22 +96,14 @@ class PObjectStorage {
 	 * @param  mixed
 	 * @return PObject or null if not found
 	 */
-	public function find($classOrObj, $id)
-	{
-		if(is_string($classOrObj)) {
-			$class = $classOrObj;
-			$classOrObj = self::referenceObj($class);
-		}
-		else
-			$class = get_class($classOrObj);
-		
-		$pk =& $classOrObj->primaryKey;
-		
-		if($properties = self::$db->arrayQuery(self::fsql("SELECT * FROM %s WHERE %s = '%s'", $classOrObj->storageClass(), $pk, $classOrObj->$pk), SQLITE_ASSOC))
-			return new $class($properties);
-		
-		return null;
-	}
+	abstract public function find($classOrObj, $id);
+	
+	
+	/**
+	 * @param  mixed  string Classname or PObject instance
+	 * @return PObject[]
+	 */
+	abstract public function findAll($classOrObj);
 	
 	
 	/**
@@ -79,28 +111,7 @@ class PObjectStorage {
 	 * @param  string  Primary key
 	 * @return void
 	 */
-	public function save(PObject $obj, $pk)
-	{
-		if(!$pk)
-		{
-			$keys = array();
-			$values = array();
-			foreach($obj->getProperties(false) as $k => $v) {
-				$keys[] = $k;
-				$values[] = self::dbquote($v);
-			}
-			self::dbexec('INSERT INTO '.$obj->storageClass().' ('.implode(',', $keys).') VALUES ('.implode(',', $values).')');
-		}
-		else {
-			$sql = 'UPDATE '.$this->storageClass().' SET ';
-			
-			foreach($obj->getProperties(false) as $k => $v)
-				$sql .= $k . '=' . self::dbquote($v) . ',';
-			
-			$sql = rtrim($sql, ','). " WHERE $pk='".$obj->$pk."'";
-			self::dbexec($sql);
-		}
-	}
+	abstract public function save(PObject $obj, $pk);
 	
 	
 	/**
@@ -109,11 +120,6 @@ class PObjectStorage {
 	 * @return void
 	 * @throws IllegalOperationException if object is not yet persistent
 	 */
-	public function delete(PObject $obj, $pk)
-	{
-		if(!$obj->$pk)
-			throw new IllegalOperationException('Object is not persistent');
-		self::dbexec(self::fsql("DELETE FROM %s WHERE %s = '%s'", $obj->__table(), $pk, $obj->$pk));
-	}
+	abstract public function delete(PObject $obj, $pk);
 }
 ?>
