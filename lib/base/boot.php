@@ -270,15 +270,17 @@ set_error_handler('__errhandler', E_ALL);
  * @param  int     Decides which messages acctually get written. 0 = none,
  *                 1 = only log_error, 2 = log_error and log_warn, 3+ = everything.
  *                 (null = use defaults)
+ * @param  string
  * @return void
  * @see    log_info()
  * @see    log_warn()
  * @see    log_error()
  */
-function log_setup($logfile = null, $dir = null, $level = null) {
+function log_setup($logfile = null, $dir = null, $level = null, $msgPrefix = null) {
 	require_once 'event.d/log.php';
 	if($level !== null) ABLog::$level = $level;
 	if($dir) ABLog::$dir = rtrim($dir,'/').'/';
 	if($logfile) ABLog::$defaultFile = $logfile;
+	if($msgPrefix) ABLog::$msgPrefix = $msgPrefix;
 }
 ?>

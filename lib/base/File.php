@@ -97,12 +97,13 @@ class File {
 		return new $class(dirname(rtrim($this->toString(),'/\\')));
 	}
 	
-	/**
-	 * @return string
-	 */
+	/** @return string */
 	public function toString() {
 		return $this->url ? $this->url->toString() : $this->path;
 	}
+	
+	/** @return string */
+	public function __toString() { return $this->toString(); }
 	
 	/**
 	 * @return string
@@ -503,6 +504,36 @@ class File {
 		}
 		catch(PHPException $e) {
 			$e->rethrow('IOException', 'chown');
+		}
+	}
+	
+	
+	/**
+	 * Create a link
+	 *
+	 * @param  mixed  string path or any object whos __toString() results in a valid path
+	 * @param  bool   Create a symbiolic (soft) link instead of a hard link
+	 * @return void
+	 * @throws IOException
+	 */
+	public function linkTo($linkName, $symbolic = true) {
+		# sanity check
+		if($this->getURL()->getProtocol() && $this->getURL()->getProtocol() != 'file')
+			throw new IllegalOperationException('Can not create a link outside the local file system');
+		
+		# clean up $linkName
+		if(!is_string($linkName))
+			$linkName = is_object($linkName) ? $linkName->__toString() : strval($linkName);
+		$linkName = rtrim($linkName, '/');
+		
+		try {
+			if($symbolic)
+				symlink($this->getPath(), $linkName);
+			else
+				link($this->getPath(), $linkName);
+		}
+		catch(PHPException $e) {
+			throw new IOException($e, $e->getMessage());
 		}
 	}
 	

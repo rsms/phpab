@@ -11,6 +11,7 @@ final class ABLog
 	public static $dir = '';
 	public static $defaultFile = '';
 	public static $level = 0;
+	public static $msgPrefix = '';
 }
 
 /** @ignore */
@@ -24,11 +25,15 @@ function log_msg($msgOrDest, $msg, &$level, $sto)
 		$logfile = ABLog::$defaultFile;
 	}
 	
-	$f = debug_backtrace();
-	$f1 = @$f[$sto+1];
-	$f = $f[$sto];
-	$file =& $f['file'];
-	$prefix = ((strpos($file, BASEDIR) === 0) ? substr($file, strlen(BASEDIR)+1) : $file).':'.$f['line'];
+	if(!ABLog::$msgPrefix) {
+		$f = debug_backtrace();
+		$f1 = @$f[$sto+1];
+		$f = $f[$sto];
+		$file =& $f['file'];
+		$prefix = ((strpos($file, BASEDIR) === 0) ? substr($file, strlen(BASEDIR)+1) : $file).':'.$f['line'];
+	}
+	else
+		$prefix = ABLog::$msgPrefix;
 	
 	error_log(date('[Y-m-d H:i:s')." $level $prefix] $msg\n", 3, ABLog::$dir.$logfile.'.log');
 }
