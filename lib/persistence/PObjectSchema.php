@@ -30,7 +30,7 @@ class PObjectSchema {
 	
 	/** @return string */
 	public function toString() {
-		return get_class($this).'{'.print_r($this->fields).'}';
+		return get_class($this).'{'.print_r($this->fields, 1).'}';
 	}
 	
 	/** @return string */
