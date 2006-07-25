@@ -148,6 +148,19 @@ class File {
 	 * @return bool
 	 * @throws IOException
 	 */
+	public function isLink() {
+		try {
+			return is_link(rtrim($this->toString(),'/'));
+		}
+		catch(PHPException $e) {
+			$e->rethrow('IOException', 'is_link');
+		}
+	}
+	
+	/**
+	 * @return bool
+	 * @throws IOException
+	 */
 	public function isDir() {
 		try {
 			return is_dir($this->toString());
@@ -225,18 +238,18 @@ class File {
 	 */
 	public function delete($recursive = false) {
 		try {
-			$url = $this->toString();
-			if($this->isDir()) {
+			$url = rtrim($this->toString(), '/');
+			if(is_file($url) || is_link($url)) {
+				if(!unlink($url))
+					throw new IOException('Failed to delete '.($this->isFile() ? 'file: ' : 'link: ').$url);
+			}
+			else {
 				if($recursive)
 					foreach($this->getFiles() as $file)
 						$file->delete(true);
 				
 				if(!rmdir($url))
 					throw new IOException('Failed to delete directory: '.$url);
-			}
-			else {
-				if(!unlink($url))
-					throw new IOException('Failed to delete file: '.$url);
 			}
 		}
 		catch(PHPException $e) {
@@ -516,7 +529,8 @@ class File {
 	 * @return void
 	 * @throws IOException
 	 */
-	public function linkTo($linkName, $symbolic = true) {
+	public function linkTo($linkName, $symbolic = true, $mkdirs = true)
+	{
 		# sanity check
 		if($this->getURL()->getProtocol() && $this->getURL()->getProtocol() != 'file')
 			throw new IllegalOperationException('Can not create a link outside the local file system');
@@ -525,12 +539,24 @@ class File {
 		if(!is_string($linkName))
 			$linkName = is_object($linkName) ? $linkName->__toString() : strval($linkName);
 		$linkName = rtrim($linkName, '/');
+		$linkDir = dirname($linkName);
 		
 		try {
+			$thisPath = rtrim($this->getPath(), '/');
+			
+			if(!file_exists($linkDir) && !is_link($linkDir)) {
+				if($mkdirs) {
+					mkdir($linkDir, 0775, true);
+					@chmod($linkDir, 0775);
+				}
+				else
+					throw new FileNotFoundException('link target parent directory not found "'.$linkDir.'"');
+			}
+			
 			if($symbolic)
-				symlink($this->getPath(), $linkName);
+				symlink($thisPath, $linkName);
 			else
-				link($this->getPath(), $linkName);
+				link($thisPath, $linkName);
 		}
 		catch(PHPException $e) {
 			throw new IOException($e, $e->getMessage());
@@ -620,7 +646,7 @@ class File {
 					if(is_dir($fromPath)) {
 						mkdir($toPath, $dirMode);
 						@chown($toPath, fileowner($fromPath));
-						$this->_copyDir($fromPath, $toPath, $overwrite, $dirMode);
+						$this->_copyDir($fromPath, $toPath, $overwrite, $dirMode, $excludeFilter);
 					}
 					elseif(is_file($fromPath) || is_link($fromPath)) {
 						if($overwrite || !file_exists($toPath)) {
@@ -797,6 +823,17 @@ class File {
 		if(!$this->url && strpos($this->path, ':') === false)
 			return true;
 		return ($this->getURL()->isProtocol('file') || $this->getURL()->isProtocol(''));
+	}
+	
+	/**
+	 * @param  mixed  File or string
+	 * @return bool
+	 */
+	public function equals($file) {
+		$file = self::valueOf($file);
+		$thisUrl = $this->isLink() ? readlink(rtrim($this->getPath(),'/')) : rtrim($this->toString(),'/');
+		$fileUrl = $file->isLink() ? readlink(rtrim($file->getPath(),'/')) : rtrim($file->toString(),'/');
+		return $thisUrl == $fileUrl;
 	}
 	
 	/**
