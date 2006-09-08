@@ -1,0 +1,63 @@
+#!/usr/bin/env php
+<?
+require_once dirname(__FILE__).'/../base/boot.php';
+import(dirname(__FILE__));
+
+# Argv & c
+$argv =& $GLOBALS['argv'];
+$argc = count($argv);
+
+# Set libpath
+$libPath = isset($argv[1]) ? $argv[1] : realpath(dirname(__FILE__).'/..');
+
+if(!is_dir($libPath))
+	die("ERROR: libpath is not a directory or does not exist\n");
+
+die("A\n");
+$libTest = new UnitLibraryTestCase($libPath);
+$libTest->test();
+$cases = $libTest->getCompletedTestCases();
+
+foreach($cases as $case)
+{
+	# Assemble class info
+	$classInfo = $case->getClassInfo();
+	$ifs = $classInfo->getInterfaces();
+	$ifNames = array();
+	foreach($ifs as $if)
+		$ifNames[] = $if->getName();
+	
+	
+	# Render HTML
+	print '<div class="case">'
+		. '<h2 class="header '.($case->passed() ? 'passed' : 'failed').'">'
+		. ($classInfo->isAbstract() ? ' abstract' : '')
+		. ($classInfo->isFinal() ? ' final' : '')
+		. ($classInfo->isInterface() ? ' interface' : ' class')
+		. ' '.$classInfo->getName()
+		. ($classInfo->getParentClass() ? ' extends '.$classInfo->getParentClass()->getName() : '')
+		. ($ifNames ? ' implements '.implode(' ', $ifNames) : '')
+		. '</h2>'
+		. '<div class="body">'
+		. 'Defined in ' . $classInfo->getFileName() . '<br />';
+	
+	# Render exception, if any
+	if($case->hasException())
+		print ABException::format($case->getException());
+	
+	
+	# Render each assertion
+	if($case->getAssertions())
+	{
+		$numAssertions = count($case->getAssertions());
+		print '<h3>' . $numAssertions . ' failure'.($numAssertions > 1 ? 's' : '').':</h3>';
+		foreach($case->getAssertions() as $assertion)
+			print '<div class="assertion html">' . $assertion->toHTML() . '</div>';
+	}
+	
+	# Finish him!
+	print '</div>'
+		. '</div>';
+}
+
+?>
