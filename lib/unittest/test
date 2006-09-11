@@ -1,63 +1,197 @@
 #!/usr/bin/env php
 <?
+define('TEST_SCRIPT_VERSION', '0.1');
 require_once dirname(__FILE__).'/../base/boot.php';
 import(dirname(__FILE__));
+$op = getopt('v:hsV');
 
-# Argv & c
-$argv =& $GLOBALS['argv'];
-$argc = count($argv);
 
-# Set libpath
-$libPath = isset($argv[1]) ? $argv[1] : realpath(dirname(__FILE__).'/..');
-
-if(!is_dir($libPath))
-	die("ERROR: libpath is not a directory or does not exist\n");
-
-die("A\n");
-$libTest = new UnitLibraryTestCase($libPath);
-$libTest->test();
-$cases = $libTest->getCompletedTestCases();
-
-foreach($cases as $case)
-{
-	# Assemble class info
-	$classInfo = $case->getClassInfo();
-	$ifs = $classInfo->getInterfaces();
-	$ifNames = array();
-	foreach($ifs as $if)
-		$ifNames[] = $if->getName();
+class UnitTestCLI extends ConsoleApplication {
+	
+	public $op = array();
+	public $logger = null;
 	
 	
-	# Render HTML
-	print '<div class="case">'
-		. '<h2 class="header '.($case->passed() ? 'passed' : 'failed').'">'
-		. ($classInfo->isAbstract() ? ' abstract' : '')
-		. ($classInfo->isFinal() ? ' final' : '')
-		. ($classInfo->isInterface() ? ' interface' : ' class')
-		. ' '.$classInfo->getName()
-		. ($classInfo->getParentClass() ? ' extends '.$classInfo->getParentClass()->getName() : '')
-		. ($ifNames ? ' implements '.implode(' ', $ifNames) : '')
-		. '</h2>'
-		. '<div class="body">'
-		. 'Defined in ' . $classInfo->getFileName() . '<br />';
-	
-	# Render exception, if any
-	if($case->hasException())
-		print ABException::format($case->getException());
-	
-	
-	# Render each assertion
-	if($case->getAssertions())
-	{
-		$numAssertions = count($case->getAssertions());
-		print '<h3>' . $numAssertions . ' failure'.($numAssertions > 1 ? 's' : '').':</h3>';
-		foreach($case->getAssertions() as $assertion)
-			print '<div class="assertion html">' . $assertion->toHTML() . '</div>';
+	public function usage($exitCode = 127) {
+		if(!isset($this->op['s']) && !isset($this->op['silent']))
+		{
+			$this->println(
+			"Usage: " . basename($GLOBALS['argv'][0]) . " [options] libpath\n"
+			. "Run unit tests on a library.\n"
+				. "Options:\n"
+				
+				. "  -v level      Log verbosity level. Lower values means more details. 0 = debug,\n"
+				. "                1 = info, 2 = warnings, 3 = errors, 4 = fatal errors, 5 = off.\n\n"
+				
+				. "  -s,--silent   Silent. Does not print anything to stdout. Only fatal errors in the\n"
+				. "                application itself are printed to stderr.\n\n"
+				
+				. "  -h,--help     Print this help message and exit\n\n"
+				
+				. "  -V,--version  Print version information and exit\n"
+			, true);
+		}
+		exit($exitCode);
 	}
 	
-	# Finish him!
-	print '</div>'
-		. '</div>';
+	
+	public function main(&$argc, &$argv) {
+		
+		# Parse options
+		$this->op = $this->getopt(array(
+			'-v|--verbosity:',
+			'-s|--silent',
+			'-h|--help',
+			'-V|--version'));
+		$op =& $this->op;
+		
+		
+		# Print help or version?
+		if(isset($op['h']) || isset($argv['help']))
+			$this->usage(32);
+		elseif(isset($op['V'])) {
+			$v = get_version_info();
+			$this->println(basename($argv[0]).' '.TEST_SCRIPT_VERSION.'.'.$v['r'].' ('.$v['d'].')', true);
+			exit(32);
+		}
+		
+		# Silent mode?
+		$this->silent = (isset($op['s']) || isset($op['silent']));
+		
+		# Set libpath
+		$libPath = isset($argv[1]) ? $argv[1] : realpath(dirname(__FILE__).'/..');
+		if(!is_dir($libPath))
+			die("ERROR: libpath does not exist or is not a directory.\n");
+		
+		# Setup logger
+		$log = $this->log = new SimpleLogger(fopen('php://stderr','w'), SimpleLogger::LEVEL_WARN);
+		$log->enableFormatting = false;
+		if($this->silent) {
+			$log->level = SimpleLogger::LEVEL_ERROR;
+		}
+		elseif(isset($op['v']) || isset($op['verbosity'])) {
+			$v = isset($op['v']) ? $op['v'] : $op['verbosity'];
+			if(is_numeric($v))
+				$log->level = intval($v);
+			else
+				die("Error: Verbosity argument must be specified as an integer.\n");
+		}
+		
+		
+		# Setup Library test case
+		$libTest = new UnitLibraryTestCase($libPath);
+		$libTest->log = $log;
+		$timer = new BenchmarkTimer(true);
+		
+		
+		# Run tests
+		$log->info("Running tests in '$libPath'...\n");
+		$libTest->test();
+		$cases = $libTest->getCompletedTestCases();
+		$timer->stop();
+		
+		# Gather results
+		$passedCases = array();
+		$failedCases = array();
+		
+		foreach($cases as $case) {
+			if($case->passed())
+				$passedCases[] = $case;
+			else
+				$failedCases[] = $case;
+		}
+		
+		
+		# Display summary
+		$hr = "-----------------------------------------------------";
+		
+		if($log->level < SimpleLogger::LEVEL_WARN)
+			$this->println($hr);
+		if($libTest->passed())
+			$this->println("OK. All ".count($cases)." tests passed.");
+		else
+			$this->println(count($failedCases)." test FAILED out of a total ".count($cases)." tests.");
+		$this->println("Done in ".Datetime::formatDiff($timer->getRealTime(), false, false));
+		
+		
+		# Display failed first
+		if(count($failedCases)) {
+			$this->println("\nFAILED TESTS:");
+			foreach($failedCases as $case)
+				$this->renderTestCaseResult($case, $hr);
+		}
+		
+		# Then passed
+		if(count($passedCases)) {
+			$this->println("\nSUCCESSFUL TESTS:");
+			foreach($passedCases as $case)
+				$this->renderTestCaseResult($case, $hr);
+		}
+		
+		# Exit status > 0 if not all test passed
+		return $libTest->passed() ? 0 : 1;
+	}
+	
+	
+	/** Render */
+	private function renderTestCaseResult($case, $hr)
+	{
+		# Assemble class info
+		$classInfo = $case->getClassInfo();
+		$ifs = $classInfo->getInterfaces();
+		$ifNames = array();
+		foreach($ifs as $if)
+			$ifNames[] = $if->getName();
+		
+		# Render
+		$this->println($hr . "\n"
+			. ($classInfo->isAbstract() ? 'abstract ' : '')
+			. ($classInfo->isFinal() ? 'final ' : '')
+			. ($classInfo->isInterface() ? 'interface ' : 'class ')
+			. $classInfo->getName()
+			. ($classInfo->getParentClass() ? ' extends '.$classInfo->getParentClass()->getName() : '')
+			. ($ifNames ? ' implements '.implode(' ', $ifNames) : '')
+			. "\n"
+			. 'defined in: ' . $classInfo->getFileName() . "\n");
+		
+		# Render exception, if any
+		if($case->hasException()) {
+			$this->println("Exception:\n"
+				. ABException::format($case->getException(), true, false));
+		}
+		
+		# Render each assertion
+		if($case->getAssertions())
+		{
+			$numAssertions = count($case->getAssertions());
+			$this->println($numAssertions . ' Assertion'.($numAssertions > 1 ? 's' : '').":");
+			foreach($case->getAssertions() as $assertion)
+				$this->println($assertion->toString());
+			$this->println();
+		}
+	}
 }
+
+new UnitTestCLI();
+
+
+function get_version_info( $part = 'r' ) {
+	$v = array('r' => 0, 'd' => '', 'u' => '');
+	if(preg_match('/^\$Id: (.+) (\d+) (\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.*) (.+) \$$/', '$Id: test 1 2006-09-11 13:53:37Z rasmus $', $m))
+		$v = array(
+			'r'  => intval($m[2]),
+			'd'  => $m[3],
+			'u'  => $m[4]
+		);
+	return $v;
+}
+
+
+function printerr($str) {
+	$fp = fopen('php://stderr','w');
+	fwrite($fp, $str);
+	fclose($fp);
+}
+
 
 ?>

@@ -98,6 +98,24 @@ class UnitTestAssertion {
 	
 	
 	/** @return string */
+	public function toString()
+	{
+		$lines = $this->getLines($this->lineNo-1, $this->lineNo+1, false);
+		$str = '';
+		
+		if(isset($lines[$this->lineNo-1]))
+			$str .= sprintf('   % -6d',$this->lineNo-1) . $lines[$this->lineNo-1] . "\n";
+			
+		$str .= '-> '. sprintf('% -6d',$this->lineNo). @$lines[$this->lineNo] ."\n";
+		
+		if(isset($lines[$this->lineNo+1]))
+			$str .= sprintf('   % -6d',$this->lineNo+1) . $lines[$this->lineNo+1] . "\n";
+		
+		return rtrim($str,"\n");
+	}
+	
+	
+	/** @return string */
 	public function toHTML()
 	{
 		$lines = $this->getLines($this->lineNo-1, $this->lineNo+1);

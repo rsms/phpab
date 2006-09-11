@@ -9,6 +9,9 @@
  */
 class UnitLibraryTestCase extends UnitDirectoryTestCase {
 	
+	/** @var SimpleLogger */
+	public static $log = null;
+	
 	/**
 	 * @param string
 	 * @param bool
@@ -27,7 +30,11 @@ class UnitLibraryTestCase extends UnitDirectoryTestCase {
 	protected function performTests()
 	{
 		# Import all class definitions
+		if($this->log)
+			$this->log->info("Importing libraries...\n");
 		$this->importLibrary($this->path);
+		if($this->log)
+			$this->log->info("Importing classes and interfaces...\n");
 		$this->importClassFiles($this->path);
 		
 		# Aquire declared classes
@@ -73,12 +80,24 @@ class UnitLibraryTestCase extends UnitDirectoryTestCase {
 	 */
 	protected function importLibrary($path)
 	{
-		if(substr($path,-2) != '.d')
-			import($path);
+		$this->_importLibrary($path);
 		
 		foreach(File::valueOf($path)->getFiles(true) as $file)
 			if($this->recursive && $file->isDir() && $file->isReadable())
-				$this->importLibrary($file->getPath());
+				$this->_importLibrary($file->getPath());
+	}
+	
+	
+	/* Smisk */
+	private function _importLibrary($path)
+	{
+		if(substr($path,-2) != '.d' && $path{0} != '.') {
+			if($this->log)
+				$this->log->debug("Importing library $path ...".substr($path,-2));
+			import($path);
+			if($this->log)
+				$this->log->debug("OK\n");
+		}
 	}
 	
 	
@@ -100,9 +119,17 @@ class UnitLibraryTestCase extends UnitDirectoryTestCase {
 					continue;
 				
 				$guessedClass = substr($file, 0, -4);
-				if(!class_exists($guessedClass) && !interface_exists($guessedClass))
+				
+				if($this->log)
+					$this->log->debug("Loading class $guessedClass from ".basename($path).'/'.basename($file)." ... ");
+				
+				if(!class_exists($guessedClass) && !interface_exists($guessedClass, false)) {
 					die('FATAL: Unthrowable error: '.__FILE__.':'.(__LINE__-1)
-						." Unable to find probable class $guessedClass");
+						." Unable to find probable class or interface $guessedClass");
+				}
+				
+				if($this->log)
+					$this->log->debug("OK\n");
 			}
 			elseif($this->recursive && is_dir($filepath) && is_readable($filepath))
 			{
