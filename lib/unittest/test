@@ -122,7 +122,7 @@ class UnitTestCLI extends ConsoleApplication {
 			$this->println("OK. All ".count($cases)." tests passed.");
 		else
 			$this->println(count($failedCases)." test FAILED out of a total ".count($cases)." tests.");
-		$this->println("Done in ".Datetime::formatDiff($timer->getRealTime(), false, false));
+		$this->println("Done in ".Datetime::formatAge($timer->getRealTime(), false, false));
 		
 		
 		# Display failed first
