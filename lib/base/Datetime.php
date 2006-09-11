@@ -48,7 +48,7 @@ class Datetime {
 	 * @return string
 	 */
 	public function getFormattedDiff( $comparedToTime, $short = false, $complete = true ) {
-		return self::formatAge(($comparedToTime > $this->time) ? ($comparedToTime - $this->time) : ($this->time - $comparedToTime), $short, $complete);
+		return self::formatDiff(($comparedToTime > $this->time) ? ($comparedToTime - $this->time) : ($this->time - $comparedToTime), $short, $complete);
 	}
 	
 	
@@ -79,10 +79,10 @@ class Datetime {
 	 */
 	public static function formatDiff( $seconds, $short = false, $complete = true )
 	{
+		$sec = $seconds;
 		if($complete)
 		{
 			if($seconds == 0) return '0';
-			$sec = $seconds;
 			
 			$days = intval( $sec / 86400);
 			$sec -= $days * 86400;

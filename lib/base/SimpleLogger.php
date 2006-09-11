@@ -55,6 +55,7 @@ class SimpleLogger {
 	 */
 	public function __construct($outputFD, $level = 2) {
 		$this->fd = $outputFD;
+		$this->level = $level;
 	}
 	
 	/** @ingore */

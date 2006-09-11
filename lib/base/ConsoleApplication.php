@@ -48,7 +48,7 @@ abstract class ConsoleApplication {
 	 * @param  bool    If true, the message will go to stderr instead of stdout
 	 * @return void
 	 */
-	public function println($msg, $to_stderr = false)
+	public function println($msg='', $to_stderr = false)
 	{
 		if(!$this->silent) {
 			if($to_stderr) {

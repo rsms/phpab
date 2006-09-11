@@ -741,6 +741,7 @@ class File {
 	 */
 	private function getFilesR(&$files, $dir)
 	{
+		$dir = rtrim($dir,'/');
 		if(!($dh = @opendir($dir)))
 			throw new IOException('Failed to open directory for reading: '.$dir);
 		
