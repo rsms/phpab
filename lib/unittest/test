@@ -3,7 +3,6 @@
 define('TEST_SCRIPT_VERSION', '0.1');
 require_once dirname(__FILE__).'/../base/boot.php';
 import(dirname(__FILE__));
-$op = getopt('v:hsV');
 
 
 class UnitTestCLI extends ConsoleApplication {
@@ -35,6 +34,18 @@ class UnitTestCLI extends ConsoleApplication {
 	}
 	
 	
+	function versionInfo( $part = 'r' ) {
+		$v = array('r' => 0, 'd' => '', 'u' => '');
+		if(preg_match('/^\$Id: (.+) (\d+) (\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.*) (.+) \$$/', '$Id$', $m))
+			$v = array(
+				'r'  => intval($m[2]),
+				'd'  => $m[3],
+				'u'  => $m[4]
+			);
+		return $v;
+	}
+	
+	
 	public function main(&$argc, &$argv) {
 		
 		# Parse options
@@ -50,7 +61,7 @@ class UnitTestCLI extends ConsoleApplication {
 		if(isset($op['h']) || isset($argv['help']))
 			$this->usage(32);
 		elseif(isset($op['V'])) {
-			$v = get_version_info();
+			$v = $this->versionInfo();
 			$this->println(basename($argv[0]).' '.TEST_SCRIPT_VERSION.'.'.$v['r'].' ('.$v['d'].')', true);
 			exit(32);
 		}
@@ -173,25 +184,5 @@ class UnitTestCLI extends ConsoleApplication {
 }
 
 new UnitTestCLI();
-
-
-function get_version_info( $part = 'r' ) {
-	$v = array('r' => 0, 'd' => '', 'u' => '');
-	if(preg_match('/^\$Id: (.+) (\d+) (\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.*) (.+) \$$/', '$Id$', $m))
-		$v = array(
-			'r'  => intval($m[2]),
-			'd'  => $m[3],
-			'u'  => $m[4]
-		);
-	return $v;
-}
-
-
-function printerr($str) {
-	$fp = fopen('php://stderr','w');
-	fwrite($fp, $str);
-	fclose($fp);
-}
-
 
 ?>
