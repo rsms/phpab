@@ -177,7 +177,7 @@ new UnitTestCLI();
 
 function get_version_info( $part = 'r' ) {
 	$v = array('r' => 0, 'd' => '', 'u' => '');
-	if(preg_match('/^\$Id: (.+) (\d+) (\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.*) (.+) \$$/', '$Id: test 1 2006-09-11 13:53:37Z rasmus $', $m))
+	if(preg_match('/^\$Id: (.+) (\d+) (\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.*) (.+) \$$/', '$Id$', $m))
 		$v = array(
 			'r'  => intval($m[2]),
 			'd'  => $m[3],
