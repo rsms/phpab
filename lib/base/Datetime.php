@@ -9,8 +9,8 @@
  */
 class Datetime {
 	
-	/** @var int Unix time */
-	public $time = 0;
+	/** @var double Unix time with fractions */
+	public $time = 0.0;
 	
 	
 	/**
@@ -18,11 +18,13 @@ class Datetime {
 	 * @param  mixed
 	 * @todo   Recalculate time when timezone is specified
 	 */
-	public function __construct( $timestampOrString=0, $timezone = null ) {
+	public function __construct( $timestampOrString = -1, $timezone = null )
+	{
 		if(is_string($timestampOrString))
-			$this->time = strtotime($timestampOrString);
-		else
+			$this->time = doubleval(strtotime($timestampOrString));
+		elseif($timestampOrString != -1)
 			$this->time = doubleval($timestampOrString);
+		$this->time = microtime(1);
 	}
 	
 	
@@ -48,13 +50,18 @@ class Datetime {
 	 * @return string
 	 */
 	public function getFormattedDiff( $comparedToTime, $short = false, $complete = true ) {
-		return self::formatDiff(($comparedToTime > $this->time) ? ($comparedToTime - $this->time) : ($this->time - $comparedToTime), $short, $complete);
+		return self::formatAge(($comparedToTime > $this->time) ? ($comparedToTime - $this->time) : ($this->time - $comparedToTime), $short, $complete);
 	}
 	
 	
 	/** @ignore */
 	public static function __test() {
 		
+		$now = microtime(1);
+		$dt = new Datetime($now);
+		assert($dt->time == $now);
+		
+		assert(self::formatAge(123.456789) == '');
 	}
 	
 	
@@ -77,7 +84,7 @@ class Datetime {
 	 * @param  bool   Include full array of units. ie "2 days, 3 hours, 16 min, ..." instead of "2.1 days"
 	 * @return string
 	 */
-	public static function formatDiff( $seconds, $short = false, $complete = true )
+	public static function formatAge( $seconds, $short = false, $complete = true )
 	{
 		$sec = $seconds;
 		if($complete)
