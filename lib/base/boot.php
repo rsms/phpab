@@ -216,7 +216,7 @@ function __autoload($c) {
 	# we use include instead of include_once since it's alot faster
 	# and the probability of including an allready included file is
 	# very small.
-	if((@include $c . '.php') === false) {
+	if((include $c . '.php') === false) {
 		$t = debug_backtrace();
 		if(@$t[1]['function'] != 'class_exists') {
 			require_once 'event.d/autoload_failure.php';

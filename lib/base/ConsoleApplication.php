@@ -119,7 +119,7 @@ abstract class ConsoleApplication {
 	{
 		$argv =& $GLOBALS['argv'];
 		$argc =& $GLOBALS['argc'];
-		$argPos = 1; // zero is program running
+		$argPos = 1;
 		$return = array();
 		$new_argc = $argc;
 		
