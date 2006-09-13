@@ -24,7 +24,8 @@ class Datetime {
 			$this->time = doubleval(strtotime($timestampOrString));
 		elseif($timestampOrString != -1)
 			$this->time = doubleval($timestampOrString);
-		$this->time = microtime(1);
+		else
+			$this->time = microtime(1);
 	}
 	
 	
@@ -49,19 +50,20 @@ class Datetime {
 	 * @param  bool
 	 * @return string
 	 */
-	public function getFormattedDiff( $comparedToTime, $short = false, $complete = true ) {
-		return self::formatAge(($comparedToTime > $this->time) ? ($comparedToTime - $this->time) : ($this->time - $comparedToTime), $short, $complete);
+	public function getFormattedDiff( $comparedToTime, $complete = true, $short = false ) {
+		return self::formatAge(($comparedToTime > $this->time) ? ($comparedToTime - $this->time) : ($this->time - $comparedToTime), $complete, $short);
 	}
 	
 	
 	/** @ignore */
-	public static function __test() {
-		
+	public static function __test()
+	{
 		$now = microtime(1);
+		$now2 = $now;
 		$dt = new Datetime($now);
 		assert($dt->time == $now);
 		
-		assert(self::formatAge(123.456789) == '');
+		assert(self::formatAge(123.456789) == '2 min, 3 sec, 456 ms, 789 us, 0 ns');
 	}
 	
 	
@@ -80,11 +82,11 @@ class Datetime {
 	 * Return a human readable string expressing the number of seconds passed as the first argument.
 	 * 
 	 * @param  float  Seconds
-	 * @param  bool   Short prefixes. ie "4 s" instead of "4 sec"
 	 * @param  bool   Include full array of units. ie "2 days, 3 hours, 16 min, ..." instead of "2.1 days"
+	 * @param  bool   Short prefixes. ie "4 s" instead of "4 sec"
 	 * @return string
 	 */
-	public static function formatAge( $seconds, $short = false, $complete = true )
+	public static function formatAge( $seconds, $complete = true, $short = false )
 	{
 		$sec = $seconds;
 		if($complete)
