@@ -67,7 +67,7 @@ class BlowfishCompatCipher extends BlowfishCipher {
 	 * Initialization Vector for CBC mode
 	 * @var	string
 	 */
-	public static $iv = 'z4c8e7gh';
+	public $iv = 'z4c8e7gh';
 	
 	
 	/**
@@ -75,8 +75,10 @@ class BlowfishCompatCipher extends BlowfishCipher {
 	 * 
 	 * @param string
 	 */
-	public function __construct($key, $blockMode = self::MODE_ECB)
+	public function __construct($key, $blockMode = self::MODE_ECB, $iv = null)
 	{	
+		if($iv)
+			$this->iv = $iv;
 		$this->blockMode = $blockMode;
 		$this->ctxP =& self::$parray;
 		$this->ctxSB[0] =& self::$sbox0;
@@ -103,7 +105,7 @@ class BlowfishCompatCipher extends BlowfishCipher {
 		$cipher = '';
 		
 		if($cbc)
-			$lcipher = self::$iv; // copy IV
+			$lcipher = $this->iv; // copy IV
 		
 		for($i = 0;$i < $plainsize;$i += 8)
 		{	
@@ -150,7 +152,7 @@ class BlowfishCompatCipher extends BlowfishCipher {
 		$plain = '';
 		
 		if($cbc)
-			$lcipher = self::$iv; // copy IV
+			$lcipher = $this->iv; // copy IV
 		
 		for($i = 0;$i < $ciphersize;$i += 8)
 		{

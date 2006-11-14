@@ -26,13 +26,16 @@ class BlowfishCipher extends Cipher {
 	 * Initialization Vector
 	 * @var string
 	 */
-	public $iv = null;
+	public $iv;
 	
 	/**
 	 * MCrypt module instance
 	 * @var resource
 	 */
-	protected $r = null;
+	protected $r;
+
+	/** @var string */
+	protected $key;
 	
 	/**
 	 * 0 = uninited, 1 = encrypt, 2 = decrypt
@@ -58,6 +61,15 @@ class BlowfishCipher extends Cipher {
 			throw new IllegalArgumentException('Initialization Vector must be exactly 8 bytes long');
 		
 		$this->iv = $iv;
+		$this->key = $key;
+	}
+	
+	/**
+	 * @param  string
+	 * @return void
+	 */
+	public function setKey($key)
+	{
 		$this->key = $key;
 	}
 	
@@ -91,6 +103,11 @@ class BlowfishCipher extends Cipher {
 	public function __destruct() {
 		@mcrypt_generic_deinit($this->r);
 		mcrypt_module_close($this->r);
+	}
+	
+	/** @ignore */
+	public static function __test() {
+		parent::__test(new self('tr7raxe5apHeTr2v'));
 	}
 }
 ?>
