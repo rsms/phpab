@@ -23,25 +23,10 @@
 class BlowfishCipher extends Cipher {
 	
 	/**
-	 * Initialization Vector
-	 * @var string
+	 * Implementation
+	 * @var Cipher
 	 */
-	public $iv;
-	
-	/**
-	 * MCrypt module instance
-	 * @var resource
-	 */
-	protected $r;
-
-	/** @var string */
-	protected $key;
-	
-	/**
-	 * 0 = uninited, 1 = encrypt, 2 = decrypt
-	 * @var int
-	 */
-	private $cryptState = 0;
+	public $impl;
 	
 	
 	/**
@@ -50,27 +35,15 @@ class BlowfishCipher extends Cipher {
 	 */
 	public function __construct($key, $iv = null)
 	{
-		if(strlen($key) != 56)
-			throw new IllegalArgumentException('Key must be exactly 56 bytes long');
 		
-		$this->r = mcrypt_module_open(MCRYPT_BLOWFISH, '', MCRYPT_MODE_CBC, '');
-		
-		if($iv == null)
-			$iv = mcrypt_create_iv(mcrypt_enc_get_iv_size($this->r), MCRYPT_RAND);
-		elseif(strlen($iv) != 8)
-			throw new IllegalArgumentException('Initialization Vector must be exactly 8 bytes long');
-		
-		$this->iv = $iv;
-		$this->key = $key;
 	}
 	
 	/**
 	 * @param  string
 	 * @return void
 	 */
-	public function setKey($key)
-	{
-		$this->key = $key;
+	public function setKey($key) {
+		$this->impl->setKey($key);
 	}
 	
 	/**
@@ -78,12 +51,7 @@ class BlowfishCipher extends Cipher {
 	 * @return string
 	 */
 	public function encrypt($data) {
-		if($this->cryptState != 1) {
-			@mcrypt_generic_deinit($this->r);
-			mcrypt_generic_init($this->r, $this->key, $this->iv);
-			$this->cryptState = 1;
-		}
-		return mcrypt_generic($this->r, $data);
+		return $this->impl->encrypt($data);
 	}
 	
 	/**
