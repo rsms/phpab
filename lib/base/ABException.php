@@ -186,7 +186,7 @@ class ABException extends Exception
 				if(isset($ti['line']))
 					$str .= ' on line '.$ti['line'];
 				if(isset($ti['file'])) {
-					$file = Utils::relativePath($ti['file'], $_SERVER['DOCUMENT_ROOT']);
+					$file = Utils::relativePath($ti['file'], @$_SERVER['DOCUMENT_ROOT']);
 					if($file{0} != '/')
 						$file = '/'.$file;
 					$str .= ' in ' . $file;

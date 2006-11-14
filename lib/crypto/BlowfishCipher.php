@@ -11,66 +11,38 @@
  * it is slowly gaining acceptance as a strong encryption algorithm.
  * 
  * Blowfish is unpatented and license-free, and is available free for all uses.
- * 
- * <b>Note:</b> this class relies on the <samp>mcrypt</samp> extension. If you don't 
- * have it, consider using {@link BlowfishCompatCipher} instead.
+ * It has some known weaknesses.
  * 
  * @version    $Id$
  * @package    ab
  * @subpackage crypto
  * @author     Rasmus Andersson {@link http://hunch.se/}
  */
-class BlowfishCipher extends Cipher {
+class BlowfishCipher extends CipherProxy {
 	
 	/**
-	 * Implementation
-	 * @var Cipher
+	 * Block mode
 	 */
-	public $impl;
+	const MODE_ECB = 0;
 	
+	/**
+	 * Block mode
+	 */
+	const MODE_CBC = 1;
 	
 	/**
 	 * @param string 56 bytes
-	 * @param string 8 bytes
+	 * @param int
 	 */
-	public function __construct($key, $iv = null)
+	public function __construct( $key=null, $iv=null, $mode=self::MODE_ECB )
 	{
-		
-	}
-	
-	/**
-	 * @param  string
-	 * @return void
-	 */
-	public function setKey($key) {
-		$this->impl->setKey($key);
-	}
-	
-	/**
-	 * @param  string
-	 * @return string
-	 */
-	public function encrypt($data) {
-		return $this->impl->encrypt($data);
-	}
-	
-	/**
-	 * @param  string
-	 * @return string
-	 */
-	public function decrypt($data) {
-		if($this->cryptState != 2) {
-			@mcrypt_generic_deinit($this->r);
-			mcrypt_generic_init($this->r, $this->key, $this->iv);
-			$this->cryptState = 2;
+		if(defined('MCRYPT_RAND')) {
+			$this->impl = new MCryptCipherImpl(MCRYPT_BLOWFISH, 
+				($mode == self::MODE_CBC) ? MCRYPT_MODE_CBC : MCRYPT_MODE_ECB, $key, $iv);
 		}
-		return trim(mdecrypt_generic($this->r, $data), "\0");
-	}
-	
-	/** @return void */
-	public function __destruct() {
-		@mcrypt_generic_deinit($this->r);
-		mcrypt_module_close($this->r);
+		else {
+			$this->impl = new BlowfishCipherImpl($mode, $key, $iv);
+		}
 	}
 	
 	/** @ignore */

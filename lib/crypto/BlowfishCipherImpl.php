@@ -1,16 +1,6 @@
 <?
 /**
- * Blowfish cipher
- * 
- * Blowfish is a symmetric block cipher that can be used as a drop-in replacement 
- * for DES or IDEA. It takes a variable-length key, from 32 bits to 448 bits, making 
- * it ideal for both domestic and exportable use.
- * 
- * Blowfish was designed in 1993 by Bruce Schneier as a fast, free alternative to 
- * existing encryption algorithms. Since then it has been analyzed considerably, and 
- * it is slowly gaining acceptance as a strong encryption algorithm.
- * 
- * Blowfish is unpatented and license-free, and is available free for all uses.
+ * PHP-native Blowfish cipher
  * 
  * <b>Facts:</b>
  *  - Block cipher: 64-bit block
@@ -19,7 +9,7 @@
  *  - Unpatented and royalty-free and no license required
  *
  *
- * <b>APD Profiling results:</b> (en- and decrypted 1070 bytes, 8 times back and fourth)
+ * <b>APD Profiling results:</b> (1070 original bytes, 8 times back and fourth)
  * <code>
  * Total Elapsed Time = 0.47 seconds
  * Total System Time  = 0.05 seconds
@@ -39,53 +29,46 @@
  *   0.5  0.00 0.00   0.00 0.00   0.00 0.00      136   0.0000   0.0000          0 b  strlen
  *   0.0  0.00 0.00   0.00 0.00   0.00 0.00        1   0.0001   0.0001          0 b  base64_decode
  * </code>
+ *
+ * @todo       CBC mode is broken! Fix it.
  * 
  * @version    $Id$
  * @package    ab
  * @subpackage crypto
  * @author     Rasmus Andersson {@link http://hunch.se/}
+ * @ignore
  */
-class BlowfishCompatCipher extends BlowfishCipher {
-	
-	/**
-	 * Block mode ECB
-	 */
-	const MODE_ECB = 0;
-	
-	/**
-	 * Block mode CBC
-	 */
-	const MODE_CBC = 1;
+class BlowfishCipherImpl extends Cipher {
 	
 	/**
 	 * Block mode
 	 * @var int
+	 * @see BlowfishCipher
 	 */
-	protected $blockMode = 1;
+	protected $mode;
 	
 	/**
-	 * Initialization Vector for CBC mode
+	 * 8 byte Initialization Vector.
 	 * @var	string
 	 */
-	public $iv = 'z4c8e7gh';
-	
+	public $iv;
 	
 	/**
 	 * Create a new Blowfish cipher instance
 	 * 
 	 * @param string
 	 */
-	public function __construct($key, $blockMode = self::MODE_ECB, $iv = null)
-	{	
-		if($iv)
-			$this->iv = $iv;
-		$this->blockMode = $blockMode;
+	public function __construct($mode, $key=null, $iv=null)
+	{
+		$this->iv = substr($iv ? $iv : Cipher::$defaultIV, 0, 8);
+		$this->mode = $mode;
 		$this->ctxP =& self::$parray;
 		$this->ctxSB[0] =& self::$sbox0;
 		$this->ctxSB[1] =& self::$sbox1;
 		$this->ctxSB[2] =& self::$sbox2;
 		$this->ctxSB[3] =& self::$sbox3;
-		$this->setKey($key);
+		if($key)
+			$this->setKey($key);
 	}
 	
 	
@@ -100,7 +83,7 @@ class BlowfishCompatCipher extends BlowfishCipher {
 		if(empty($plain))
 			return '';
 		
-		$cbc = $this->blockMode;
+		$cbc = $this->mode;
 		$plainsize = strlen($plain);
 		$cipher = '';
 		
@@ -131,7 +114,7 @@ class BlowfishCompatCipher extends BlowfishCipher {
 			unset($tmpData);
 		}
 		
-		return $this->postFilterData($cipher);
+		return $cipher;
 	}
 	
 	
@@ -146,8 +129,7 @@ class BlowfishCompatCipher extends BlowfishCipher {
 		if(empty($cipher))
 			return '';
 		
-		$cbc = $this->blockMode;
-		$cipher =& $this->preFilterData($cipher);
+		$cbc = $this->mode;
 		$ciphersize = strlen($cipher);
 		$plain = '';
 		

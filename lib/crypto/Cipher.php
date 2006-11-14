@@ -7,8 +7,10 @@
  * @subpackage crypto
  * @author     Rasmus Andersson {@link http://hunch.se/}
  */
-abstract class Cipher {
+abstract class Cipher {	
 	
+	/** @var string */
+	public static $defaultIV = "\x9E\x37\x79\xB9abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
 	/**
 	 * @param  string
