@@ -96,6 +96,8 @@
  * @subpackage base
  */
 
+/** Location of abstractbase libraries */
+define('AB_LIB', realpath(dirname(__FILE__).'/..'));
 
 /**
  * Runtime utilities
@@ -195,7 +197,7 @@ class PHP {
 }
 
 # add baselib to cp
-ini_set('include_path', ini_get('include_path') . ':' . dirname(__FILE__));
+ini_set('include_path', ini_get('include_path') . ':' . AB_LIB . '/base');
 
 
 if(!defined('SAFEMODE')) {
@@ -208,7 +210,14 @@ if(!defined('SAFEMODE')) {
  * @deprecated Use {@link import()} instead
  */
 function import( $dirpath ) {
-	ini_set('include_path', ini_get('include_path') . ':' . $dirpath);
+	# if no path delimiter exists, maybe it's a abstractbase library -- add both!
+	if(strpos($dirpath,'/') === false) {
+		ini_set('include_path', ini_get('include_path') . ':' . './'.$dirpath);
+		ini_set('include_path', ini_get('include_path') . ':' . AB_LIB.'/'.$dirpath);
+	}
+	else {
+		ini_set('include_path', ini_get('include_path') . ':' . $dirpath);
+	}
 }
 
 /** @ignore */
@@ -223,7 +232,7 @@ function __autoload($c) {
 		}
 	}
 } }
-# TODO: Spray: move into php.ini?
+# TODO: move into php.ini?
 ini_set('unserialize_callback_func', '__autoload');
 
 
