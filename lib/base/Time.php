@@ -7,7 +7,7 @@
  * @package    ab
  * @subpackage util
  */
-class Datetime {
+class Time {
 	
 	/** @var double Unix time with fractions */
 	public $time = 0.0;
@@ -60,7 +60,7 @@ class Datetime {
 	{
 		$now = microtime(1);
 		$now2 = $now;
-		$dt = new Datetime($now);
+		$dt = new self($now);
 		assert($dt->time == $now);
 		
 		assert(self::formatAge(123.456789) == '2 min, 3 sec, 456 ms, 789 us, 0 ns');
