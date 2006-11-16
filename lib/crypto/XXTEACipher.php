@@ -2,11 +2,11 @@
 /**
  * XXTEA cipher
  * 
- * @version     $Id$
- * @package     ab
- * @subpackage  crypto
- * @author      Rasmus Andersson {@link http://hunch.se/}
- * @author      Ma Bingyao(andot@ujn.edu.cn)
+ * @version    $Id$
+ * @package    ab
+ * @subpackage crypto
+ * @author     Rasmus Andersson {@link http://hunch.se/}
+ * @author     Ma Bingyao(andot@ujn.edu.cn)
  * @see        TEA
  * @see        XTEA
  */
