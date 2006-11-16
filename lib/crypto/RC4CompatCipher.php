@@ -2,13 +2,15 @@
 /**
  * RC4 stream cipher routines implementation
  *
- * An extremly fast stream cipher, famous from it's use in WEP technology.
+ * A very fast stream cipher, famous from it's use in WEP technology.
  * 
  * Uses variable sized secret. RC4 is not patented, but it is a registered 
  * trademark of RSA Security Systems. Based on code written by 
  * Damien Miller <djm@mindrot.org>.
  *
  * Highly optimised PHP code. Alot of op using APD has been made.
+ * Don't use this for heavy encryption, as it's fairly unsafe and
+ * quite easy to break. Good for short term encryption.
  *
  * <b>Example</b><code>
  * $key = "pelle";
@@ -29,7 +31,7 @@
  * @author	 Dave Mertens <dmertens.AT.zyprexia.com>
  * @author	 Damien Miller <djm.AT.mindrot.org>
  */
-class RC4CompatCipher extends RC4Cipher {
+class RC4CipherImpl extends Cipher {
 
 	/** @access private */
 	private $s = array();
@@ -54,25 +56,23 @@ class RC4CompatCipher extends RC4Cipher {
 	* @return void
 	* @access public
 	*/
-	public function __construct($secret) {
-		$this->setSecret($secret);
-		$this->calcRC4Secret();
+	public function __construct($key=null) {
+		if($key)
+			$this->setKey($key);
 	}
-
 	
 	/**
 	 * {@inheritdoc}
 	 *
 	 * @param  string
 	 * @return void
-	 * @throws IllegalArgumentException  if secret is empty/null
+	 * @throws IllegalArgumentException  if key is empty
 	 */
-	public function setSecret($secret) {
-		if(!$secret)
-			throw new IllegalArgumentException('Secret can not be empty');
-		
-		$this->secret = $secret;
-		$this->rawSecretSize = strlen($secret) * 8;
+	public function setKey($key) {
+		if(!$key)
+			throw new IllegalArgumentException('Key can not be empty');
+		$this->key = $key;
+		$this->rawSecretSize = strlen($key) * 8;
 	}
 	
 
@@ -83,29 +83,19 @@ class RC4CompatCipher extends RC4Cipher {
 	 * @return string
 	 */
 	public function encrypt( $data ) {
-		return $this->postFilterData($this->crypt($data));
+		# same function for both directions
+		return $this->decrypt($data);
 	}
-
+	
+	
 	/**
 	 * {@inheritdoc}
 	 *
 	 * @param  string
 	 * @return string
 	 */
-	public function decrypt ( $data ) {
-		return $this->crypt($this->preFilterData($data));
-	}
-	
-	
-	/// PRIVATES ///////////////////////////////////////////////
-	
-	
-	/**
-	 * @param  string
-	 * @return string
-	 */
-	protected function crypt( $str ) {
-
+	public function decrypt( $data )
+	{
 		//Init key for every call
 		$this->calcRC4Secret();
 		
@@ -139,7 +129,9 @@ class RC4CompatCipher extends RC4Cipher {
 	*/
 	private function calcRC4Secret()
 	{
-		$key =& $this->secret;
+		if(!$this->key)
+			throw new IllegalStateException('Key is undefined');
+		$key =& $this->key;
 		$keyLen =& $this->rawSecretSize;
 		$len = strlen($key);
 		
