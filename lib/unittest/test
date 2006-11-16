@@ -122,7 +122,8 @@ class UnitTestCLI extends ConsoleApplication {
 			$this->println("OK. All ".count($cases)." tests passed.");
 		else
 			$this->println(count($failedCases)." test FAILED out of a total ".count($cases)." tests.");
-		$this->println("Done in ".Datetime::formatAge($timer->getRealTime(), false, false));
+		
+		$this->println("Done in ".Time::formatAge($timer->getRealTime(), false, false));
 		
 		
 		# Display failed first
@@ -133,11 +134,11 @@ class UnitTestCLI extends ConsoleApplication {
 		}
 		
 		# Then passed
-		if(count($passedCases)) {
+		/*if(count($passedCases)) {
 			$this->println("\nSUCCESSFUL TESTS:");
 			foreach($passedCases as $case)
 				$this->renderTestCaseResult($case, $hr);
-		}
+		}*/
 		
 		# Exit status > 0 if not all test passed
 		return $libTest->passed() ? 0 : 1;
