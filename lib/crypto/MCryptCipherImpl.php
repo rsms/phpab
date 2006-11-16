@@ -44,7 +44,8 @@ class MCryptCipherImpl extends Cipher {
 	public function __construct($algorithm, $mode, $key=null, $iv=null)
 	{
 		$this->r = mcrypt_module_open($algorithm, '', $mode, '');
-		$this->iv = substr($iv ? $iv : Cipher::$defaultIV, 0, mcrypt_enc_get_iv_size($this->r));
+		if($iv !== false)
+			$this->iv = substr($iv ? $iv : Cipher::$defaultIV, 0, mcrypt_enc_get_iv_size($this->r));
 		if($key)
 			$this->setKey($key);
 	}

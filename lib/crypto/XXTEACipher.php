@@ -7,6 +7,8 @@
  * @subpackage  crypto
  * @author      Rasmus Andersson {@link http://hunch.se/}
  * @author      Ma Bingyao(andot@ujn.edu.cn)
+ * @see        TEA
+ * @see        XTEA
  */
 class XXTEACipher extends Cipher {
 	

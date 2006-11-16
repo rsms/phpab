@@ -21,28 +21,15 @@
 class BlowfishCipher extends CipherProxy {
 	
 	/**
-	 * Block mode
-	 */
-	const MODE_ECB = 0;
-	
-	/**
-	 * Block mode
-	 */
-	const MODE_CBC = 1;
-	
-	/**
 	 * @param string 56 bytes
 	 * @param int
 	 */
-	public function __construct( $key=null, $iv=null, $mode=self::MODE_ECB )
+	public function __construct( $key=null, $iv=null, $mode=Cipher::MODE_CBC )
 	{
-		if(defined('MCRYPT_RAND')) {
-			$this->impl = new MCryptCipherImpl(MCRYPT_BLOWFISH, 
-				($mode == self::MODE_CBC) ? MCRYPT_MODE_CBC : MCRYPT_MODE_ECB, $key, $iv);
-		}
-		else {
+		if(defined('MCRYPT_BLOWFISH'))
+			$this->impl = new MCryptCipherImpl(MCRYPT_BLOWFISH, Cipher::mcryptModeForMode($mode), $key, $iv);
+		else
 			$this->impl = new BlowfishCipherImpl($mode, $key, $iv);
-		}
 	}
 	
 	/** @ignore */

@@ -83,7 +83,7 @@ class BlowfishCipherImpl extends Cipher {
 		if(empty($plain))
 			return '';
 		
-		$cbc = $this->mode;
+		$cbc = ($this->mode == Cipher::MODE_CBC);
 		$plainsize = strlen($plain);
 		$cipher = '';
 		
@@ -129,7 +129,7 @@ class BlowfishCipherImpl extends Cipher {
 		if(empty($cipher))
 			return '';
 		
-		$cbc = $this->mode;
+		$cbc = ($this->mode == Cipher::MODE_CBC);
 		$ciphersize = strlen($cipher);
 		$plain = '';
 		

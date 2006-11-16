@@ -1,29 +1,24 @@
 <?
 /**
- * Class that implements the TEA encryption algorithm.
+ * PHP implementation of the TEA encryption algorithm.
  *
- * This is relatively new, sufficiently strong and very compact 
- * and fast block cipher algorithm with a fixed-size 128-bit secret.
- * It is not patented.
+ * Optimised PHP code. (Still considered WIP)
+ * Alot of APD profiling has been done.
+ * 
+ * Note that TEA has some weaknesses. The best available TEA algorithm
+ * in Abstract Base is {@link XXTEA}.
  *
- * <b>Note:</b> As TEA uses a fixed-length secret, you should use
- * a secret which is exactly 16 bytes long. Try this generator:
- * {@link http://www.winguides.com/security/password.php?length=16&phonetic=off&alpha=on&mixedcase=on&numeric=on&nosimilar=on&quantity=4&guide=security&generate=true winguides.com/security/password.php?length=16&phon...}
- *
- * Highly optimised PHP code. Alot of op using APD has been made.
- *
- * This enables you to encrypt data without requiring mcrypt.
- * For more info, visit {@link http://www.simonshepherd.supanet.com/tea.htm}
+ * @todo Variable iteration is currently broken, only 32 n works. Fix this.
  *
  * @version    $Id$
  * @package    ab
  * @subpackage crypto
  * @author     Rasmus Andersson <http://hunch.se/>
  */
-class TEACompatCipher extends TEACipher {
+class TEACipherImpl extends Cipher {
 	
 	/** @var int */
-	private $iterations;
+	private $iterations = 32;
 	
 	/** @var long[] Raw, fixed length version of $secret */
 	private $rawSecret;
@@ -41,52 +36,27 @@ class TEACompatCipher extends TEACipher {
 	 * @see    setIterations()
 	 * @see    getIterations()
 	 */
-	public function __construct($secret, $iterations = 32 ) {
-		$this->setSecret($secret);
-		$this->setIterations($iterations);
+	public function __construct($key) {
+		$this->setKey($key);
 	}
 	
 	
 	/**
 	 * @param  string
 	 * @return void
-	 * @throws IllegalArgumentException  if secret is empty/null
+	 * @throws IllegalArgumentException  if key is empty/null
 	 */
-	public function setSecret($secret)
+	public function setKey($key)
 	{
-		if(!$secret)
-			throw new IllegalArgumentException('Secret can not be empty');
+		if(!$key)
+			throw new IllegalArgumentException('Key is empty');
 		
 		# resize key to a multiple of 128 bits/16 bytes. (TEA uses static key length of 128)
-		$this->resizeData($secret, 16, true);
+		$this->resizeData($key, 16, true);
 		
 		# Translate secret to array of longs
-		$this->rawSecretSize = self::str2long($secret, $this->rawSecret, 0);
+		$this->rawSecretSize = self::str2long($key, $this->rawSecret, 0);
 	}
-	
-	
-	/**
-	 * Set the number of block iterations
-	 *
-	 * Many iterations = strong/slow, Few iterations = weak/fast
-	 *
-	 * @param  integer
-	 * @return void
-	 */
-	public function setIterations($iterations) {
-		$this->iterations = intval($iterations);
-	}
-	
-	
-	/**
-	 *  Get the number of block iterations
-	 *
-	 *  @return int
-	 */
-	function getIterations() {
-		return $this->iterations;
-	}
-	
 	
 	/**
 	 *  Encrypt a string
@@ -143,7 +113,7 @@ class TEACompatCipher extends TEACipher {
 			$enc_data .= pack('N', $w[1]);
 		}
 		
-		return $this->postFilterData($enc_data);
+		return $enc_data;
 	}
 	
 	
@@ -157,10 +127,8 @@ class TEACompatCipher extends TEACipher {
 	 */
 	public function decrypt( $data )
 	{	
-		$enc_data = $this->preFilterData($data);
-		
 		// convert data to long
-		$n_enc_data_long = self::str2long($enc_data, $enc_data_long, 0);
+		$n_enc_data_long = self::str2long($data, $enc_data_long, 0);
 		
 		// decrypt the long data with the key
 		$data = '';

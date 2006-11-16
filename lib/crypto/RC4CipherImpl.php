@@ -1,12 +1,6 @@
 <?
 /**
- * RC4 stream cipher routines implementation
- *
- * A very fast stream cipher, famous from it's use in WEP technology.
- * 
- * Uses variable sized secret. RC4 is not patented, but it is a registered 
- * trademark of RSA Security Systems. Based on code written by 
- * Damien Miller <djm@mindrot.org>.
+ * RC4 stream cipher
  *
  * Highly optimised PHP code. Alot of op using APD has been made.
  * Don't use this for heavy encryption, as it's fairly unsafe and
@@ -101,7 +95,7 @@ class RC4CipherImpl extends Cipher {
 		
 		$i = 0;
 		$j = 0;
-		$len = strlen($str);
+		$len = strlen($data);
 		$keyLen =& $this->rawSecretSize;
 		
 		for ($c= 0; $c < $len; $c++)
@@ -114,9 +108,9 @@ class RC4CipherImpl extends Cipher {
 
 			$t = ($this->s[$this->i] + $this->s[$this->j]) % $keyLen;
 
-			$str{$c} = chr(ord($str{$c}) ^ $this->s[$t]);
+			$data{$c} = chr(ord($data{$c}) ^ $this->s[$t]);
 		}
-		return $str;
+		return $data;
 	}
 	
 	
