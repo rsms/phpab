@@ -21,7 +21,7 @@ class MySQLDBResult extends DBResult {
 	 * @param  int
 	 * @return mixed
 	 */
-	abstract public function fetchRow($style = DB_FETCH_ASSOC)
+	public function fetchRow($style = DB_FETCH_ASSOC)
 	{
 		if($style == DB_FETCH_ASSOC)
 			return mysql_fetch_assoc($this->res);

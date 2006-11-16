@@ -9,7 +9,7 @@ define('DB_FETCH_BOTH', 2);
  * @package    ab
  * @subpackage db
  */
-class DBResult {
+abstract class DBResult {
 	
 	/**
 	 * @param  int
