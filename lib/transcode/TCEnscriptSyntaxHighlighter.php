@@ -101,6 +101,7 @@ class TCEnscriptSyntaxHighlighter extends TCSyntaxHighlighter {
 	/**
 	 * @param  string
 	 * @param  string
+	 * @param  string
 	 * @return string
 	 */
 	private function processFile($path, $ext, $output)
