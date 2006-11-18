@@ -65,7 +65,6 @@ class TCSyntaxHighlighter {
 	/**
 	 * @param  string
 	 * @param  string  File extension including a dot. ie. ".html"
-	 * @param  string
 	 * @return string
 	 */
 	public function convertFile($path, $output = 'html')
