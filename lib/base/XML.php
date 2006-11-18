@@ -13,6 +13,18 @@ final class XML {
 	private static $xtblt_e = array('&#38;','&#60;','&#62;');
 	
 	/**
+	 * Convenience function to load a xml file into an array.
+	 * 
+	 * @param  string
+	 * @return array  Document structure
+	 */
+	public static function load( $pathOrUrl ) {
+		$xp = new SimpleXMLParser();
+		$xp->loadFile($pathOrUrl);
+		return $xp->toArray();
+	}
+	
+	/**
 	 * Escape attribute value
 	 * 
 	 * @param  string
