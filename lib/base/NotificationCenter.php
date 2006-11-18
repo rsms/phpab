@@ -5,7 +5,7 @@
  * broadcasts them to any objects in the same process that have registered to 
  * receive the notification with the task’s default notification center.
  *
- * <b>Example:>/b>
+ * <b>Example:</b>
  * <code>
  * class ToyFactory {
  * 	public $id;
