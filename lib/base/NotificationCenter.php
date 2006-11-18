@@ -3,7 +3,7 @@
  * The NotificationCenter class provides a way to send notifications to objects 
  * in the same process. It takes a notification name and optionally a payload, and 
  * broadcasts them to any objects in the same process that have registered to 
- * receive the notification with the task’s default notification center.
+ * receive the notification with the task's default notification center.
  *
  * <b>Example:</b>
  * <code>
