@@ -6,7 +6,6 @@
  * @package    ab
  * @subpackage crypto
  * @author     Rasmus Andersson {@link http://hunch.se/}
- * @ignore
  */
 abstract class CipherProxy extends Cipher {
 	
