@@ -47,7 +47,7 @@
 class NotificationCenter {
 	
 	/** @var NotificationCenter */
-	protected static $defaultCenter;
+	private static $defaultCenter;
 	
 	/** @var object[] */
 	public $observers = array();
