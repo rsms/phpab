@@ -13,7 +13,8 @@
  * @subpackage util
  * @access     protected
  */
-class I13nDomain {
+class I13nDomain
+{
 	
 	/** @var string */
 	public $name = '';
