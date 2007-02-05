@@ -5,7 +5,7 @@
  */
  
 /**
- * Represents a internationalisation domain for use in conjunction with the I13n class
+ * Represents a internationalization domain for use in conjunction with the I18n class
  * 
  * @version    $Id$
  * @author     Rasmus Andersson
@@ -13,7 +13,7 @@
  * @subpackage util
  * @access     protected
  */
-class I13nDomain
+class I18nDomain
 {
 	
 	/** @var string */
@@ -52,7 +52,7 @@ class I13nDomain
 			return false;
 		}
 		else {
-			if($dat = @file_get_contents($this->dir . '/' . I13n::$locale . '/strings.dat')) {
+			if($dat = @file_get_contents($this->dir . '/' . I18n::$locale . '/strings.dat')) {
 				$this->strings = unserialize($dat);
 				return true;
 			}
@@ -72,12 +72,12 @@ class I13nDomain
  * @package    ab
  * @subpackage util
  */
-class I13n {
+class I18n {
 	
-	/** @var I13nDomain[] */
+	/** @var I18nDomain[] */
 	public static $domains = array();
 	
-	/** @var I13nDomain */
+	/** @var I18nDomain */
 	public static $domain = null;
 	
 	/** @var string */
@@ -102,7 +102,7 @@ class I13n {
 			$dom->strings = null;
 		}
 		else {
-			$dom = new I13nDomain($domain, $dir);
+			$dom = new I18nDomain($domain, $dir);
 			self::$domains[$domain] = $dom;
 		}
 		
@@ -260,8 +260,8 @@ function s($str /*[, arg1[, arg2[, ...]]] */)
 {
 	if(func_num_args() > 1) {
 		$a = func_get_args();array_shift($a);
-		return vsprintf(I13n::string($str), $a);
+		return vsprintf(I18n::string($str), $a);
 	}
-	return I13n::string($str);
+	return I18n::string($str);
 }
 ?>
