@@ -3,7 +3,7 @@
  * Measure code execution
  *
  * <b>Example:</b><code>
- * $timer = new BenchmarkTimer(true);
+ * $timer = new BenchmarkTimer();
  * for($i=0;$i<10000;$i++)
  *     $dummy = 4337*(1337/89024)*23;
  * print $timer->stop();
@@ -30,7 +30,7 @@ class BenchmarkTimer {
 	/**
 	 * @param bool
 	 */
-	public function __construct($startImmediately = false) {
+	public function __construct($startImmediately = true) {
 		if($startImmediately)
 			$this->start();
 	}

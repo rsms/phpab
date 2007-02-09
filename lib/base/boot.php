@@ -238,7 +238,12 @@ ini_set('unserialize_callback_func', '__autoload');
 
 /** @ignore */
 function __exhandler($e) {
-	print ABException::format($e, true, (ini_get('html_errors') != '0'));
+	try {
+		print ABException::format($e, true, (ini_get('html_errors') != '0'));
+	}
+	catch(Exception $e){
+		die(nl2br(strval($e)));
+	}
 }
 set_exception_handler('__exhandler');
 

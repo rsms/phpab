@@ -84,7 +84,10 @@ class ABException extends Exception
 			
 			# extra info, used by PDOException, ActionDBException, etc
 			if(isset($e->errorInfo) && $e->errorInfo)
-				$str .= '<pre>' . trim(htmlentities(preg_replace('/[ \r\n\t]+/', ' ', $e->errorInfo))).'</pre>';
+			{
+				$errorInfo = is_array($e->errorInfo) ? trim(print_r($e->errorInfo,1)) : strval($e->errorInfo);
+				$str .= '<pre>' . trim(htmlentities(preg_replace('/[ \r\n\t]+/', ' ', $errorInfo))).'</pre>';
+			}
 			
 			$str .= '</span> <span class="file">on line '.$e->getLine().' in '.$e->getFile().'</span>';
 		}
