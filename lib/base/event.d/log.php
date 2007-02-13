@@ -25,17 +25,18 @@ function log_msg($msgOrDest, $msg, &$level, $sto)
 		$logfile = ABLog::$defaultFile;
 	}
 	
-	if(!ABLog::$msgPrefix) {
+	if(!ABLog::$msgPrefix)
+	{
 		$f = debug_backtrace();
 		$f1 = @$f[$sto+1];
 		$f = $f[$sto];
 		$file =& $f['file'];
-		$prefix = ((strpos($file, BASEDIR) === 0) ? substr($file, strlen(BASEDIR)+1) : $file).':'.$f['line'];
+		$prefix = ((strpos($file, @$_SERVER['DOCUMENT_ROOT']) === 0) ? substr($file, strlen(@$_SERVER['DOCUMENT_ROOT'])+1) : $file).':'.$f['line'];
 	}
 	else
 		$prefix = ABLog::$msgPrefix;
 	
-	error_log(date('[Y-m-d H:i:s')." $level $prefix] $msg\n", 3, ABLog::$dir.$logfile.'.log');
+	return error_log(date('[Y-m-d H:i:s')." $level $prefix] $msg\n", 3, ABLog::$dir.$logfile.'.log');
 }
 
 /**
@@ -43,12 +44,13 @@ function log_msg($msgOrDest, $msg, &$level, $sto)
  *
  * @param  string  Message or Logfile name
  * @param  string
- * @return void
+ * @return bool    Success
  */
 function log_info($msgOrDest, $msg = null) {
 	static $level = 'INFO ';
 	if(ABLog::$level > 2)
-		log_msg($msgOrDest, $msg, $level, 1);
+		return log_msg($msgOrDest, $msg, $level, 1);
+	return false;
 }
 
 /**
@@ -56,12 +58,13 @@ function log_info($msgOrDest, $msg = null) {
  *
  * @param  string  Message or Logfile name
  * @param  string
- * @return void
+ * @return bool    Success
  */
 function log_warn($msgOrDest, $msg = null) {
 	static $level = 'WARN ';
 	if(ABLog::$level > 1)
-		log_msg($msgOrDest, $msg, $level, 1);
+		return log_msg($msgOrDest, $msg, $level, 1);
+	return false;
 }
 
 /**
@@ -69,12 +72,13 @@ function log_warn($msgOrDest, $msg = null) {
  *
  * @param  string  Message or Logfile name
  * @param  string
- * @return void
+ * @return bool    Success
  */
 function log_error($msgOrDest, $msg = null) {
 	static $level = 'ERROR';
 	if(ABLog::$level > 0)
-		log_msg($msgOrDest, $msg, $level, 1);
+		return log_msg($msgOrDest, $msg, $level, 1);
+	return false;
 }
 
 # INIT

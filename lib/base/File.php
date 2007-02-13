@@ -859,27 +859,27 @@ class File {
 	}
 	
 	/**
-     * Convert absolute path to a relative path, based in <samp>$relativeToBase</samp>
-     *
-     * <b>Example</b>
-     * <code>
-     * print File::relativePath('/absolute/path/to/foo.bar', '/absolute/path');
+    * Convert absolute path to a relative path, based in <samp>$relativeToBase</samp>
+    *
+    * <b>Example</b>
+    * <code>
+    * print File::relativePath('/absolute/path/to/foo.bar', '/absolute/path');
 	 * // output: "to/foo.bar"
-     * </code>
-     * 
-     * @param  string
-     * @param  string
-     * @return string
-     */
-    public static function relativePath( $path, $basePath )
-    {
+    * </code>
+    * 
+    * @param  string
+    * @param  string
+    * @return string
+    */
+	public static function relativePath( $path, $basePath )
+	{
 		if($basePath) {
 			$len = strlen($basePath);
-	        if(substr($path, 0, $len) == $basePath)
-	            return substr($path, $len + (($basePath{$len-1} != '/') ? 1 : 0));
+			if(substr($path, 0, $len) == $basePath)
+				return substr($path, $len + (($basePath{$len-1} != '/') ? 1 : 0));
 		}
-        return $path;
-    }
+		return $path;
+	}
 	
 	/**
 	 * @param  mixed  string, File or URL
