@@ -10,12 +10,12 @@ class UnitClassTestCase extends UnitTestCase
 	/** @var string */
 	protected $class = '';
 	
-	/** @var ReflectionClass */
+	/** @var ABReflectionClass */
 	protected $classInfo = null;
 	
 	/**
 	 * @param string
-	 * @param ReflectionClass
+	 * @param ABReflectionClass
 	 */
 	public function __construct($class, $classInfo = null)
 	{
@@ -31,10 +31,10 @@ class UnitClassTestCase extends UnitTestCase
 	protected function performTests()
 	{
 		if($this->log)
-			$this->log->debug("Testing class $this->class ... ");
+			$this->log->warn("Testing class ".$this->getClassInfo()->getPackageName().".$this->class ... ");
 		call_user_func(array($this->class, '__test'));
 		if($this->log)
-			$this->log->debug(($this->passed() ? 'PASSED':'FAILED')."\n");
+			$this->log->warn(($this->passed() ? 'PASSED':'FAILED')."\n");
 	}
 	
 	/**
@@ -51,13 +51,13 @@ class UnitClassTestCase extends UnitTestCase
 	/**
 	 * Class information
 	 *
-	 * @return ReflectionClass
+	 * @return ABReflectionClass
 	 * @see    getClass()
 	 */
 	public function getClassInfo()
 	{
 		if($this->classInfo === null)
-			$this->classInfo = new ReflectionClass($this->class);
+			$this->classInfo = new ABReflectionClass($this->class);
 		return $this->classInfo;
 	}
 }

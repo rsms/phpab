@@ -31,11 +31,12 @@ class UnitLibraryTestCase extends UnitDirectoryTestCase
 			$this->log->warn("Importing libraries...\n");
 		$this->importLibrary($this->path);
 		if($this->log)
-			$this->log->warn("Importing classes and interfaces...\n");
+			$this->log->warn("Importing classes...\n");
 		$this->importClassFiles($this->path);
 		
 		# Aquire declared classes
 		$classes = get_declared_classes();
+		#var_dump($classes);
 		
 		# Find loaded classes and run UnitClassTestCase tests
 		foreach($classes as $class)
@@ -43,29 +44,34 @@ class UnitLibraryTestCase extends UnitDirectoryTestCase
 			# Has __test method?
 			if(is_callable(array($class, '__test'), false))
 			{
-				$classInfo = new ReflectionClass($class);
+				$classInfo = new ABReflectionClass($class);
 				
-				# Roots from this library path?
-				$declaredInFile = $classInfo->getFileName();
-				if(substr($declaredInFile, 0, strlen($this->path)) == $this->path)
+				# Disabled this because symlinked libraries might not root in the same
+				# directory as we began looking in. The above test should be enough.
+				#$declaredInFile = $classInfo->getFileName();
+				#if(substr($declaredInFile, 0, strlen($this->path)) == $this->path)
+			
+				$hasItsOwnTest = true;
+				
+				# Only include __test()'s explicitly defined in subclasses
+				if($classInfo->getParentClass())
 				{
-				
-					# Only include __test()s explicitly defined in sublcasses
-					$hasItsOwnTest = true;
+					$hasItsOwnTest = false;
+					$classInfoName = $classInfo->getName();
 					
-					if($classInfo->getParentClass()) {
-						foreach($classInfo->getMethods() as $method) {
-							if($method->getName() == '__test' && $method->getDeclaringClass() != $classInfo) {
-								$hasItsOwnTest = false;
-								break;
-							}
+					foreach($classInfo->getMethods() as $method)
+					{
+						if($method->getName() == '__test' && $method->getDeclaringClass()->getName() == $classInfoName)
+						{
+							$hasItsOwnTest = true;
+							break;
 						}
 					}
-				
-					# Create and execute test
-					if($hasItsOwnTest)
-						$this->executeTest(new UnitClassTestCase($class, $classInfo));
 				}
+			
+				# Create and execute test
+				if($hasItsOwnTest)
+					$this->executeTest(new UnitClassTestCase($class, $classInfo));
 			}
 		}
 	}
