@@ -557,7 +557,7 @@ class WikiParser
 	public static function __test()
 	{
 		$p = new self();
-		assert($p->parse('== Nowiki test ==') == '<h2> Hej </h2>');
+		assert(trim($p->parse('== Hello Hej ==')) == '<h2> Hello Hej </h2>');
 	}
 }
 ?>
