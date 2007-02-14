@@ -22,7 +22,7 @@ class String {
 	 * @param  string
 	 * @return string
 	 */
-	public static function cut($str, $maxlength, $suffix = '...')
+	public static function cut($str, $maxlength, $suffix='...')
 	{
 		if(strlen($str) > $maxlength)
 			return substr($str, 0, $maxlength - strlen($suffix)) . $suffix;
@@ -41,7 +41,7 @@ class String {
 	 * @param  string
 	 * @return string
 	 */
-	public static function constrain($str, $maxlength, $glue = '...')
+	public static function constrain($str, $maxlength, $glue='...')
 	{
 		if(strlen($str) > $maxlength) {
 			$length = $maxlength - strlen($glue);
@@ -50,6 +50,23 @@ class String {
 			return (($a > 0) ? substr($str, 0, $a) : '') . $glue . ($b > 0 ? substr($str, -floor($length/2)) : '');
 		}
 		return $str;
+	}
+	
+	/**
+	 * Find first char in string not matching character $ch
+	 * 
+	 * @param  string
+	 * @param  char
+	 * @param  int
+	 * @return int  position or -1 if not found
+	 */
+	public static function indexOfNotMatchingChar($str, $ch, $offset=0)
+	{	
+		$len = strlen($str);
+		for(;$offset<$len;$offset++)
+			if($str{$offset} != $ch)
+				return $offset;
+		return -1;
 	}
 }
 ?>

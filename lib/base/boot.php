@@ -206,17 +206,19 @@ if(!defined('SAFEMODE')) {
  * Add a path to be searched for classes by the classloader
  *
  * @param  string Path to a directory
- * @return void
- * @deprecated Use {@link import()} instead
+ * @return boolean If the include_path was successfully altered
  */
-function import( $dirpath ) {
+function import( $dirpath )
+{
 	# if no path delimiter exists, maybe it's a abstractbase library -- add both!
-	if(strpos($dirpath,'/') === false) {
+	if(strpos($dirpath,'/') === false)
+	{
 		ini_set('include_path', ini_get('include_path') . ':' . './'.$dirpath);
-		ini_set('include_path', ini_get('include_path') . ':' . AB_LIB.'/'.$dirpath);
+		return ini_set('include_path', ini_get('include_path') . ':' . AB_LIB.'/'.$dirpath) !== false;
 	}
-	else {
-		ini_set('include_path', ini_get('include_path') . ':' . $dirpath);
+	else
+	{
+		return ini_set('include_path', ini_get('include_path') . ':' . $dirpath) !== false;
 	}
 }
 
