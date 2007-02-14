@@ -5,7 +5,10 @@
  * @package    ab
  * @subpackage unittest
  */
-class UnitTest {
+class UnitTest
+{
+	/** @var SimpleLogger */
+	public $log = null;
 	
 	/** @var UnitTest */
 	protected static $instance = null;
@@ -84,6 +87,7 @@ class UnitTest {
 			if(is_callable(array($class, '__test'), false))
 			{
 				$case = new UnitClassTestCase($class);
+				$case->log = $this->log;
 				$case->test($this);
 				$cases[] = $case;
 			}

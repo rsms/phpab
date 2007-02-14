@@ -7,11 +7,8 @@
  * @package    ab
  * @subpackage unittest
  */
-class UnitLibraryTestCase extends UnitDirectoryTestCase {
-	
-	/** @var SimpleLogger */
-	public static $log = null;
-	
+class UnitLibraryTestCase extends UnitDirectoryTestCase
+{
 	/**
 	 * @param string
 	 * @param bool
@@ -31,10 +28,10 @@ class UnitLibraryTestCase extends UnitDirectoryTestCase {
 	{
 		# Import all class definitions
 		if($this->log)
-			$this->log->info("Importing libraries...\n");
+			$this->log->warn("Importing libraries...\n");
 		$this->importLibrary($this->path);
 		if($this->log)
-			$this->log->info("Importing classes and interfaces...\n");
+			$this->log->warn("Importing classes and interfaces...\n");
 		$this->importClassFiles($this->path);
 		
 		# Aquire declared classes
@@ -77,27 +74,52 @@ class UnitLibraryTestCase extends UnitDirectoryTestCase {
 	/**
 	 * @param  string
 	 * @return void
+	 * @todo   optimize
 	 */
 	protected function importLibrary($path)
 	{
-		$this->_importLibrary($path);
+		if(substr($path,-2) != '.d' && substr(basename($path),0,1) != '.')
+			if($this->_importLibrary($path) && $this->recursive)
+				$this->_recursiveImport(new RecursiveDirectoryIterator($path), 1);
+	}
+
+
+	/**
+	 * @param  string
+	 * @return void
+	 * @todo   optimize
+	 */
+	private function _recursiveImport($it, $depth)
+	{
+		if($depth > 20)
+			die("\nFATAL: max recursion depth reached in ".__FILE__.':'.(__LINE__-1)."\n");
 		
-		foreach(File::valueOf($path)->getFiles(true) as $file)
-			if($this->recursive && $file->isDir() && $file->isReadable())
-				$this->_importLibrary($file->getPath());
+		while($it->valid())
+		{
+			$n = $it->getFilename();
+			if($n{0} != '.' && $it->isDir() && substr($n,-2) != '.d')
+			{
+				#print "__ ".$it->current()->getFilename()." __\n";
+				if($this->_importLibrary($it->getPathname()))
+					$this->_recursiveImport($it->getChildren(), $depth+1);
+			}
+			$it->next();
+		}
 	}
 	
 	
-	/* Smisk */
+	/**
+	 * @param  string  Abs path
+	 * @return boolean Success
+	 */
 	private function _importLibrary($path)
 	{
-		if(substr($path,-2) != '.d' && $path{0} != '.') {
-			if($this->log)
-				$this->log->debug("Importing library $path ...".substr($path,-2));
-			import($path);
-			if($this->log)
-				$this->log->debug("OK\n");
-		}
+		if($this->log)
+			$this->log->info("Importing library $path ... ");
+		$success = import($path);
+		if($this->log)
+			$this->log->info("OK\n");
+		return $success;
 	}
 	
 	
@@ -124,8 +146,11 @@ class UnitLibraryTestCase extends UnitDirectoryTestCase {
 					$this->log->debug("Loading class $guessedClass from ".basename($path).'/'.basename($file)." ... ");
 				
 				if(!class_exists($guessedClass) && !interface_exists($guessedClass, false)) {
-					die('FATAL: Unthrowable error: '.__FILE__.':'.(__LINE__-1)
-						." Unable to find probable class or interface $guessedClass");
+					$e = new Exception();
+					print "\nFATAL unittest error in ".__FILE__.':'.(__LINE__-2)
+						. ":\n  Unable to find probable class or interface \"$guessedClass\" for file \n"
+						. ABException::formatTrace($e, false);
+					exit(1);
 				}
 				
 				if($this->log)

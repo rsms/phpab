@@ -96,7 +96,7 @@ class UnitTestCLI extends ConsoleApplication {
 		
 		
 		# Run tests
-		$log->info("Running tests in '$libPath'...\n");
+		$log->warn("Running tests in '$libPath'...\n");
 		$libTest->test();
 		$cases = $libTest->getCompletedTestCases();
 		$timer->stop();

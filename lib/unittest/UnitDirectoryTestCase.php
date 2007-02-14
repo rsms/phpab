@@ -7,8 +7,8 @@
  * @package    ab
  * @subpackage unittest
  */
-class UnitDirectoryTestCase extends UnitTestCase {
-	
+class UnitDirectoryTestCase extends UnitTestCase
+{
 	/** @var string */
 	protected $path = '';
 	
@@ -112,6 +112,7 @@ class UnitDirectoryTestCase extends UnitTestCase {
 	 */
 	protected function executeTest(UnitTestCase $case)
 	{
+		$case->log = $this->log;
 		$this->cases[] = $case;
 		$case->test();
 		

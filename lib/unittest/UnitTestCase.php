@@ -5,7 +5,10 @@
  * @package    ab
  * @subpackage unittest
  */
-abstract class UnitTestCase {
+abstract class UnitTestCase
+{
+	/** @var SimpleLogger */
+	public $log = null;
 	
 	/** @var UnitTestAssertion[] */
 	protected $assertions = array();
