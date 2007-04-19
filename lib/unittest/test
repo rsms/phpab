@@ -58,7 +58,7 @@ class UnitTestCLI extends ConsoleApplication {
 		
 		
 		# Print help or version?
-		if(isset($op['h']) || isset($argv['help']))
+		if(isset($op['h']) || isset($op['help']))
 			$this->usage(32);
 		elseif(isset($op['V'])) {
 			$v = $this->versionInfo();
