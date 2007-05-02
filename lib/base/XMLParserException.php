@@ -4,5 +4,9 @@
  * @package    ab
  * @subpackage xml
  */
-class XMLParserException extends ParseException {}
+class XMLParserException extends ParseException
+{
+	/** @var mixed */
+	public $errorInfo = null;
+}
 ?>

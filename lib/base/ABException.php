@@ -37,6 +37,8 @@ class ABException extends Exception
 				$file = $msg->getFile();
 				$errno = $msg->getCode();
 				$msg = $msg->getMessage();
+				if(isset($msg->errorInfo))
+					$this->errorInfo = $msg->errorInfo;
 			}
 		}
 		parent::__construct($msg, $errno);
@@ -77,10 +79,14 @@ class ABException extends Exception
 	 */
 	public static function format( Exception $e, $includingTrace = true, $html = true, $skip = null )
 	{
+		$code = $e->getCode();
 		if($html)
 		{
 			$str = '<div class="exception"><b>' .  get_class($e) . '</b><br /> '
 				. '<span class="message">'.nl2br(htmlentities($e->getMessage()));
+			
+			if($code)
+				$str .= ' ['.$code.']';
 			
 			# extra info, used by PDOException, ActionDBException, etc
 			if(isset($e->errorInfo) && $e->errorInfo)
@@ -93,6 +99,9 @@ class ABException extends Exception
 		}
 		else {
 			$str = get_class($e) . ': ' . $e->getMessage();
+		
+			if($code)
+				$str .= ' ['.$code.']';
 			
 			# extra info, used by PDOException, ActionDBException, etc
 			if(isset($e->errorInfo) && $e->errorInfo)
