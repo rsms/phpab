@@ -35,8 +35,7 @@ class StringOutputStream implements OutputStream {
 			$bytes = substr($bytes, 0, $length);
 		
 		$this->string .= $bytes;
-		$len = strlen($bytes);
-		$this->length += $len;
+		$this->length += $len = strlen($bytes);
 		return $len;
 	}
 	

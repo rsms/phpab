@@ -15,13 +15,32 @@ final class XML {
 	/**
 	 * Convenience function to load a xml file into an array.
 	 * 
-	 * @param  string
+	 * @param  string Path or url
 	 * @return array  Document structure
+	 * @throws XMLParserException
 	 */
 	public static function load( $pathOrUrl ) {
-		$xp = new SimpleXMLParser();
-		$xp->loadFile($pathOrUrl);
-		return $xp->toArray();
+		return self::loadString(file_get_contents($pathOrUrl));
+	}
+	
+	/**
+	 * Convenience function to load xml data into an array.
+	 * 
+	 * @param  string XML document
+	 * @return array  Document structure
+	 * @throws XMLParserException
+	 */
+	public static function loadString( $string ) {
+		try {
+			return self::simpleXMLToArray(simplexml_load_string($string));
+		}
+		catch(PHPException $e) {
+			if(preg_match('/^[^ ]+xml[^ ]+\(/', $e->getMessage(), $m)) {
+				$e = new XMLParserException($e);
+				$e->errorInfo = 'Document: '.$string;
+			}
+			throw $e;
+		}
 	}
 	
 	/**
@@ -66,6 +85,34 @@ final class XML {
 	 */
 	public static function unescapeText($str) {
 		return str_replace(self::$xtblt_e, self::$xtblt_u, $str);
+	}
+	
+	/**
+	 * @param  SimpleXMLDocument
+	 * @return array  DOM structure
+	 */
+	public static function simpleXMLToArray(SimpleXMLElement $xml)
+	{
+		# new array node
+		$node = array();
+		
+		# attributes
+		$attributes = $xml->attributes();
+		if(count($attributes)) {
+			foreach($attributes as $k => $v)
+				$node['@'][$k] = (string) $v;
+		}
+		
+		# child nodes
+		foreach($xml as $childName => $childNode)
+			$node[$childName][] = self::simpleXMLToArray($childNode);
+		
+		# node value
+		$nodeValue = (string) $xml;
+		if(trim($nodeValue) != '')
+			$node['#'] = $nodeValue;
+		
+		return $node;
 	}
 }
 ?>

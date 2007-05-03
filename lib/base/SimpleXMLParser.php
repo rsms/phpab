@@ -427,16 +427,10 @@ class SimpleXMLParser
 	 * @param  SimpleXMLDocument
 	 * @return array  DOM structure
 	 */
-	public static function toArrayWalker($xml)
+	public static function toArrayWalker(SimpleXMLElement $xml)
 	{
-		# typecheck
-		if(!($xml instanceof SimpleXMLElement))
-			throw new IllegalStateException('node is not a SimpleXMLElement, but a ' . gettype($xml));
-		
-		
 		# new array node
 		$node = array();
-		
 		
 		# attributes
 		$attributes = $xml->attributes();
@@ -445,17 +439,14 @@ class SimpleXMLParser
 				$node['@'][$k] = (string) $v;
 		}
 		
-		
 		# child nodes
 		foreach($xml as $childName => $childNode)
 			$node[$childName][] = self::toArrayWalker($childNode);
-		
 		
 		# node value
 		$nodeValue = (string) $xml;
 		if(trim($nodeValue) != '')
 			$node['#'] = $nodeValue;
-		
 		
 		return $node;
 	}
