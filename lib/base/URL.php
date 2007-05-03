@@ -304,7 +304,7 @@ class URL {
 	 * @param  Logger
 	 * @return int  bytes written
 	 */
-	public function saveContent( $toFile, $connectTimeout = 10.0, $readTimeout = 30.0, $atomic = true, $debugLogger = null )
+	/*public function saveContent( $toFile, $connectTimeout = 10.0, $readTimeout = 30.0, $atomic = true, $debugLogger = null )
 	{	
 		if($debugLogger)
 			$debugLogger->debug('URL::saveContent(): toFile: ' . $toFile);
@@ -313,7 +313,7 @@ class URL {
 		$req->open('GET', null, $connectTimeout);
 		$req->setDataTimeout($readTimeout);
 		return $req->sendAndSave($toFile, null, $atomic, $debugLogger);
-	}
+	}*/
 	
 	
 	/** Set a part */
