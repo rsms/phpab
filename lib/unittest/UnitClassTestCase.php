@@ -30,11 +30,24 @@ class UnitClassTestCase extends UnitTestCase
 	 */
 	protected function performTests()
 	{
+		$exc = null;
+		
 		if($this->log)
 			$this->log->warn("Testing class ".$this->getClassInfo()->getPackageName().".$this->class ... ");
-		call_user_func(array($this->class, '__test'));
+		
+		try {
+			call_user_func(array($this->class, '__test'));
+		}
+		catch(Exception $e) {
+			$this->exception = $e;
+			$exc = $e;
+		}
+		
 		if($this->log)
 			$this->log->warn(($this->passed() ? 'PASSED':'FAILED')."\n");
+		
+		if($exc)
+			throw $exc;
 	}
 	
 	/**
