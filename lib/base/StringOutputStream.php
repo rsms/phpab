@@ -14,14 +14,12 @@ class StringOutputStream implements OutputStream {
 	public $length = 0;
 	
 	/**
-	 * @param  string
+	 * @param  string  The buffer to use. If not specified, an string buffer is created and stored inside the instance.
 	 * @throws IllegalArgumentException if $string is not a string
 	 */
-	public function __construct(&$string) {
-		if(!is_string($string))
-			throw new IllegalArgumentException('First argument is not a string');
-		$this->string =& $string;
-		$this->length = strlen($string);
+	public function __construct() {
+		$this->string = '';
+		$this->length = strlen($this->string);
 	}
 	
 	/**

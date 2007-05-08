@@ -4,29 +4,22 @@
  *
  * @version    $Id$
  * @author     Rasmus Andersson <http://hunch.se>
- * @copyright  Copyright (C) 2007 Spotify Technology S.A.R.L.
+ * @copyright  Copyright (c) 2007 Rasmus Andersson
  * @package    ab
  * @subpackage net
  */
-class HTTPConnection
+class HTTPConnection extends CURLConnection
 {
-	/** @var bool */
-	public static $debug = false;
+	/** @var string */
+	public $method = 'GET';
 	
-	/** @var resource */
-	protected $curl;
+	/** @var array (string name => string value) Must be set before calling connect() */
+	public $requestHeaders = array('User-Agent' => 'AbstractBase');
 	
-	/** @var array */
-	protected $curlOptions;
 	
-	/** @var array */
-	protected $responseHeaders = array();
+	/** @var int Number of redirects, if any, to follow (Location: responses) */
+	public $followRedirects = 4;
 	
-	/** @var OutputStream */
-	protected $outputStream = null;
-	
-	/** @var InputStream */
-	protected $inputStream = null;
 	
 	/** @var int Available after a successful call to connect() */
 	public $responseStatus = 0;
@@ -37,52 +30,127 @@ class HTTPConnection
 	/** @var string Available after a successful call to connect() */
 	public $responseProtocol = '';
 	
-	/** @var array (string name => string value) Must be set before calling connect() */
-	public $requestHeaders = array();
+	/** @var array Available after a successful call to connect() */
+	public $responseHeaders = array();
+	
 	
 	/**
 	 * @param URL
 	 */
-	public function __construct($url=null)
+	public function __construct($url=null, $extraCurlOptions=array())
 	{
-		$this->curl = curl_init();
-		$this->curlOptions = array(
-			CURLOPT_URL => '',
+		parent::__construct($url, array(
 			CURLOPT_HEADER => 0,
-			CURLOPT_USERAGENT => 'AbstractBase',
-			CURLOPT_FOLLOWLOCATION => 1,
-			CURLOPT_CUSTOMREQUEST => 'GET',
-			CURLOPT_HEADERFUNCTION => array($this, 'onResponseHeader'),
-		);
-		if($url)
-			$this->setURL($url);
-	}
-
-	/** @ignore */
-	public function __destruct()
-	{
-		curl_close($this->curl);
+			CURLOPT_RETURNTRANSFER => 1,
+			CURLOPT_HEADERFUNCTION => array($this, '_onResponseHeader')) );
+		
+		if($extraCurlOptions)
+			$this->curlOptions = $extraCurlOptions + $this->curlOptions;
 	}
 	
-	/** @ignore */
-	public static function __test()
+	
+	/**
+	 * @param  mixed  If request method is POST, this should be the data to post, as a string.
+	 *                If request method is PUT, this should be a valid file stream resource 
+	 *                and $requestBodyLength must be specified.
+	 * @param  int    If request method is PUT, this must be specified and should tell how many 
+	 *                bytes should be read from the  $requestBody file stream.
+	 * @return mixed  If no output stream is used, returns the response body, if any. Otherwise 
+	 *                a boolean is returned, indicating success.
+	 * @throws IOException
+	 * @throws IllegalStateException
+	 * @throws IllegalOperationException
+	 * @throws IllegalArgumentException
+	 */
+	public function connect($requestBody=null, $requestBodyLength=0)
 	{
-		self::$debug = true;
-		$c = new self('http://hunch.se/');
-		$c->setMethod('post');
-		assert($c->getMethod() == 'POST');
-		$c->setURL('http://www.spotify.com/');
-		$c->connect();
-		assert($c->responseProtocol == '1.1');
-		assert((int)($c->responseStatus/100) == 2);
+		$args = array();
+		$args['requestBody'] =& $requestBody;
+		$args['requestBodyLength'] =& $requestBodyLength;
+		return parent::connect($args);
+	}
+	
+	/**
+	 * @param  resource
+	 * @param  array
+	 * @return void
+	 * @throws IllegalStateException
+	 * @throws IllegalOperationException
+	 * @throws IllegalArgumentException
+	 */
+	protected function connectInit(&$curl, &$args)
+	{
+		parent::connectInit($curl, $args);
+		
+		$requestBody =& $args['requestBody'];
+		$requestBodyLength =& $args['requestBodyLength'];
+		
+		# Set method, if not GET
+		if($this->method != 'GET')
+		{
+			switch($this->method = strtoupper($this->method))
+			{
+				case 'POST':
+					curl_setopt($curl, CURLOPT_POST, 1);
+					break;
+				case 'PUT':
+					curl_setopt($curl, CURLOPT_PUT, 1);
+					break;
+				case 'GET':
+					break;
+				default:
+					curl_setopt($curl, CURLOPT_CUSTOMREQUEST, $this->method);
+			}
+		}
+		
+		# Set headers
+		if($this->requestHeaders)
+			curl_setopt($curl, CURLOPT_HTTPHEADER, $this->requestHeaders);
+		
+		# PUT or not
+		if($requestBody !== null && $this->method == 'PUT') {
+			if(!is_resource($requestBody))
+				throw new IllegalStateException('$requestBody is not a valid file stream');
+			curl_setopt($curl, CURLOPT_INFILE, $requestBody);
+			curl_setopt($curl, CURLOPT_INFILESIZE, $requestBodyLength);
+		}
+		
+		# POST or not
+		if($requestBody !== null && $this->method == 'POST')
+			curl_setopt($curl, CURLOPT_POSTFIELDS, $requestBody);
+		
+		# Follow redirects?
+		if($this->followRedirects) {
+			curl_setopt($curl, CURLOPT_FOLLOWLOCATION, 1);
+			curl_setopt($curl, CURLOPT_MAXREDIRS, (int)$this->followRedirects);
+		}
+		
+		# Cleared before each connection and filled by _onResponseHeader
+		$this->responseProtocol = '';
+		$this->responseStatus = 0;
+		$this->responseStatusName = '';
+		$this->responseHeaders = array();
+	}
+	
+	/**
+	 * @param  resource
+	 * @param  array
+	 * @return void
+	 * @throws IOException
+	 */
+	protected function connectCleanup(&$curl, &$args)
+	{
+		parent::connectCleanup($curl, $args);
+		$this->responseStatus = curl_getinfo($curl, CURLINFO_HTTP_CODE);
 	}
 	
 	/**
 	 * @param  resource
 	 * @param  string
 	 * @return void
+	 * @internal
 	 */
-	public function onResponseHeader($curl, $header)
+	public function _onResponseHeader($curl, $header)
 	{
 		$len = strlen($header);
 		
@@ -101,179 +169,58 @@ class HTTPConnection
 		return $len;
 	}
 	
-	/**
-	 * @param  resource curl
-	 * @param  string   data to be written
-	 * @return int      bytes written
-	 * @internal
-	 */
-	public function onPushOutputStream($curl, $data)
+	/** @ignore */
+	public static function __test()
 	{
-		return $this->outputStream->write($data);
-	}
-	
-	/**
-	 * @param  resource curl
-	 * @param  string   ??
-	 * @return int      0=EOF
-	 * @internal
-	 */
-	public function onPullInputStream($curl, $data)
-	{
-		print 'onPullInputStream:';
-		var_dump($data);
-		#return $this->outputStream->write($data);
-		return 0;
-	}
-	
-	/**
-	 * Assign a stream to handle incoming response body data. If set to null, any
-	 * response body data is returned as a string by the connect() method.
-	 * 
-	 * @param  OutputStream
-	 * @return void
-	 */
-	public function setOutputStream($os)
-	{
-		if(!$os) {
-			if(isset($this->curlOptions[CURLOPT_WRITEFUNCTION]))
-				unset($this->curlOptions[CURLOPT_WRITEFUNCTION]);
-			$this->outputStream = null;
-		}
-		else {
-			$this->outputStream = $os;
-			$this->curlOptions[CURLOPT_WRITEFUNCTION] = array($this, 'onPushOutputStream');
-		}
-	}
-	
-	/**
-	 * @return OutputStream
-	 */
-	public function getOutputStream()
-	{
-		$this->outputStream;
-	}
-	
-	/**
-	 * Assign a stream to provide the request body. If null is passed, stream 
-	 * input will be disabled and connect() will use $requestBody parameter if 
-	 * available and/or needed.
-	 * 
-	 * @param  OutputStream
-	 * @return void
-	 */
-	public function setInputStream($is)
-	{
-		if(!$is) {
-			if(isset($this->curlOptions[CURLOPT_READFUNCTION]))
-				unset($this->curlOptions[CURLOPT_READFUNCTION]);
-			$this->inputStream = null;
-		}
-		else {
-			$this->inputStream = $is;
-			$this->curlOptions[CURLOPT_READFUNCTION] = array($this, 'onPullInputStream');
-		}
-	}
-	
-	/**
-	 * @return InputStream
-	 */
-	public function getInputStream()
-	{
-		return $this->inputStream;
-	}
-	
-	/**
-	 * @param  URL
-	 * @return void
-	 */
-	public function setURL($url)
-	{
-		$this->curlOptions[CURLOPT_URL] = URL::valueOf($url);
-	}
-	
-	/**
-	 * @return URL
-	 */
-	public function getURL()
-	{
-		return $this->curlOptions[CURLOPT_URL];
-	}
-	
-	/**
-	 * Defaults to GET
-	 * 
-	 * @param  string
-	 * @return void
-	 * @throws IllegalArgumentException
-	 */
-	public function setMethod($m)
-	{
-		static $valid = array('OPTIONS', 'GET', 'HEAD', 'POST', 'PUT', 'DELETE', 'TRACE', 'CONNECT');
-		$m = strtoupper($m);
-		if(!in_array($m, $valid, true))
-			throw new IllegalArgumentException('Invalid request method '.$m);
-		else
-			$this->curlOptions[CURLOPT_CUSTOMREQUEST] = $m;
-	}
-	
-	/**
-	 * @return string
-	 **/
-	public function getMethod()
-	{
-		return $this->curlOptions[CURLOPT_CUSTOMREQUEST];
-	}
-	
-	/**
-	 * @param  bool
-	 * @return void
-	 */
-	public function setFollowRedirects($b)
-	{
-		$this->curlOptions[CURLOPT_FOLLOWLOCATION] = $b ? 1 : 0;
-	}
-	
-	/**
-	 * True by default
-	 * 
-	 * @return bool
-	 */
-	public function getFollowRedirects()
-	{
-		return $this->curlOptions[CURLOPT_FOLLOWLOCATION] ? true : false;
-	}
-	
-	/**
-	 * @param  string  Optional. Has no effect if a input stream is used. {@see setInputStream}
-	 * @return mixed   If no output stream is used, returns the response body, if any. Otherwise void is returned.
-	 * @throws IOException
-	 */
-	public function connect($requestBody=null)
-	{
-		$this->responseProtocol = '';
-		$this->curlOptions[CURLOPT_HTTPHEADER] =& $this->requestHeaders;
+		#parent::$debug = true;
+		error_reporting(E_ALL);
 		
-		curl_setopt_array($this->curl, $this->curlOptions);
+		# Test basics and GET
+		$c = new self('http://hunch.se/');
+		$c->method = 'GeT';
+		$c->url = 'http://apple.spotify.net/ping.php';
+		$c->connect();
+		assert($c->responseProtocol == '1.1');
+		assert((int)($c->responseStatus/100) == 2);
 		
-		if(self::$debug)
-			print 'DEBUG>> HTTPConnection->connect(): Request: '.(($method == 'POST') ? 'POST':'GET').' '.$this->getURL()."\n";
+		# Test POST
+		$c->method = 'POST';
+		$c->connect('unittest=1');
 		
-		$responseBody = curl_exec($this->curl);
-		$this->responseStatus = curl_getinfo($this->curl, CURLINFO_HTTP_CODE);
+		# Test reset
+		$c->url = 'http://apple.spotify.net/ping.php';
+		$c->method = 'post';
+		assert($c->connect('unittest=2'));
 		
-		if(self::$debug)
-			print 'DEBUG>> HTTPConnection->connect(): Response: HTTP '.$this->responseStatus." string(".strlen($responseBody).")\n";
+		# Test outputStream
+		$c->outputStream = new StringOutputStream();
+		$c->url = 'http://apple.spotify.net/ping.php?unittest=3';
+		$c->method = 'GET';
+		assert($c->connect());
+		assert($c->outputStream->string != '');
 		
-		if($errno = curl_errno($this->curl))
-		{
-			if($errno == 7)
-				throw new ConnectException(ucfirst(curl_error(self::$curlHandle)), $errno);
-			else
-				throw new IOException(ucfirst(curl_error(self::$curlHandle)), $errno);
+		# Test auth
+		#$c->method = 'GET';
+		#$c->url = 'http://johndoe:foobar@apple.spotify.net/ui/?unittest=4';
+		#$c->connect();
+		
+		# Test unsupported protocol error
+		$c->url = 'azbx://something';
+		try {
+			$c->connect(); assert(!'We should have gotten an exception thrown at us');
+		} catch(Exception $e) {
+			assert($e instanceof IllegalArgumentException);
 		}
 		
-		return $responseBody;
+		# Test connection timeout handling
+		$c->url = 'http://127.126.125.124/no-such-host/';
+		$c->curlOptions[CURLOPT_CONNECTTIMEOUT] = 1;
+		try {
+			$c->connect();
+			assert(!'We should have gotten an exception thrown at us');
+		} catch(Exception $e) {
+			assert($e instanceof ConnectException);
+		}
 	}
 }
 ?>
