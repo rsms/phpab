@@ -97,6 +97,9 @@ final class XML {
 		$node = array();
 		
 		# attributes
+		if(!$xml)
+			return $node;
+		
 		$attributes = $xml->attributes();
 		if(count($attributes)) {
 			foreach($attributes as $k => $v)

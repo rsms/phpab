@@ -1,12 +1,15 @@
 <?
 /**
  * cURL-based TCP connection
+ * 
+ * Example:
  *
  * @version    $Id$
  * @author     Rasmus Andersson <http://hunch.se>
  * @copyright  Copyright (c) 2007 Rasmus Andersson
  * @package    ab
  * @subpackage net
+ * @see        http://curl.haxx.se/libcurl/ - cURL Library Homepage
  */
 class CURLConnection
 {
