@@ -32,7 +32,12 @@ final class XML {
 	 */
 	public static function loadString( $string ) {
 		try {
-			return self::simpleXMLToArray(simplexml_load_string($string));
+			if(!($dom = simplexml_load_string($string))) {
+				$e = new XMLParserException('Failed to parse XML document');
+				$e->errorInfo = 'Document: '.$string;
+				throw $e;
+			}
+			return self::simpleXMLToArray($dom);
 		}
 		catch(PHPException $e) {
 			if(preg_match('/^[^ ]+xml[^ ]+\(/', $e->getMessage(), $m)) {
