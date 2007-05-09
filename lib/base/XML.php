@@ -31,15 +31,19 @@ final class XML {
 	 * @throws XMLParserException
 	 */
 	public static function loadString( $string ) {
+		$err_old = error_reporting(E_ALL);
 		try {
-			if(!($dom = simplexml_load_string($string))) {
+			if(($dom = simplexml_load_string($string)) === false) {
 				$e = new XMLParserException('Failed to parse XML document');
 				$e->errorInfo = 'Document: '.$string;
+				error_reporting($err_old);
 				throw $e;
 			}
+			error_reporting($err_old);
 			return self::simpleXMLToArray($dom);
 		}
 		catch(PHPException $e) {
+			error_reporting($err_old);
 			if(preg_match('/^[^ ]+xml[^ ]+\(/', $e->getMessage(), $m)) {
 				$e = new XMLParserException($e);
 				$e->errorInfo = 'Document: '.$string;
