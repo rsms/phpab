@@ -82,11 +82,8 @@ class ABException extends Exception
 		$code = $e->getCode();
 		if($html)
 		{
-			$str = '<div class="exception"><b>' .  get_class($e) . '</b><br /> '
+			$str = '<div class="exception"><b>' .  get_class($e) . ($code ? " [$code]":'') . '</b><br /> '
 				. '<span class="message">'.nl2br(htmlentities($e->getMessage()));
-			
-			if($code)
-				$str .= ' ['.$code.']';
 			
 			# extra info, used by PDOException, ActionDBException, etc
 			if(isset($e->errorInfo) && $e->errorInfo)
@@ -98,10 +95,7 @@ class ABException extends Exception
 			$str .= '</span> <span class="file">on line '.$e->getLine().' in '.$e->getFile().'</span>';
 		}
 		else {
-			$str = get_class($e) . ': ' . $e->getMessage();
-		
-			if($code)
-				$str .= ' ['.$code.']';
+			$str = get_class($e) . ($code ? ": [$code] ":': ') . $e->getMessage();
 			
 			# extra info, used by PDOException, ActionDBException, etc
 			if(isset($e->errorInfo) && $e->errorInfo)
@@ -121,13 +115,12 @@ class ABException extends Exception
 					. '</div>';
 			}
 			else {
-				
 				# never include trace from caused php exception, because it is the same as it's parent.
 				if($e->cause instanceof PHPException)
 					$includingTrace = false;
 				
-				$str .= "\n    Caused by:\n        " 
-					. str_replace("\n", "\n        ", self::format($e->cause, $includingTrace, $html, $skip))."\n";
+				$str .= "\nCaused by:\n  " 
+					. str_replace("\n", "\n  ", self::format($e->cause, $includingTrace, $html, $skip))."\n";
 			}
 		}
 		
@@ -177,7 +170,8 @@ class ABException extends Exception
 				}
 			}
 			
-			$noSpace = strlen(strval($traceLen))+3;
+			$noSpace = strlen(strval($traceLen));
+			
 			foreach($trace as $i => $ti)
 			{
 				$args = '()';
