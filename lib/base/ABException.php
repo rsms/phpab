@@ -66,6 +66,36 @@ class ABException extends Exception
 	public function setLine($msg) { $this->line = intval($line); }
 	
 	/**
+	 * Convenience method equivalent to calling ABException::format with $html=true.
+	 * 
+	 * @param  Exception
+	 * @param  bool
+	 * @param  string[]
+	 * @return string
+	 * @see    format()
+	 * @see    formatPlain()
+	 */
+	public static function formatHtml(Exception $e, $includingTrace=true, $skip=null)
+	{
+		return self::format($e, $includingTrace, true, $skip);
+	}
+	
+	/**
+	 * Convenience method equivalent to calling ABException::format with $html=false.
+	 * 
+	 * @param  Exception
+	 * @param  bool
+	 * @param  string[]
+	 * @return string
+	 * @see    format()
+	 * @see    formatHtml()
+	 */
+	public static function formatPlain(Exception $e, $includingTrace=true, $skip=null)
+	{
+		return self::format($e, $includingTrace, false, $skip);
+	}
+	
+	/**
 	 * Render a full HTML description of an exception
 	 *
 	 * @param  Exception
