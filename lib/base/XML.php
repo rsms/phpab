@@ -31,7 +31,7 @@ final class XML {
 	 * @throws XMLParserException
 	 */
 	public static function loadString( $string ) {
-		$err_old = error_reporting(E_ALL);
+		$err_old = error_reporting(E_ALL & ~E_NOTICE);
 		try {
 			if(($dom = simplexml_load_string($string)) === false) {
 				$e = new XMLParserException('Failed to parse XML document');

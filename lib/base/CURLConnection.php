@@ -102,9 +102,11 @@ class CURLConnection
 		# Dump response
 		if(self::$debug) {
 			if(is_bool($rsp))
-				print "< [BODY]\n";
+				file_put_contents('php://stderr', "< [BODY]\n");
+			elseif(strlen($rsp) > 250)
+				file_put_contents('php://stderr', '< '.substr($rsp,0,250)."...\n(".(strlen($rsp)-250)." more bytes)\n");
 			else
-				print '< [BODY '.strlen($rsp)." b]\n";
+				file_put_contents('php://stderr', '< '.$rsp."\n");
 		}
 		
 		return $rsp;

@@ -14,16 +14,13 @@ final class ABLog
 	public static $msgPrefix = '';
 }
 
-/** @ignore */
-function log_msg($msgOrDest, $msg, &$level, $sto)
+/**
+ * @param  $sto  int  stacktrace offset
+ * @ignore
+ */
+function log_msg($msg, &$level, $sto)
 {
-	if($msg) {
-		$logfile = $msgOrDest;
-	}
-	else {
-		$msg = $msgOrDest;
-		$logfile = ABLog::$defaultFile;
-	}
+	$logfile = ABLog::$defaultFile;
 	
 	if(!ABLog::$msgPrefix)
 	{
@@ -36,48 +33,67 @@ function log_msg($msgOrDest, $msg, &$level, $sto)
 	else
 		$prefix = ABLog::$msgPrefix;
 	
-	return error_log(date('[Y-m-d H:i:s')." $level $prefix] $msg\n", 3, ABLog::$dir.$logfile.'.log');
+	$args = array();
+	$_msg = '';
+	
+	foreach($msg as $m)
+	{
+		if(is_object($m) and $m instanceof Exception)
+			$_msg .= ABException::format($m, true, false)."\n";
+		else
+			$args[] = $m;
+	}
+	
+	if(($count = count($args)))
+	{
+		if($count > 1) {
+			$fmt = array_shift($args);
+			$_msg = vsprintf($fmt, $args).($_msg ? ' '.rtrim($_msg) : '');
+		}
+		else {
+			$_msg = $args[0];
+		}
+	}
+	
+	return error_log(date('[Y-m-d H:i:s')." $level $prefix] $_msg\n", 3, ABLog::$dir.$logfile.'.log');
 }
 
 /**
  * Log a informational message
  *
- * @param  string  Message or Logfile name
- * @param  string
+ * @param  mixed   arguments
  * @return bool    Success
  */
-function log_info($msgOrDest, $msg = null) {
+function log_info( /*...*/ ) {
 	static $level = 'INFO ';
 	if(ABLog::$level > 2)
-		return log_msg($msgOrDest, $msg, $level, 1);
+		return log_msg(func_get_args(), $level, 1);
 	return false;
 }
 
 /**
  * Log a warning message
  *
- * @param  string  Message or Logfile name
- * @param  string
+ * @param  mixed   arguments
  * @return bool    Success
  */
-function log_warn($msgOrDest, $msg = null) {
+function log_warn( /*...*/ ) {
 	static $level = 'WARN ';
 	if(ABLog::$level > 1)
-		return log_msg($msgOrDest, $msg, $level, 1);
+		return log_msg(func_get_args(), $level, 1);
 	return false;
 }
 
 /**
  * Log a error message
  *
- * @param  string  Message or Logfile name
- * @param  string
+ * @param  mixed   arguments
  * @return bool    Success
  */
-function log_error($msgOrDest, $msg = null) {
+function log_error( /*...*/ ) {
 	static $level = 'ERROR';
 	if(ABLog::$level > 0)
-		return log_msg($msgOrDest, $msg, $level, 1);
+		return log_msg(func_get_args(), $level, 1);
 	return false;
 }
 
@@ -101,4 +117,6 @@ if(!$dir) {
 
 if(!$logfile)
 	ABLog::$defaultFile = 'web';
+
+define('AB_LOG',1);
 ?>

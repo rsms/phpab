@@ -275,6 +275,10 @@ set_error_handler('__errhandler', E_ALL);
  * You might customize logging properties by providing custom
  * arguments. If you don't, default values are used. (see below)
  *
+ * You can check if the logging has been loaded:
+ * if(defined('AB_LOG'))
+ *   print 'Logging is loaded';
+ *
  * <br><b>Default values</b>
  *   - <samp>$dir = dirname(ini_get('error_log'))</samp> or /tmp if error_log is not set or points to syslog.
  *   - <samp>$defaultLogfile = 'web'</samp>
