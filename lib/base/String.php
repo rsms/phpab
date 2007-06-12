@@ -28,8 +28,155 @@ THE SOFTWARE.
  * @package    ab
  * @subpackage util
  */
-class String {
+class String
+{
+	/** @var string */
+	public static $alpha = '';
 	
+	/** @var array */
+	public static $alpha_key = array();
+	
+	/** @var array */
+	public static $blocksizes = array();
+	
+	/**
+	 * @param  int
+	 * @return int the block size for the pseudo-base-N encoding.
+	 */
+	public static function setBaseConversionSpan($alpha)
+	{
+		self::$alpha = $alpha;
+		$hibase = strlen(self::$alpha);
+		
+		# calc block sizes
+		self::$blocksizes = array(0, $hibase);
+		for($base=2; $base < $hibase; $base++)
+		{
+			$blocksize = 0;
+			$x = 0xffffffff;
+			while ($x) {
+				++$blocksize;
+				$x = floor($x/$base);
+			}
+			self::$blocksizes[] = $blocksize;
+		}
+		
+		# calc alpha-to-position map
+		self::$alpha_key = array();
+		for($base=0; $base < $hibase; $base++)
+			self::$alpha_key[self::$alpha{$base}] = $base;
+	}
+	
+	/**
+	 * @param  int
+	 * @param  string
+	 * @return string
+	 */
+	public static function baseEncode($base, $data)
+	{
+		if($base < 1)
+			throw new IllegalArgumentException('$base must be a positive integer');
+		
+		if ($base >= strlen(self::$alpha))
+			throw new IllegalArgumentException('$base must be lower than '.strlen(self::$alpha));
+		
+		if(!$data)
+			return null;
+		
+		# Each four-byte block of MESSAGE is encoded as $blocksize symbols in
+		# base N. We encode a three-byte block as $blocksize - 1 symbols, two-byte
+		# as $blocksize - 2, etc.
+		$l = strlen($data);
+		$blocksize = self::$blocksizes[$base];
+		
+		$res = '';
+		for ($i = 0; $i < $l; $i += 4) {
+			$nin = ($l - $i > 4) ? 4 : $l - $i;
+			$nout = $blocksize;
+			# PHP doesn't, would you believe it, have unsigned ints, and in fact
+			# ignores unpack()ing with unsigned values. Genius.
+			$val = (float)0;
+			for ($j = 0; $j < $nin; ++$j) {
+				$val *= 256; # Shifting forces a cast to integer. Genius again.
+				$val += ord($data{$i+$j});
+			}
+			$nout -= (4 - $nin);
+			
+			$r = '';
+			while ($val) {
+				$rem = fmod($val, $base); # Of *course* % is integer only! Genius thrice.
+				if ($rem<0)
+					$rem += $base;
+				$val = floor($val / $base);
+				$r .= self::$alpha{$rem};
+			}
+			
+			# pad to block size.
+			if (strlen($r) != $nout)
+				$r .= str_repeat(self::$alpha{0}, ($nout - strlen($r)));
+			
+			#assert('strlen($r) <= $nout');
+			$res .= strrev($r);
+		}
+		
+		return $res;
+	}
+	
+	/**
+	 * @param  int
+	 * @param  string
+	 * @return string
+	 */
+	public static function baseDecode($base, $data)
+	{
+		if ($base < 1)
+			throw new IllegalArgumentException('$base must be a positive integer');
+		
+		if (!$data)
+			return null;
+
+		$blocksize = self::$blocksizes[$base];
+		
+		$res = '';
+		$l = strlen($data);
+		for ($i = 0; $i < $l; $i += $blocksize) {
+			$nin = ($l - $i > $blocksize) ? $blocksize : $l - $i;
+			$nout = 4;
+			if ($nin < $blocksize) {
+				$nout -= $blocksize - $nin;
+				if ($nout < 0) return null;
+			}
+			
+			$val = 0;
+			for ($j = 0; $j < $nin; ++$j) {
+				$val *= $base;
+				$c = $data{$i+$j};
+				if (!isset(self::$alpha_key[$c]))
+					return null;
+				$val += self::$alpha_key[$c];
+			}
+			
+			$r = pack('N', $val);
+			if ($nout < 4)
+				$r = substr($r, -$nout);
+			
+			$res .= $r;
+		}
+		
+		return $res;
+	}
+	
+	/**
+	 * @ignore
+	 * @return void
+	 */
+	public static function __test()
+	{
+		#print "\n".self::baseEncode(62, md5(__FILE__,true))."\n";
+		$org = 'Hello World';
+		for($base=2;$base<strlen(self::$alpha);$base++)
+			assert(self::baseDecode($base, self::baseEncode($base, $org)) == $org);
+	}
 	
 	/**
 	 * Cut a string if it's longer than <samp>$maxlength</samp>
@@ -90,4 +237,6 @@ class String {
 		return -1;
 	}
 }
+
+String::setBaseConversionSpan('ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/');
 ?>
