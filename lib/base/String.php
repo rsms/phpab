@@ -167,6 +167,26 @@ class String
 	}
 	
 	/**
+	 * Encode all bytes using decimal value entities.
+	 * 
+	 * @param  string
+	 * @return string
+	 */
+	public static function valueEntitiyEncode($string)
+	{
+		$r = '';
+		$len = strlen($string);
+		for($i=0;$i<$len;$i++) {
+			$n = ord($string{$i});
+			if($n < 100)
+				$r .= '&#0'.$n.';';
+			else
+				$r .= '&#'.$n.';';
+		}
+		return $r;
+	}
+	
+	/**
 	 * @ignore
 	 * @return void
 	 */
