@@ -34,8 +34,8 @@ class HTTPConnection extends CURLConnection
 	/** @var string */
 	public $method = 'GET';
 	
-	/** @var array (string name => string value) Must be set before calling connect() */
-	public $requestHeaders = array('User-Agent' => 'AbstractBase');
+	/** @var array (string header_field) Must be set before calling connect() */
+	public $requestHeaders = array('User-Agent: $Id$');
 	
 	
 	/** @var int Number of redirects, if any, to follow (Location: responses) */
@@ -137,8 +137,12 @@ class HTTPConnection extends CURLConnection
 		}
 		
 		# POST or not
-		if($requestBody !== null && $this->method == 'POST')
+		if($requestBody !== null && $this->method == 'POST') {
 			curl_setopt($curl, CURLOPT_POSTFIELDS, $requestBody);
+			# This fixes slow POSTS with data over 1024k, but makes a failed post slower.
+			# http://curl.haxx.se/mail/archive-2005-12/0097.html
+		  $this->requestHeaders[] = 'Expect:';
+	  }
 		
 		# Follow redirects?
 		if($this->followRedirects) {
