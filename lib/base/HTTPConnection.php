@@ -124,10 +124,6 @@ class HTTPConnection extends CURLConnection
 			}
 		}
 		
-		# Set headers
-		if($this->requestHeaders)
-			curl_setopt($curl, CURLOPT_HTTPHEADER, $this->requestHeaders);
-		
 		# PUT or not
 		if($requestBody !== null && $this->method == 'PUT') {
 			if(!is_resource($requestBody))
@@ -143,6 +139,10 @@ class HTTPConnection extends CURLConnection
 			# http://curl.haxx.se/mail/archive-2005-12/0097.html
 		  $this->requestHeaders[] = 'Expect:';
 	  }
+		
+		# Set headers
+		if($this->requestHeaders)
+			curl_setopt($curl, CURLOPT_HTTPHEADER, $this->requestHeaders);
 		
 		# Follow redirects?
 		if($this->followRedirects) {
