@@ -28,7 +28,7 @@ THE SOFTWARE.
  * @package    ab
  * @subpackage flickr
  */
-class FlickrService extends RESTServiceAdapter {
+class FlickrService extends RESTService {
 	
 	/**
 	 * A reference to the last instantiated FlickrService object.
@@ -44,19 +44,29 @@ class FlickrService extends RESTServiceAdapter {
 	 */
 	public static $instance = null;
 	
+	/** @var array */
+	protected static $requires_signing = array(
+	  'flickr.auth.getFrob',
+	  'flickr.auth.getToken',
+	);
+	
+	
 	/** @var string */
 	public $api_key = '';
+	
+	/** @var string */
+	public $shared_secret = '';
 	
 	/**
 	 * @param  string
 	 */
-	public function __construct($api_key)
+	public function __construct($api_key, $shared_secret=null)
 	{
 		$this->api_key = $api_key;
-		iconv_set_encoding('output_encoding', 'UTF-8');
-		iconv_set_encoding('input_encoding', 'UTF-8');
-		iconv_set_encoding('internal_encoding', 'UTF-8');
-		$this->url = new URL('http://www.flickr.com/services/rest/');
+		$this->shared_secret = $shared_secret;
+		#iconv_set_encoding('output_encoding', 'UTF-8');
+		#iconv_set_encoding('input_encoding', 'UTF-8');
+		#iconv_set_encoding('internal_encoding', 'UTF-8');
 		self::$instance = $this;
 	}
 	
@@ -66,25 +76,37 @@ class FlickrService extends RESTServiceAdapter {
 	 * @param  array  (string key => string value[, string key => string value[, ...]])
 	 * @return RESTResponse
 	 */
-	public function call($method, $arguments = array())
+	public function call($method, $arguments=array(), $sign=false, $call_method='GET')
 	{
-		$res = parent::call($method, $arguments);
-		if($res->getStatus() == 'fail')
-			throw new RESTException($res->dom['err'][0]['@']['msg'], intval($res->dom['err'][0]['@']['code']));
+	  $extra_args = array(
+	    'method' => $method,
+	    'api_key' => $this->api_key,
+	  );
+	  $arguments = is_array($arguments) ? $arguments + $extra_args : $extra_args;
+	  
+	  # sign call?
+	  if($sign || in_array($method, self::$requires_signing)) {
+	    $arguments['api_sig'] = $this->computeSignature($arguments);
+	  }
+	  
+		$res = parent::call('http://api.flickr.com/services/rest/', $arguments, $call_method);
+		if(isset($res['err']))
+			throw new RESTException($res['err'][0]['@']['msg'], intval($res['err'][0]['@']['code']));
+		
 		return $res;
 	}
 	
-	
 	/**
-	 * @param  RESTRequest
-	 * @return RESTRequest
+	 * @param  array
+	 * @return string
 	 */
-	protected function prepareRequest(RESTRequest $request)
+	public function computeSignature($arguments=array())
 	{
-		$request->url = $this->url;
-		$request->arguments['method'] = $request->method;
-		$request->arguments['api_key'] = $this->api_key;
-		return $request;
+    ksort($arguments);
+	  $sig = $this->shared_secret;
+    foreach($arguments as $k => $v)
+      $sig .= strval($k) . strval($v);
+    return md5($sig);
 	}
 }
 ?>
