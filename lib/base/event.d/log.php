@@ -55,16 +55,17 @@ function log_msg($msg, &$level, $sto)
 		$prefix = ABLog::$msgPrefix;
 	
 	$args = array();
-	$_msg = '';
+	$_msg2 = '';
 	
-	foreach($msg as $m)
-	{
-		if(is_object($m) and $m instanceof Exception)
-			$_msg .= ABException::format($m, true, false)."\n";
-		else
+	foreach($msg as $m) {
+		if(is_object($m) and $m instanceof Exception) {
+			$_msg2 .= ABException::format($m, true, false)."\n";
+		} else {
 			$args[] = $m;
+		}
 	}
 	
+	$_msg = '';
 	if(($count = count($args)))
 	{
 		if($count > 1) {
@@ -75,6 +76,9 @@ function log_msg($msg, &$level, $sto)
 			$_msg = $args[0];
 		}
 	}
+	
+	if($_msg2 && $_msg)
+	  $_msg .= "\n" . $_msg2;
 	
 	return error_log(date('[Y-m-d H:i:s')." $level $prefix] $_msg\n", 3, ABLog::$dir.$logfile.'.log');
 }
