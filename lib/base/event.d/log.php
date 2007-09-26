@@ -33,6 +33,7 @@ final class ABLog
 	public static $defaultFile = '';
 	public static $level = 0;
 	public static $msgPrefix = '';
+	public static $includeTimestamp = true;
 }
 
 /**
@@ -80,7 +81,17 @@ function log_msg($msg, &$level, $sto)
 	if($_msg2 && $_msg)
 	  $_msg .= "\n" . $_msg2;
 	
-	return error_log(date('[Y-m-d H:i:s')." $level $prefix] $_msg\n", 3, ABLog::$dir.$logfile.'.log');
+	if(ABLog::$includeTimestamp) {
+	  $msg = date('[Y-m-d H:i:s')." $level $prefix] $_msg";
+  } else {
+    $msg = "[$level $prefix] $_msg";
+  }
+	
+	if(!$logfile) {
+	  return error_log($msg, 0);
+  } else {
+    return error_log($msg, 3, ABLog::$dir.$logfile.'.log');
+  }
 }
 
 /**
@@ -139,9 +150,6 @@ if(!$dir) {
 		ABLog::$dir = dirname($error_log).'/';
 	}
 }
-
-if(!$logfile)
-	ABLog::$defaultFile = 'web';
 
 define('AB_LOG',1);
 ?>

@@ -306,7 +306,7 @@ set_error_handler('__errhandler', E_ALL);
  *   - <samp>$level = (error_reporting() & E_NOTICE ? 1:0) + (error_reporting() & E_WARNING ? 1:0) + (error_reporting() & E_ERROR ? 1:0);</samp>
  * 
  * <br><b>Value of default Level</b>
- *   - Level is 3 (everything) if E_NOTICE, E_WARNING and E_ERROR is included in error reporting.
+ *   - Level is 3 (everything) if E_NOTICE, E_WARNING and E_ERROR is included in error reporting. (default)
  *   - Level is 2 (warnings and errors) if E_WARNING and E_ERROR is included in error reporting, but not E_NOTICE.
  *   - Level is 1 (only errors) if only E_ERROR is included in error reporting
  *   - Level is 0 (nothing) if neither E_NOTICE, E_WARNING or E_ERROR is included in error reporting.
@@ -319,13 +319,15 @@ set_error_handler('__errhandler', E_ALL);
  *                 1 = only log_error, 2 = log_error and log_warn, 3+ = everything.
  *                 (null = use defaults)
  * @param  string
+ * @param  bool
  * @return void
  * @see    log_info()
  * @see    log_warn()
  * @see    log_error()
  */
-function log_setup($logfile = null, $dir = null, $level = null, $msgPrefix = null) {
+function log_setup($logfile = null, $dir = null, $level = 3, $msgPrefix = null, $includeTimestamp=true) {
 	require_once 'event.d/log.php';
+	ABLog::$includeTimestamp = $includeTimestamp;
 	if($level !== null) ABLog::$level = $level;
 	if($dir) ABLog::$dir = rtrim($dir,'/').'/';
 	if($logfile) ABLog::$defaultFile = $logfile;
