@@ -250,8 +250,9 @@ class ABReflectionDocComment
 	 */
 	private static function parseStringAttributes( &$str, &$description )
 	{	
-		if(empty($str))
-			return $data;
+		if(empty($str)) {
+			return '';
+		}
 		
 		$str = trim(substr($str, self::strnpos($str, '*', 1), -1));
 		$len = strlen($str);
