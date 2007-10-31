@@ -143,7 +143,6 @@ if(!$dir) {
 	$error_log = trim(ini_get('error_log'));
 	
 	if(!$error_log || $error_log == 'syslog') {
-		trigger_error('log_setup(): Failed to guess log path. Using fallback "/tmp"', E_USER_NOTICE);
 		ABLog::$dir = '/tmp/';
 	}
 	else {
