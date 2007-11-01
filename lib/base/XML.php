@@ -81,7 +81,7 @@ final class XML {
 	 * @see	   unescape()
 	 */
 	public static function escape($str) {
-		return filter_var($s, FILTER_SANITIZE_SPECIAL_CHARS);
+		return str_replace(self::$xtbl_u, self::$xtbl_e, $str);
 	}
 	
 	/**
