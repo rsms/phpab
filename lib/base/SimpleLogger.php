@@ -60,15 +60,22 @@ class SimpleLogger {
 	 *
 	 * @var string
 	 */
-	public $format = "[%date %time %level] %message\n";
+	public $format = "[%date %time %level] %message";
+	
+	/**
+	 * Add linebreak (ASCII 10) after each message.
+	 * @var bool
+	 */
+	public $linebreak = true;
 	
 	/**
 	 * If set to false, the string passed to the log methods are simply 
 	 * written as-is, skipping formatting.
 	 *
 	 * @var bool
+	 * @deprecated Not used anymore. Set format to a false value to disable it.
 	 */
-	public $enableFormatting = true;
+	public $enableFormatting;
 	
 	/**
 	 * @param  resource
@@ -85,44 +92,59 @@ class SimpleLogger {
 	}
 	
 	/**
-	 * Print a FATAL message
+	 * Print a FATAL message.
+	 * Accepts (string msg) or (string format, mixed ...)
 	 *
 	 * @param  mixed
 	 * @return void
 	 */
-	public function fatal( $msg ) { $this->log($msg, self::LEVEL_FATAL); }
+	public function fatal(/* ... */) {
+	  $this->log(func_get_args(), self::LEVEL_FATAL);
+	}
 	
 	/**
-	 * Print a ERROR message
+	 * Print a ERROR message.
+	 * Accepts (string msg) or (string format, mixed ...)
 	 *
 	 * @param  mixed
 	 * @return void
 	 */
-	public function error( $msg ) { $this->log($msg, self::LEVEL_ERROR); }
+	public function error(/* ... */) {
+	  $this->log(func_get_args(), self::LEVEL_ERROR);
+	}
 	
 	/**
-	 * Print a WARN message
+	 * Print a WARN message.
+	 * Accepts (string msg) or (string format, mixed ...)
 	 *
 	 * @param  mixed
 	 * @return void
 	 */
-	public function warn( $msg ) { $this->log($msg, self::LEVEL_WARN); }
+	public function warn(/* ... */) {
+	  $this->log(func_get_args(), self::LEVEL_WARN);
+	}
 	
 	/**
-	 * Print a INFO message
+	 * Print a INFO message.
+	 * Accepts (string msg) or (string format, mixed ...)
 	 *
 	 * @param  mixed
 	 * @return void
 	 */
-	public function info( $msg ) { $this->log($msg, self::LEVEL_INFO); }
+	public function info(/* ... */) {
+	  $this->log(func_get_args(), self::LEVEL_INFO);
+	}
 	
 	/**
-	 * Print a DEBUG message
+	 * Print a DEBUG message.
+	 * Accepts (string msg) or (string format, mixed ...)
 	 *
 	 * @param  mixed
 	 * @return void
 	 */
-	public function debug( $msg ) { $this->log($msg, self::LEVEL_DEBUG); }
+	public function debug(/* ... */) {
+	  $this->log(func_get_args(), self::LEVEL_DEBUG);
+	}
 	
 	/**
 	 * Forward a message to the current <samp>{@link LogHandler}</samp>
@@ -132,18 +154,26 @@ class SimpleLogger {
 	 * it will be converted to a string using <samp>ABException::format($e)</samp>. However,
 	 * this is done by the LogHandler, so these are more or less guidelines than rules.
 	 *
-	 * @param  LogRecord
+	 * @param  array
 	 * @return void
 	 */
-	public function log( $msg, $level )
-	{
-		// don't log?
+	public function log( $args, $level ) {
+		# don't log?
 		if($level < $this->level)
 			return;
 		
-		// format
-		if($this->enableFormatting)
-		{
+		$msg;
+		
+		# vsprintf variadic?
+  	if(count($args) > 1) {
+			$fmt = array_shift($args);
+			$msg = vsprintf($fmt, $args);
+		} else {
+			$msg = $args[0];
+		}
+		
+		# format
+		if($this->format) {
 			$levelName = 'OFF  ';
 			if    ($level < self::LEVEL_DEBUG) $levelName = 'ALL';
 			elseif($level < self::LEVEL_INFO)  $levelName = 'DEBUG';
@@ -156,8 +186,11 @@ class SimpleLogger {
 			$v = array($levelName, $msg, date('Y-m-d'), date('H:i:s.').sprintf('% -3d', intval((microtime(1)-time())*1000)) );
 			$msg = str_replace($k, $v, $this->format);
 		}
+		if($this->linebreak) {
+		  $msg .= "\n";
+		}
 		
-		// publish
+		# publish
 		fwrite($this->fd, $msg);
 	}
 }

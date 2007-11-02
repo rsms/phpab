@@ -28,8 +28,7 @@ THE SOFTWARE.
  * @package    ab
  * @subpackage unittest
  */
-class UnitLibraryTestCase extends UnitDirectoryTestCase
-{
+class UnitLibraryTestCase extends UnitDirectoryTestCase {
 	/**
 	 * @param string
 	 * @param bool
@@ -57,15 +56,14 @@ class UnitLibraryTestCase extends UnitDirectoryTestCase
 	protected function performTests() {
 		# Import all class definitions
 		if($this->log)
-			$this->log->warn("Importing libraries...\n");
+			$this->log->info("Importing libraries...\n");
 		$this->importLibrary($this->path);
 		if($this->log)
-			$this->log->warn("Importing classes...\n");
+			$this->log->info("Importing classes...\n");
 		$this->importClassFiles($this->path);
 		
 		# Aquire declared classes
 		$classes = get_declared_classes();
-		#var_dump($classes);
 		
 		# Find loaded classes and run UnitClassTestCase tests
 		foreach($classes as $class) {
@@ -110,11 +108,12 @@ class UnitLibraryTestCase extends UnitDirectoryTestCase
 	 * @return void
 	 * @todo   optimize
 	 */
-	protected function importLibrary($path)
-	{
-		if(substr($path,-2) != '.d' && substr(basename($path),0,1) != '.')
-			if($this->_importLibrary($path) && $this->recursive)
+	protected function importLibrary($path) {
+		if(substr($path,-2) != '.d' && substr(basename($path),0,1) != '.') {
+			if($this->_importLibrary($path) && $this->recursive) {
 				$this->_recursiveImport(new RecursiveDirectoryIterator($path), 1);
+			}
+		}
 	}
 
 
@@ -123,8 +122,7 @@ class UnitLibraryTestCase extends UnitDirectoryTestCase
 	 * @return void
 	 * @todo   optimize
 	 */
-	private function _recursiveImport($it, $depth)
-	{
+	private function _recursiveImport($it, $depth) {
 		if($depth > 20)
 			die("\nFATAL: max recursion depth reached in ".__FILE__.':'.(__LINE__-1)."\n");
 		
@@ -146,8 +144,7 @@ class UnitLibraryTestCase extends UnitDirectoryTestCase
 	 * @param  string  Abs path
 	 * @return boolean Success
 	 */
-	private function _importLibrary($path)
-	{
+	private function _importLibrary($path) {
 		if($this->log)
 			$this->log->info("Importing library $path ... ");
 		$success = import($path);
@@ -161,23 +158,21 @@ class UnitLibraryTestCase extends UnitDirectoryTestCase
 	 * @param  string
 	 * @return void
 	 */
-	protected function importClassFiles($path)
-	{
-		foreach(scandir($path) as $file)
-		{
+	protected function importClassFiles($path) {
+		foreach(scandir($path) as $file) {
 			if($file{0} == '.')
 				continue;
 			
 			$filepath = $path.'/'.$file;
-			if(strrchr($file, '.') == '.php')
-			{
+			if(strrchr($file, '.') == '.php') {
 				if(!preg_match('/^[A-Z]/', $file))
 					continue;
 				
 				$guessedClass = substr($file, 0, -4);
 				
-				if($this->log)
-					$this->log->debug("Loading class $guessedClass from ".basename($path).'/'.basename($file)." ... ");
+				if($this->log) {
+					$this->log->debug("Loading class %s from %s/%s ... ", $guessedClass, basename($path), basename($file));
+				}
 				
 				if(!class_exists($guessedClass) && !interface_exists($guessedClass, false)) {
 					$e = new Exception();
@@ -187,11 +182,11 @@ class UnitLibraryTestCase extends UnitDirectoryTestCase
 					exit(1);
 				}
 				
-				if($this->log)
+				if($this->log) {
 					$this->log->debug("OK\n");
+				}
 			}
-			elseif($this->recursive && is_dir($filepath) && is_readable($filepath))
-			{
+			elseif($this->recursive && is_dir($filepath) && is_readable($filepath)) {
 				# Recurse down the alley...
 				$this->importClassFiles($filepath);
 			}

@@ -42,8 +42,18 @@ class FocusedUnitLibraryTestCase extends UnitLibraryTestCase
 	 */
 	public function __construct($path, $filename_filters=array(), $classname_filters=array(), $recursive=true) {
     parent::__construct($path, $recursive);
-    if($filename_filters) { $this->filename_filters = $filename_filters; }
-    if($classname_filters) { $this->classname_filters = $classname_filters; }
+    if($filename_filters) {
+      if(!is_array($filename_filters)) {
+        throw new IllegalTypeException('$filename_filters must be an array, not '.gettype($filename_filters));
+      }
+      $this->filename_filters = $filename_filters;
+    }
+    if($classname_filters) {
+      if(!is_array($classname_filters)) {
+        throw new IllegalTypeException('$classname_filters must be an array, not '.gettype($classname_filters));
+      }
+      $this->classname_filters = $classname_filters;
+    }
 	}
 	
 	/**
@@ -54,12 +64,18 @@ class FocusedUnitLibraryTestCase extends UnitLibraryTestCase
 	 */
 	protected function shouldTestClass(ABReflectionClass $classInfo) {
 	  foreach($this->filename_filters as $pattern) {
+	    $this->log->debug("FocusedUnitLibraryTestCase->shouldTestClass: filename %s == %s\n",
+	      $pattern, $classInfo->getFileName());
 	    if(fnmatch($pattern, $classInfo->getFileName())) {
+	      $this->log->debug("FocusedUnitLibraryTestCase->shouldTestClass: filename Match!\n");
 	      return true;
 	    }
 	  }
 	  foreach($this->classname_filters as $pattern) {
+	    $this->log->debug("FocusedUnitLibraryTestCase->shouldTestClass: classname %s == %s\n",
+	      $pattern, $classInfo->getName());
 	    if(fnmatch($pattern, $classInfo->getName())) {
+	      $this->log->debug("FocusedUnitLibraryTestCase->shouldTestClass: classname Match!\n");
 	      return true;
 	    }
 	  }

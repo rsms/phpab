@@ -96,71 +96,88 @@ class UnitTestCLI extends ConsoleApplication {
 		$this->silent = (isset($op['s']) || isset($op['silent']));
 		
 		# Setup logger
-		$log = $this->log = new SimpleLogger(fopen(isset($_SERVER['TM_SELECTED_FILE']) ? 'php://stdout' : 'php://stderr','w'), SimpleLogger::LEVEL_WARN);
-		$log->enableFormatting = false;
+		$log = $this->log = new SimpleLogger(fopen(isset($_SERVER['TM_SELECTED_FILE']) ? 
+		  'php://stdout' : 'php://stderr','w'), SimpleLogger::LEVEL_WARN);
+		$log->format = null;
+		$log->linebreak = false;
 		if($this->silent) {
 			$log->level = SimpleLogger::LEVEL_ERROR;
 		}
 		elseif(isset($op['v']) || isset($op['verbosity'])) {
 			$v = isset($op['v']) ? $op['v'] : $op['verbosity'];
-			if(is_numeric($v))
+			if(is_numeric($v)) {
 				$log->level = intval($v);
-			else
+			} else {
 				die("Error: Verbosity argument must be specified as an integer.\n");
+			}
 		}
 		
-		# Get target
-		$target = isset($argv[1]) ? $argv[1] : realpath('.');
-		if(!file_exists($target)) {
-		  $log->error("'$target' does not exist");
-			die(1);
-		}
+		$inputFiles = array();
+		$tests = array();
+		$targetArgs = array_slice($argv, 1);
 		
-		$test = null;
-		$target = realpath($target);
-		
-		if(is_file($target)) {
-		  $test = new FocusedUnitLibraryTestCase(dirname($target), array('*/'.basename($target)), null, false);
-		  $log->warn("Running test in '".basename($target)."'...\n");
-		}
-		elseif(is_dir($target)) {
-  		$test = new UnitLibraryTestCase($target);
-		  $log->warn("Running tests in '$target'...\n");
-  	}
-  	else {
-  	  $log->error("Unsupported target type");
-  	  die(2);
-  	}
-  	
-  	$test->log = $log;
-		$timer = new BenchmarkTimer(true);
-		
-		# Run test(s)
-		$test->test();
-		$cases = $test->getCompletedTestCases();
-		$timer->stop();
-		
-		# Gather results
+		# parse input arguments
+		foreach($targetArgs as $target) {
+	    if(!file_exists($target)) {
+  		  $log->error("'$target' does not exist");
+  			continue;
+  		}
+		  $target = realpath($target);
+		  if(is_file($target)) {
+  		  $log->debug("Registering file-based target '$target'\n");
+		    $dir = dirname($target);
+		    if(!isset($inputFiles[$dir])) {
+		      $inputFiles[$dir] = array();
+		    }
+		    $inputFiles[$dir][] = '*/'.basename($target);
+	    }
+  		elseif(is_dir($target)) {
+  		  $log->debug("Adding directory-based target '$target'\n");
+		    $tests[] = new UnitLibraryTestCase($target);
+    	}
+    	else {
+    	  $log->error("Unsupported target type of target '$target'\n");
+    	}
+	  }
+	  
+	  # Add file-specific tests
+	  foreach($inputFiles as $dir => $filenames) {
+  		$log->debug("Adding focused directory-based test for dir: '%s' filters: '%s'\n",
+  		  $dir, preg_replace('/[\n\s\t ]+/', ' ', var_export($filenames,1)) );
+	    $tests[] = new FocusedUnitLibraryTestCase($dir, $filenames, null, false);
+    }
+	  
 		$passedCases = array();
 		$failedCases = array();
+		$case_count = 0;
+		$timer = new BenchmarkTimer();
+    
+    # Run all tests
+	  foreach($tests as $test) {
+	    $test->log = $log;
+	    $test->test();
+    	foreach($test->getCompletedTestCases() as $case) {
+  			if($case->passed()) {
+  				$passedCases[] = $case;
+  			} else {
+  				$failedCases[] = $case;
+				}
+				$case_count++;
+  		}
+	  }
 		
-		foreach($cases as $case) {
-			if($case->passed())
-				$passedCases[] = $case;
-			else
-				$failedCases[] = $case;
-		}
-		
+		# Stop timer
+		$timer->stop();
 		
 		# Display summary
 		$hr = "-----------------------------------------------------";
 		
 		if($log->level < SimpleLogger::LEVEL_WARN)
 			$this->println($hr);
-		if($test->passed())
-			$this->println("OK. All ".count($cases)." tests passed.");
+		if(!count($failedCases))
+			$this->println("OK. All $case_count tests passed.");
 		else
-			$this->println(count($failedCases)." test FAILED out of a total ".count($cases)." tests.");
+			$this->println(count($failedCases)." test FAILED out of a total $case_count tests.");
 		
 		$this->println("Done in ".Time::formatAge($timer->getRealTime(), false, false));
 		
@@ -180,7 +197,7 @@ class UnitTestCLI extends ConsoleApplication {
 		}*/
 		
 		# Exit status > 0 if not all test passed
-		return $test->passed() ? 0 : 1;
+		return count($failedCases) ? 1 : 0;
 	}
 	
 	

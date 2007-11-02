@@ -195,8 +195,7 @@ class HTTPConnection extends CURLConnection
 	}
 	
 	/** @ignore */
-	public static function __test()
-	{
+	public static function __test() {
 		#parent::$debug = true;
 		error_reporting(E_ALL);
 		

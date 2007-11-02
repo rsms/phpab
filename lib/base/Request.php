@@ -88,8 +88,8 @@ if(($p = strpos(Request::$host,':')) !== false) {
 } elseif(isset($_SERVER['SERVER_PORT'])) {
   Request::$port = intval($_SERVER['SERVER_PORT']);
 }
-Request::$query = $_SERVER['QUERY_STRING'];
-Request::$path = Request::$query ? substr($_SERVER['REQUEST_URI'], 0, strpos($_SERVER['REQUEST_URI'],'?')) : rtrim($_SERVER['REQUEST_URI'],'?');
+Request::$query = @$_SERVER['QUERY_STRING'];
+Request::$path = Request::$query ? substr(@$_SERVER['REQUEST_URI'], 0, strpos($_SERVER['REQUEST_URI'],'?')) : rtrim(@$_SERVER['REQUEST_URI'],'?');
 Request::$method = isset($_SERVER['REQUEST_METHOD']) ? $_SERVER['REQUEST_METHOD'] : 'GET';
 Request::$keepalive = isset($_SERVER['HTTP_KEEP_ALIVE']) ? intval($_SERVER['HTTP_KEEP_ALIVE']) : 0;
 ?>

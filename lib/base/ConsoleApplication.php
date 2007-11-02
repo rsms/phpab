@@ -48,16 +48,12 @@ abstract class ConsoleApplication {
 	/**
 	 * New application
 	 */
-	public function __construct()
-	{
+	public function __construct() {
 		try {
 			exit($this->main($GLOBALS['argc'], $GLOBALS['argv']));
 		}
 		catch(Exception $e) {
-			if($this->debug)
-				print $GLOBALS['argv'][0] . ': ' . ABException::format($e, true, false);
-			else
-				print $GLOBALS['argv'][0] . ': ' . get_class($e) . ': ' . trim($e->getMessage()) . "\n";
+			print $GLOBALS['argv'][0] . ': ' . ABException::format($e, true, false);
 			exit($e->getCode() ? $e->getCode() : 1);
 		}
 	}
@@ -69,8 +65,7 @@ abstract class ConsoleApplication {
 	 * @param  bool    If true, the message will go to stderr instead of stdout
 	 * @return void
 	 */
-	public function println($msg='', $to_stderr = false)
-	{
+	public function println($msg='', $to_stderr = false) {
 		if(!$this->silent) {
 			if($to_stderr) {
 				if($this->stderr === null)
@@ -89,8 +84,7 @@ abstract class ConsoleApplication {
 	 * @param  int     if($exit > 0) exit($exit)
 	 * @return void
 	 */
-	public function triggerError($message, $exit = 1)
-	{
+	public function triggerError($message, $exit = 1) {
 		$this->println($GLOBALS['argv'][0] . ': ' . rtrim($message), true);
 		if($exit > 0)
 			exit($exit);
@@ -149,7 +143,7 @@ abstract class ConsoleApplication {
 			$arg = $argv[$argPos];
 			if(!$arg) {
 			  continue;
-			}
+		  }
 			if ($arg{0}=="-") {
 				if ($arg{1}=="-") {
 					$var = substr($arg,2,strlen($arg));

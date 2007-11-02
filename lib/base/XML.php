@@ -122,8 +122,7 @@ final class XML {
 	
 	/** @ignore */
 	public static function __test() {
-	  var_dump(self::escape("<>&'\"\t"));
-	  #assert(self::escape("<>&'\"\t") == );
+	  assert(self::escape("<>&'\"\t") == '&#60;&#62;&#38;&#39;&#34;&#9;');
 	}
 	
 	/**

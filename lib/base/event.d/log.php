@@ -27,8 +27,7 @@ THE SOFTWARE.
  */
 
 /** @ignore */
-final class ABLog
-{
+final class ABLog {
 	public static $dir = '';
 	public static $defaultFile = '';
 	public static $level = 0;
@@ -40,20 +39,18 @@ final class ABLog
  * @param  $sto  int  stacktrace offset
  * @ignore
  */
-function log_msg($msg, &$level, $sto)
-{
+function log_msg($msg, &$level, $sto) {
 	$logfile = ABLog::$defaultFile;
 	
-	if(!ABLog::$msgPrefix)
-	{
+	if(!ABLog::$msgPrefix) {
 		$f = debug_backtrace();
 		$f1 = @$f[$sto+1];
 		$f = $f[$sto];
 		$file =& $f['file'];
 		$prefix = ((strpos($file, @$_SERVER['DOCUMENT_ROOT']) === 0) ? substr($file, strlen(@$_SERVER['DOCUMENT_ROOT'])+1) : $file).':'.$f['line'];
-	}
-	else
+	} else {
 		$prefix = ABLog::$msgPrefix;
+	}
 	
 	$args = array();
 	$_msg2 = '';
@@ -67,8 +64,7 @@ function log_msg($msg, &$level, $sto)
 	}
 	
 	$_msg = '';
-	if(($count = count($args)))
-	{
+	if(($count = count($args))) {
 		if($count > 1) {
 			$fmt = array_shift($args);
 			$_msg = vsprintf($fmt, $args).($_msg ? ' '.rtrim($_msg) : '');
@@ -78,8 +74,9 @@ function log_msg($msg, &$level, $sto)
 		}
 	}
 	
-	if($_msg2 && $_msg)
+	if($_msg2 && $_msg) {
 	  $_msg .= "\n" . $_msg2;
+	}
 	
 	if(ABLog::$includeTimestamp) {
 	  $msg = date('[Y-m-d H:i:s')." $level $prefix] $_msg";
