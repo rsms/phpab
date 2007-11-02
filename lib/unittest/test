@@ -96,7 +96,7 @@ class UnitTestCLI extends ConsoleApplication {
 		$this->silent = (isset($op['s']) || isset($op['silent']));
 		
 		# Set libpath
-		$libPath = isset($argv[1]) ? $argv[1] : realpath(dirname(__FILE__).'/..');
+		$libPath = isset($argv[1]) ? $argv[1] : realpath('.');
 		if(!is_dir($libPath))
 			die("ERROR: libpath does not exist or is not a directory.\n");
 		
