@@ -64,6 +64,7 @@ class UnitLibraryTestCase extends UnitDirectoryTestCase {
 		
 		# Aquire declared classes
 		$classes = get_declared_classes();
+		$org_cwd = getcwd();
 		
 		# Find loaded classes and run UnitClassTestCase tests
 		foreach($classes as $class) {
@@ -96,10 +97,14 @@ class UnitLibraryTestCase extends UnitDirectoryTestCase {
 				}
 			
 				# Create and execute test
-				if($hasItsOwnTest)
+				if($hasItsOwnTest) {
+				  chdir(dirname($classInfo->getFileName()));
 					$this->executeTest(new UnitClassTestCase($class, $classInfo));
+				}
 			}
 		}
+		
+		chdir($org_cwd);
 	}
 	
 	
@@ -159,6 +164,8 @@ class UnitLibraryTestCase extends UnitDirectoryTestCase {
 	 * @return void
 	 */
 	protected function importClassFiles($path) {
+	  $org_cwd = getcwd();
+	  chdir($path);
 		foreach(scandir($path) as $file) {
 			if($file{0} == '.')
 				continue;
@@ -191,6 +198,8 @@ class UnitLibraryTestCase extends UnitDirectoryTestCase {
 				$this->importClassFiles($filepath);
 			}
 		}
+		chdir($org_cwd);
 	}
+	
 }
 ?>

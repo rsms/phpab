@@ -137,8 +137,9 @@ class UnitDirectoryTestCase extends UnitTestCase
 		$this->cases[] = $case;
 		$case->test();
 		
-		if($this->allCasesPassed && !$case->passed())
+		if($this->allCasesPassed && !$case->passed()) {
 			$this->allCasesPassed = false;
+		}
 	}
 	
 	
