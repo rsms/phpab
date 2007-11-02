@@ -147,6 +147,9 @@ abstract class ConsoleApplication {
 		// foreach arg
 		while ($argPos<$argc) {
 			$arg = $argv[$argPos];
+			if(!$arg) {
+			  continue;
+			}
 			if ($arg{0}=="-") {
 				if ($arg{1}=="-") {
 					$var = substr($arg,2,strlen($arg));

@@ -28,8 +28,6 @@ THE SOFTWARE.
  */
 final class XML {
 	
-	private static $xtbl_u = array('&','"','<','>');
-	private static $xtbl_e = array('&#38;','&#34;','&#60;','&#62;');
 	private static $xtblt_u = array('&','<','>');
 	private static $xtblt_e = array('&#38;','&#60;','&#62;');
 	
@@ -74,36 +72,58 @@ final class XML {
 	}
 	
 	/**
-	 * Escape attribute value
+	 * Escape attribute value.
+	 * 
+	 * Encodes '"<>& and characters with ASCII value less than 32, optionally 
+	 * encode other special characters (above ASCII 127).
 	 * 
 	 * @param  string
+	 * @param  bool
 	 * @return string
 	 * @see	   unescape()
+	 * @see	   unescape()
 	 */
-	public static function escape($str) {
-		return str_replace(self::$xtbl_u, self::$xtbl_e, $str);
+	public static function escape($str, $encode_high=false) {
+	  return $encode_high ? 
+	    filter_var($str, FILTER_SANITIZE_SPECIAL_CHARS, FILTER_FLAG_ENCODE_HIGH) :
+	    filter_var($str, FILTER_SANITIZE_SPECIAL_CHARS);
 	}
 	
 	/**
-	 * Unescape attribute value
+	 * Decode entities.
+	 * 
+	 * Decode entities previously encoded in numeric or aliased xml/html
+	 * entities.
 	 * 
 	 * @param  string
 	 * @return string
 	 * @see	   escape()
 	 */
 	public static function unescape($str) {
-		return str_replace(self::$xtbl_e, self::$xtbl_u, $str);
+		return html_entity_decode($str, ENT_QUOTES);
 	}
 	
 	/**
-	 * Escape text node
+	 * Escape text node.
+	 * 
+	 * Encodes <>&
+	 * 
+	 * Note: This is currently _not_ faster than {@link escape()}, use 
+	 *       only if you need to preserve linebreaks, tabs, etc.
 	 * 
 	 * @param  string
 	 * @return string
-	 * @see	   unescapeText()
+	 * @see	   escape()
+	 * @see	   unescape()
 	 */
 	public static function escapeText($str) {
 		return str_replace(self::$xtblt_u, self::$xtblt_e, $str);
+	}
+	
+	/** @ignore */
+	public static function __test() {
+	  var_dump(self::escape("<>&'\"\t"));
+	  #assert(self::escape("<>&'\"\t") == );
 	}
 	
 	/**
@@ -112,17 +132,17 @@ final class XML {
 	 * @param  string
 	 * @return string
 	 * @see	   escapeText()
+	 * @deprecated Use {@link unescape()} instead
 	 */
 	public static function unescapeText($str) {
-		return str_replace(self::$xtblt_e, self::$xtblt_u, $str);
+		return self::unescape($str);
 	}
 	
 	/**
 	 * @param  SimpleXMLDocument
 	 * @return array  DOM structure
 	 */
-	public static function simpleXMLToArray(SimpleXMLElement $xml)
-	{
+	public static function simpleXMLToArray(SimpleXMLElement $xml) {
 		# new array node
 		$node = array();
 		
