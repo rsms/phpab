@@ -171,7 +171,7 @@ class BenchmarkTimer {
 			if( $mins > 0 ) $ret .= "$mins min, ";
 			if( $secs > 0 ) $ret .= "$secs sec, ";
 			if( $ms > 0 ) $ret .= "$ms ms, ";
-			if( $mi > 0 ) $ret .= "$mi ".(self::$utf8 ? "\xc2" : 'u').'s, '; # ISO: "\xb5"
+			if( $mi > 0 ) $ret .= "$mi ".(self::$utf8 ? "\xc2\xb5" : 'u').'s, '; # ISO/Latin-1: "\xb5"
 			$ret .= "$ns ns";
 			
 			return $ret;
@@ -198,8 +198,8 @@ class BenchmarkTimer {
 			if( ($sec > 0.001 && $what == null) || $what == 'ms' )
 				return round($sec * 1000, 2).' ms';
 			
-			if( ($sec > 0.000001 && $what == null) || $what == 'mi' || $what == "\xb5s" || $what == "\xc2s" || $what == 'us' )
-				return round($sec * 1000000, 2).' '.(self::$utf8 ? "\xc2" : 'u').'s';
+			if( ($sec > 0.000001 && $what == null) || $what == 'mi' || $what == 'mu' || $what == "\xb5s" || $what == "\xc2s" || $what == 'us' )
+				return round($sec * 1000000, 2).' '.(self::$utf8 ? "\xc2\xb5" : 'u').'s';
 			
 			return intval($sec * 1000000000).' ns';
 		}
