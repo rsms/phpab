@@ -39,14 +39,22 @@ class UnitLibraryTestCase extends UnitDirectoryTestCase
 		$this->recursive = $recursive;
 	}
 	
+	/**
+	 * Meant for overriding. This implementation always returns true.
+	 * 
+	 * @param  ABReflectionClass
+	 * @return bool
+	 */
+	protected function shouldTestClass(ABReflectionClass $classInfo) {
+	  return true;
+	}
 	
 	/**
 	 * Implementation-specific test logic
 	 *
 	 * @return void
 	 */
-	protected function performTests()
-	{
+	protected function performTests() {
 		# Import all class definitions
 		if($this->log)
 			$this->log->warn("Importing libraries...\n");
@@ -60,30 +68,29 @@ class UnitLibraryTestCase extends UnitDirectoryTestCase
 		#var_dump($classes);
 		
 		# Find loaded classes and run UnitClassTestCase tests
-		foreach($classes as $class)
-		{
+		foreach($classes as $class) {
 			# Has __test method?
-			if(is_callable(array($class, '__test'), false))
-			{
+			if(is_callable(array($class, '__test'), false)) {
 				$classInfo = new ABReflectionClass($class);
+				
+				if(!$this->shouldTestClass($classInfo)) {
+				  continue;
+				}
 				
 				# Disabled this because symlinked libraries might not root in the same
 				# directory as we began looking in. The above test should be enough.
 				#$declaredInFile = $classInfo->getFileName();
 				#if(substr($declaredInFile, 0, strlen($this->path)) == $this->path)
-			
+			  
 				$hasItsOwnTest = true;
 				
 				# Only include __test()'s explicitly defined in subclasses
-				if($classInfo->getParentClass())
-				{
+				if($classInfo->getParentClass()) {
 					$hasItsOwnTest = false;
 					$classInfoName = $classInfo->getName();
 					
-					foreach($classInfo->getMethods() as $method)
-					{
-						if($method->getName() == '__test' && $method->getDeclaringClass()->getName() == $classInfoName)
-						{
+					foreach($classInfo->getMethods() as $method) {
+						if($method->getName() == '__test' && $method->getDeclaringClass()->getName() == $classInfoName) {
 							$hasItsOwnTest = true;
 							break;
 						}

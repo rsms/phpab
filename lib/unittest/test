@@ -41,7 +41,7 @@ class UnitTestCLI extends ConsoleApplication {
 		if(!isset($this->op['s']) && !isset($this->op['silent']))
 		{
 			$this->println(
-			"Usage: " . basename($GLOBALS['argv'][0]) . " [options] libpath\n"
+			"Usage: " . basename($GLOBALS['argv'][0]) . " [options] target\n"
 			. "Run unit tests on a library.\n"
 				. "Options:\n"
 				
@@ -95,11 +95,6 @@ class UnitTestCLI extends ConsoleApplication {
 		# Silent mode?
 		$this->silent = (isset($op['s']) || isset($op['silent']));
 		
-		# Set libpath
-		$libPath = isset($argv[1]) ? $argv[1] : realpath('.');
-		if(!is_dir($libPath))
-			die("ERROR: libpath does not exist or is not a directory.\n");
-		
 		# Setup logger
 		$log = $this->log = new SimpleLogger(fopen(isset($_SERVER['TM_SELECTED_FILE']) ? 'php://stdout' : 'php://stderr','w'), SimpleLogger::LEVEL_WARN);
 		$log->enableFormatting = false;
@@ -114,17 +109,35 @@ class UnitTestCLI extends ConsoleApplication {
 				die("Error: Verbosity argument must be specified as an integer.\n");
 		}
 		
+		# Get target
+		$target = isset($argv[1]) ? $argv[1] : realpath('.');
+		if(!file_exists($target)) {
+		  $log->error("'$target' does not exist");
+			die(1);
+		}
 		
-		# Setup Library test case
-		$libTest = new UnitLibraryTestCase($libPath);
-		$libTest->log = $log;
+		$test = null;
+		$target = realpath($target);
+		
+		if(is_file($target)) {
+		  $test = new FocusedUnitLibraryTestCase(dirname($target), array('*/'.basename($target)), null, false);
+		  $log->warn("Running test in '".basename($target)."'...\n");
+		}
+		elseif(is_dir($target)) {
+  		$test = new UnitLibraryTestCase($target);
+		  $log->warn("Running tests in '$target'...\n");
+  	}
+  	else {
+  	  $log->error("Unsupported target type");
+  	  die(2);
+  	}
+  	
+  	$test->log = $log;
 		$timer = new BenchmarkTimer(true);
 		
-		
-		# Run tests
-		$log->warn("Running tests in '$libPath'...\n");
-		$libTest->test();
-		$cases = $libTest->getCompletedTestCases();
+		# Run test(s)
+		$test->test();
+		$cases = $test->getCompletedTestCases();
 		$timer->stop();
 		
 		# Gather results
@@ -144,7 +157,7 @@ class UnitTestCLI extends ConsoleApplication {
 		
 		if($log->level < SimpleLogger::LEVEL_WARN)
 			$this->println($hr);
-		if($libTest->passed())
+		if($test->passed())
 			$this->println("OK. All ".count($cases)." tests passed.");
 		else
 			$this->println(count($failedCases)." test FAILED out of a total ".count($cases)." tests.");
@@ -167,7 +180,7 @@ class UnitTestCLI extends ConsoleApplication {
 		}*/
 		
 		# Exit status > 0 if not all test passed
-		return $libTest->passed() ? 0 : 1;
+		return $test->passed() ? 0 : 1;
 	}
 	
 	
