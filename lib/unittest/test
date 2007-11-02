@@ -101,7 +101,7 @@ class UnitTestCLI extends ConsoleApplication {
 			die("ERROR: libpath does not exist or is not a directory.\n");
 		
 		# Setup logger
-		$log = $this->log = new SimpleLogger(fopen('php://stderr','w'), SimpleLogger::LEVEL_WARN);
+		$log = $this->log = new SimpleLogger(fopen(isset($_SERVER['TM_SELECTED_FILE']) ? 'php://stdout' : 'php://stderr','w'), SimpleLogger::LEVEL_WARN);
 		$log->enableFormatting = false;
 		if($this->silent) {
 			$log->level = SimpleLogger::LEVEL_ERROR;
