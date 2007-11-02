@@ -38,7 +38,7 @@ THE SOFTWARE.
 class BenchmarkTimer {
 	
 	/** @var bool */
-	public static $utf8 = false;
+	public static $utf8 = true;
 	
 	/** @ignore */
 	public static $HAVE_RUSAGE = 1;
