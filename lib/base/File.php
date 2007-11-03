@@ -46,8 +46,7 @@ class File {
 	 * @throws IllegalArgumentException if the class of $path is not convertable
 	 * @see    valueOf()
 	 */
-	public function __construct($path)
-	{
+	public function __construct($path) {
 		if(is_object($path))
 		{
 			if($path instanceof URL)
@@ -71,8 +70,7 @@ class File {
 	}
 	
 	/** @return URL */
-	public function getURL()
-	{
+	public function getURL() {
 		if(!$this->url)
 			$this->url = new URL($this->path);
 		return $this->url;
@@ -82,8 +80,7 @@ class File {
 	 * ftp://localhost/foo/bar.txt -> bar.txt
 	 * @return string
 	 */
-	public function getName()
-	{
+	public function getName() {
 		return basename($this->getPath());
 	}
 	
@@ -91,8 +88,7 @@ class File {
 	 * ftp://localhost/foo/bar -> /foo
 	 * @return string
 	 */
-	public function getDirname()
-	{
+	public function getDirname() {
 		return dirname($this->getPath());
 	}
 	
@@ -100,8 +96,7 @@ class File {
 	 * ftp://localhost/foo/../bar -> /foo/../bar
 	 * @return File
 	 */
-	public function getPath()
-	{
+	public function getPath() {
 		if(!$this->url && strpos($this->path, ':') === false)
 			return $this->path;
 		return $this->getURL()->getPath();
@@ -111,8 +106,7 @@ class File {
 	 * ftp://localhost/foo/../bar -> /bar
 	 * @return File
 	 */
-	public function getAbsolutePath()
-	{
+	public function getAbsolutePath() {
 		if(($p = realpath($this->getPath())) === false)
 			return $this->getPath();
 		return $p;
@@ -122,8 +116,7 @@ class File {
 	 * ftp://localhost/foo/bar -> ftp://localhost/foo
 	 * @return File
 	 */
-	public function getParent()
-	{
+	public function getParent() {
 		$class = get_class($this);
 		return new $class(dirname(rtrim($this->toString(),'/\\')));
 	}
@@ -139,8 +132,7 @@ class File {
 	/**
 	 * @return string
 	 */
-	public function getExtension()
-	{
+	public function getExtension() {
 		$name = $this->getName();
 		if(($p = strrpos($name, '.')) !== false)
 			return substr($name, $p+1);
@@ -152,8 +144,7 @@ class File {
 	 * @param  string
 	 * @return void
 	 */
-	public function setExtension($ext)
-	{
+	public function setExtension($ext) {
 		$name = $this->getName();
 		$p = strrpos($name, '.');
 		$url = $this->getURL();
@@ -168,8 +159,7 @@ class File {
 	 * @return bool
 	 * @throws IOException
 	 */
-	public function isFile()
-	{
+	public function isFile() {
 		try
 		{
 			return is_file($this->toString());
@@ -184,8 +174,7 @@ class File {
 	 * @return bool
 	 * @throws IOException
 	 */
-	public function isLink()
-	{
+	public function isLink() {
 		try
 		{
 			return is_link(rtrim($this->toString(),'/'));
@@ -200,8 +189,7 @@ class File {
 	 * @return bool
 	 * @throws IOException
 	 */
-	public function isDir()
-	{
+	public function isDir() {
 		try
 		{
 			return is_dir($this->toString());
@@ -221,8 +209,7 @@ class File {
 	 * @return bool
 	 * @throws IOException
 	 */
-	public function isReadable()
-	{
+	public function isReadable() {
 		try
 		{
 			return is_readable($this->toString());
@@ -237,8 +224,7 @@ class File {
 	 * @return bool
 	 * @throws IOException
 	 */
-	public function exists()
-	{
+	public function exists() {
 		try
 		{
 			return file_exists($this->toString());
@@ -253,8 +239,7 @@ class File {
 	 * @return int (unsigned)
 	 * @throws IOException
 	 */
-	public function size()
-	{
+	public function size() {
 		try
 		{
 			return filesize($this->toString());
@@ -269,8 +254,7 @@ class File {
 	 * @return int Timestamp
 	 * @throws IOException
 	 */
-	public function lastModified()
-	{
+	public function lastModified() {
 		try
 		{
 			return filemtime($this->toString());
@@ -290,8 +274,7 @@ class File {
 	 * @return void
 	 * @throws IOException
 	 */
-	public function delete($recursive = false)
-	{
+	public function delete($recursive = false) {
 		try
 		{
 			$url = rtrim($this->toString(), '/');
@@ -328,8 +311,7 @@ class File {
 	 * 
 	 * @return void
 	 */
-	public function deleteOnExit()
-	{
+	public function deleteOnExit() {
 		if(!self::$deleteOnExit)
 			register_shutdown_function(array('File','__deleteOnExit'));
 		self::$deleteOnExit[] = /*clone*/ $this;
@@ -339,8 +321,7 @@ class File {
 	 * @return void
 	 * @throws IOException
 	 */
-	public function touch($time = null, $atime = null)
-	{
+	public function touch($time = null, $atime = null) {
 		try
 		{
 			if($time === null)
@@ -364,8 +345,7 @@ class File {
 	 * @return void
 	 * @throws IOException
 	 */
-	public function mkdir( $mode = 0775, $recursive = false )
-	{
+	public function mkdir( $mode = 0775, $recursive = false ) {
 		try
 		{
 			if(!mkdir($this->toString(), $mode, $recursive))
@@ -386,8 +366,7 @@ class File {
 	 * @return void
 	 * @throws IOException
 	 */
-	public function mkdirs( $mode = 0775 )
-	{
+	public function mkdirs( $mode = 0775 ) {
 		$this->mkdir($mode, true);
 	}
 	
@@ -411,8 +390,7 @@ class File {
 	 * @throws IOException
 	 * @throws FileNotFoundException
 	 */
-	public function chmod( $mode )
-	{
+	public function chmod( $mode ) {
 		try {
 			$url = $this->toString();
 			if(strcasecmp(substr($url,0,7), 'file://') == 0)
@@ -444,8 +422,7 @@ class File {
 	 * @throws PHPException
 	 * @throws FileNotFoundException
 	 */
-	protected function chmodstr($filename, $mode)
-	{
+	protected function chmodstr($filename, $mode) {
 		$orgmode = -1;
 		$mod = 0;
 		$m = array('r'=>0,'w'=>0,'x'=>0);
@@ -574,8 +551,7 @@ class File {
 	 * @return void
 	 * @throws IOException
 	 */
-	public function chown( $user )
-	{
+	public function chown( $user ) {
 		try {
 			$url = $this->toString();
 			if(strcasecmp(substr($url,0,7), 'file://'))
@@ -596,8 +572,7 @@ class File {
 	 * @return void
 	 * @throws IOException
 	 */
-	public function linkTo($linkName, $symbolic = true, $mkdirs = true)
-	{
+	public function linkTo($linkName, $symbolic = true, $mkdirs = true) {
 		# sanity check
 		if($this->getURL()->getProtocol() && $this->getURL()->getProtocol() != 'file')
 			throw new IllegalOperationException('Can not create a link outside the local file system');
@@ -637,8 +612,7 @@ class File {
 	 * @throws IllegalArgumentException  on protocol mismatch
 	 * @throws IOException
 	 */
-	public function renameTo( $what )
-	{
+	public function renameTo( $what ) {
 		$what = File::valueOf($what);
 		
 		if(!$this->getURL()->isProtocol($what->getURL()->getProtocol()))
@@ -663,8 +637,7 @@ class File {
 	 * @throws IllegalArgumentException  on protocol mismatch
 	 * @throws IOException
 	 */
-	public function copyTo( $where, $recursive = false, $recDirMode = 0775, $recOverwrite = false, $excludeFilter = null)
-	{
+	public function copyTo( $where, $recursive = false, $recDirMode = 0775, $recOverwrite = false, $excludeFilter = null) {
 		$where = File::valueOf($where);
 		$from = $this->toString();
 		$to = $where->toString();
@@ -699,8 +672,7 @@ class File {
 	 * @param  bool
 	 * @return void
 	 */
-	private function _copyDir( $from, $to, $overwrite, $dirMode, $excludeFilter )
-	{
+	private function _copyDir( $from, $to, $overwrite, $dirMode, $excludeFilter ) {
 		if($d = opendir($from)) {
 			while(($file = readdir($d)) !== false) {
 				if($file != '.' && $file != '..')
@@ -740,13 +712,28 @@ class File {
 	 * @return int    Amount of bytes that were written to the file
 	 * @throws IOException
 	 */
-	public function putContents( $data, $append = false, $lock = false )
-	{
+	public function putContents( $data, $append = false, $lock = false, $atomic = false ) {
+	  if($atomic and $append) {
+	    throw new IllegalStateException('atomic can not be used in combination with append');
+	  }
+	  
+	  if($atomic and $lock) {
+	    throw new IllegalStateException('atomic can not be used in combination with file locking');
+	  }
+	  
 		try {
-			$flags = 0;
-			if($append) $flags |= FILE_APPEND;
-			if($lock) $flags |= LOCK_EX;
-			return file_put_contents($this->toString(), $data, $flags);
+		  if($atomic) {
+		    $tempFile = self::createTempFile();
+  		  $bytes_written = file_put_contents($tempFile->toString(), $data, $flags);
+  		  $tempFile->renameTo($this);
+  		  return $bytes_written;
+		  }
+		  else {
+  			$flags = 0;
+  			if($append) $flags |= FILE_APPEND;
+  			if($lock) $flags |= LOCK_EX;
+  			return file_put_contents($this->toString(), $data, $flags);
+  		}
 		}
 		catch(PHPException $e) {
 			$e->rethrow('IOException', 'file_put_contents');
@@ -759,8 +746,7 @@ class File {
 	 * @return string  Data
 	 * @throws IOException
 	 */
-	public function getContents()
-	{
+	public function getContents() {
 		try {
 			return file_get_contents($this->toString());
 		}
@@ -776,8 +762,7 @@ class File {
 	 * @see    http://php.net/manual/en/function.DirectoryIterator-construct.php
 	 * @return DirectoryIterator
 	 */
-	public function directoryIterator($recursive = false)
-	{
+	public function directoryIterator($recursive = false) {
 		if($recursive)
 			return new RecursiveDirectoryIterator($this->getPath());
 		else
@@ -793,8 +778,7 @@ class File {
 	 * @return string[]
 	 * @throws IOException  if this is not a directory, it can't be read or other i/o error
 	 */
-	public function getFilenames()
-	{
+	public function getFilenames() {
 		$files = array();
 		
 		if(!($dh = @opendir($this->getPath())))
@@ -821,8 +805,7 @@ class File {
 	 * @return File[]
 	 * @throws IOException
 	 */
-	public function getFiles($recursive = false)
-	{
+	public function getFiles($recursive = false) {
 		$dir = rtrim($this->toString(), '/') . '/';
 		$files = array();
 		
@@ -855,8 +838,7 @@ class File {
 	 * @return void
 	 * @throws IOException
 	 */
-	private function getFilesR(&$files, $dir)
-	{
+	private function getFilesR(&$files, $dir) {
 		$dir = rtrim($dir,'/');
 		if(!($dh = @opendir($dir)))
 			throw new IOException('Failed to open directory for reading: '.$dir);
@@ -890,8 +872,7 @@ class File {
 	 * @return File[]
 	 * @see    ls()
 	 */
-	public function listFiles( $pattern = '', $sort = 0)
-	{
+	public function listFiles( $pattern = '', $sort = 0) {
 		$dir = rtrim($this->toString(),'/').'/';
 		$files = array();
 		foreach($this->ls($pattern, $sort) as $file)
@@ -905,8 +886,7 @@ class File {
 	 * @return string[]
 	 * @see    listFiles()
 	 */
-	public function ls( $pattern = '', $sort = 0 )
-	{
+	public function ls( $pattern = '', $sort = 0 ) {
 		try {
 			if ($dh = opendir($this->toString())) {
 				$files = array();
@@ -936,8 +916,7 @@ class File {
 	/**
 	 * @return bool
 	 */
-	public function isLocal()
-	{
+	public function isLocal() {
 		if(!$this->url && strpos($this->path, ':') === false)
 			return true;
 		return ($this->getURL()->isProtocol('file') || $this->getURL()->isProtocol(''));
@@ -947,8 +926,7 @@ class File {
 	 * @param  mixed  File or string
 	 * @return bool
 	 */
-	public function equals($file)
-	{
+	public function equals($file) {
 		$file = self::valueOf($file);
 		$thisUrl = $this->isLink() ? readlink(rtrim($this->getPath(),'/')) : rtrim($this->toString(),'/');
 		$fileUrl = $file->isLink() ? readlink(rtrim($file->getPath(),'/')) : rtrim($file->toString(),'/');
@@ -961,8 +939,7 @@ class File {
 	 * @param  string
 	 * @return File
 	 */
-	public static function createTempFile($prefix = '', $suffix = '', $inDir = '/tmp', $deleteOnExit = true)
-	{
+	public static function createTempFile($prefix = '', $suffix = '', $inDir = '/tmp', $deleteOnExit = true) {
 		if(($file = tempnam($inDir, $prefix).$suffix) === false)
 			throw new IOException('Failed to create temporary file ' . $file);
 		
@@ -974,6 +951,21 @@ class File {
 			$file->deleteOnExit();
 		
 		return $file;
+	}
+	
+	/**
+	 * Put data into file (like file_put_contents, but using File features)
+	 *
+	 * @param  string
+	 * @param  string
+	 * @param  bool   Append instead of truncate
+	 * @param  bool   Acquire an exclusive lock
+	 * @return int    Amount of bytes that were written to the file
+	 * @throws IOException
+	 */
+	public static function put( $filename, $data, $append=false, $lock=false, $atomic=false ) {
+	  $f = new self($filename);
+	  return $f->putContents($data, $append, $lock, $atomic);
 	}
 	
 	/**
@@ -989,8 +981,7 @@ class File {
     * @param  string
     * @return string
     */
-	public static function relativePath( $path, $basePath )
-	{
+	public static function relativePath( $path, $basePath ) {
 		if($basePath) {
 			$len = strlen($basePath);
 			if(substr($path, 0, $len) == $basePath)
@@ -1004,8 +995,7 @@ class File {
 	 * @return File
 	 * @throws IllegalArgumentException
 	 */
-	public static function valueOf($file)
-	{
+	public static function valueOf($file) {
 		if($file instanceof File)
 			return $file;
 		return new self($file);
@@ -1014,13 +1004,12 @@ class File {
 	/** @ignore */
 	public static function __deleteOnExit() {
 		foreach(self::$deleteOnExit as $file) {
-			try { $file->delete(); } catch(Exception $e) {}
+			try { @$file->delete(); } catch(Exception $e) {}
 		}
 	}
 	
 	/** @ignore */
-	public static function __test()
-	{
+	public static function __test() {
 		$file = new File(__FILE__);
 		assert($file->exists());
 		assert($file->isFile());
