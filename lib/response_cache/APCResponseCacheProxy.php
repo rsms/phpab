@@ -204,10 +204,6 @@ class APCResponseCacheProxy {
         
         # Apply tidy
         if(self::$tidy) {
-            
-            #'indent-spaces' => 0
-            #'tab-size' => 0
-          
           $tidy = new tidy;
           $tidy->parseString($body, array(
             'clean'=>1,
@@ -218,7 +214,6 @@ class APCResponseCacheProxy {
             'tab-size'=>0,
             'wrap'=>0,
             'quote-ampersand'=>0,
-            #'indent'         => true,
             'output-xhtml'   => true,
             'quiet' => 1
           ), 'utf8');
