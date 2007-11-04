@@ -210,13 +210,13 @@ class APCResponseCacheProxy {
           
           $tidy = new tidy;
           $tidy->parseString($body, array(
-            'clean'=>1
-            'bare'=>1
-            'hide-comments'=>1
-            'doctype'=>omit
-            'indent-spaces'=>0
-            'tab-size'=>0
-            'wrap'=>0
+            'clean'=>1,
+            'bare'=>1,
+            'hide-comments'=>1,
+            'doctype'=> 'omit',
+            'indent-spaces'=>0,
+            'tab-size'=>0,
+            'wrap'=>0,
             'quote-ampersand'=>0,
             #'indent'         => true,
             'output-xhtml'   => true,
