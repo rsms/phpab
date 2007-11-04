@@ -75,6 +75,9 @@ class APCResponseCacheProxy {
   public static $etagCheck = 'crc32';
   
   /** @var bool */
+  public static $tidy = false;
+  
+  /** @var bool */
   protected static $activated = false;
   
   /** @var bool */
@@ -198,6 +201,23 @@ class APCResponseCacheProxy {
       }
       else {
         $body = ob_get_clean();
+        
+        # Apply tidy
+        if(self::$tidy) {
+            
+            #'indent-spaces' => 0
+            #'tab-size' => 0
+          
+          $tidy = new tidy;
+          $tidy->parseString($body, array(
+            'indent'         => true,
+            'output-xhtml'   => true,
+            'wrap'           => 0,
+            'quiet' => 1
+          ), 'utf8');
+          $tidy->cleanRepair();
+          $body = $tidy->__toString();
+        }
         
         # Add expires header if not exists
         if(!$custom_expire_date) {
