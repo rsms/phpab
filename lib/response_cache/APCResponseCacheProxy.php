@@ -210,13 +210,20 @@ class APCResponseCacheProxy {
           
           $tidy = new tidy;
           $tidy->parseString($body, array(
-            'indent'         => true,
+            'clean'=>1
+            'bare'=>1
+            'hide-comments'=>1
+            'doctype'=>omit
+            'indent-spaces'=>0
+            'tab-size'=>0
+            'wrap'=>0
+            'quote-ampersand'=>0,
+            #'indent'         => true,
             'output-xhtml'   => true,
-            'wrap'           => 0,
             'quiet' => 1
           ), 'utf8');
           $tidy->cleanRepair();
-          $body = $tidy->__toString();
+          $body = tidy_get_output($tidy);
         }
         
         # Add expires header if not exists
