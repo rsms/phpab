@@ -35,8 +35,9 @@ if($errno == E_WARNING || $errno == E_USER_WARNING)
 	throw new PHPException($str, $errno, $file, $line);
 
 global $__original_errhandler;
-$__original_errhandler($errno, $str, $file, $line, $context);
-return;
+if($__original_errhandler) {
+  return $__original_errhandler($errno, $str, $file, $line, $context);
+}
 
 $fileLine = "on line $line in ";
 if(isset($_SERVER['DOCUMENT_ROOT']))
