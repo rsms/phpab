@@ -49,12 +49,10 @@ switch($errno) {
 		break;
 	case E_NOTICE:
 	case E_USER_NOTICE:
-	  if(error_reporting() & E_USER_NOTICE || error_reporting() & E_NOTICE) {
-  		if(PHP::isCLI())
-  			IO::writeError("{$GLOBALS['argv'][0]}: WARNING: $str $fileLine\n");
-  		else
-  			error_log("WARNING: $str $fileLine");
-		}
+		if(PHP::isCLI())
+			IO::writeError("{$GLOBALS['argv'][0]}: WARNING: $str $fileLine\n");
+		else
+			error_log("WARNING: $str $fileLine");
 		return;
 }
 
