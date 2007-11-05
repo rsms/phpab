@@ -24,8 +24,8 @@ THE SOFTWARE.
  * APC-based response caching.
  * 
  * <b>Performance-gain:</b>
- *   - Frontpage of Wordpress 2.3 with Hemingway theme gains about 800% in
- *     in speed. (2572 r/s vs 31 r/s)
+ *   - Frontpage of Wordpress 2.3 with Hemingway theme gains alot in speed.
+ *     (2572 r/s vs 31 r/s)
  * 
  * <b>Example:</b><code>
  * &lt;?
