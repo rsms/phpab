@@ -36,7 +36,8 @@ if($errno == E_WARNING || $errno == E_USER_WARNING)
 
 global $__original_errhandler;
 if($__original_errhandler) {
-  return $__original_errhandler($errno, $str, $file, $line, $context);
+  return;
+  $__original_errhandler($errno, $str, $file, $line, $context);
 }
 
 $fileLine = "on line $line in ";
