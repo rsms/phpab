@@ -135,6 +135,7 @@ class APCResponseCacheProxy {
       $headers = headers_list();
       $custom_expire_date = false;
       $no_cache = false;
+      $always_cache = false;
       $custom_max_age = false;
       $custom_etag = false;
       $now = time();
@@ -152,9 +153,11 @@ class APCResponseCacheProxy {
         }
         # Look at cache-control header
         if(($k == 'cache-control') or ($k == 'pragma')) {
-          if((strpos($v, 'no-cache') !== false) or (strpos($v, 'private') !== false)) {
+          if( !$always_cache and (strpos($v, 'no-cache') !== false) or (strpos($v, 'private') !== false)) {
             $no_cache = true;
-            break; # We do not need to know anything else - abort and respond.
+          }
+          elseif(strpos($v, 'x-always-cache') !== false) {
+            $always_cache = true;
           }
           elseif( !$custom_max_age and ($p = strpos($v, 'max-age=')) !== false) {
             $p += 8;
@@ -196,7 +199,7 @@ class APCResponseCacheProxy {
         }
       }
       # Skip caching?
-      if($no_cache) {
+      if($no_cache && !$always_cache) {
         ob_end_flush();
       }
       else {
