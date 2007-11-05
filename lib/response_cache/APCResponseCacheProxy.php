@@ -156,10 +156,10 @@ class APCResponseCacheProxy {
           if( !$always_cache and (strpos($v, 'no-cache') !== false) or (strpos($v, 'private') !== false)) {
             $no_cache = true;
           }
-          elseif(strpos($v, 'x-always-cache') !== false) {
+          if(strpos($v, 'x-always-cache') !== false) {
             $always_cache = true;
           }
-          elseif( !$custom_max_age and ($p = strpos($v, 'max-age=')) !== false) {
+          if( !$custom_max_age and ($p = strpos($v, 'max-age=')) !== false) {
             $p += 8;
             $max_age = null;
             if(($pp = strpos($v, ';', $p)) !== false) {
