@@ -285,7 +285,7 @@ function __errhandler($errno, $str, $file, $line, &$context) {
 		return;
 	require_once 'event.d/php_error.php';
 }
-set_error_handler('__errhandler', E_ALL);
+$__original_errhandler = set_error_handler('__errhandler', E_ALL);
 
 
 /**

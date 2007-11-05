@@ -34,6 +34,10 @@ THE SOFTWARE.
 if($errno == E_WARNING || $errno == E_USER_WARNING)
 	throw new PHPException($str, $errno, $file, $line);
 
+global $__original_errhandler;
+$__original_errhandler($errno, $str, $file, $line, $context);
+return;
+
 $fileLine = "on line $line in ";
 if(isset($_SERVER['DOCUMENT_ROOT']))
 	$fileLine .= File::relativePath($file, $_SERVER['DOCUMENT_ROOT']);
