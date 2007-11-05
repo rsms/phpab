@@ -52,7 +52,7 @@ switch($errno) {
 		if(PHP::isCLI())
 			IO::writeError("{$GLOBALS['argv'][0]}: WARNING: $str $fileLine\n");
 		else
-			print "<span class=\"warning\"><b>WARNING:</b> $str <span class=\"file\">$fileLine</span></span><br />";
+			error_log("WARNING: $str $fileLine");
 		return;
 }
 
@@ -62,8 +62,10 @@ if(PHP::isCLI()) {
 		. "\n");
 }
 else {
+  $s = ABException::formatTrace(new Exception(), true, array('__errhandler'));
+  error_log("FATAL: $str ($fileLine) $s");
 	print "<div class=\"err\"><b>FATAL:</b> $str <span class=\"file\">$fileLine</span>\n"
-		. '<div class="trace">' . ABException::formatTrace(new Exception(), true, array('__errhandler')) . '</div>'
+		. '<div class="trace">' . $s . '</div>'
 		. '</div>';
 }
 
