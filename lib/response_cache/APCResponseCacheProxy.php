@@ -85,7 +85,7 @@ class APCResponseCacheProxy {
    * The function construction should be like this:
    * <code>bool break_filter_chain function_name(array &headers, string &body, bool uncached)</code>
    * 
-   * @var bool
+   * @var array
    */
   public static $outputFilters = array();
   
