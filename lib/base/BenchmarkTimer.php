@@ -69,6 +69,7 @@ class BenchmarkTimer {
 	/**
 	 * Stop the timer
 	 *
+	 * @param  float
 	 * @return string  Returns the value of $timer->toString()
 	 */
 	public function stop($divideTimeBy = 1) {
@@ -79,6 +80,17 @@ class BenchmarkTimer {
 			$this->rtime /= $divideTimeBy;
 		}
 		return $this->toString();
+	}
+	
+	/**
+	 * Stop, start and return previous measurements (formatted)
+	 *
+	 * @return string  Returns the value of $timer->toString()
+	 */
+	public function restart() {
+		$s = $this->stop();
+		$this->start();
+		return $s;
 	}
 	
 	/**
