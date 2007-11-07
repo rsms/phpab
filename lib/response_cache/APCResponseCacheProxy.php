@@ -78,8 +78,16 @@ class APCResponseCacheProxy {
    */
   public static $etagCheck = 'crc32';
   
-  /** @var bool */
-  public static $tidy = false;
+  /**
+   * A list of functions to filter output.
+   * 
+   * Called in order and only on cache miss.
+   * The function construction should be like this:
+   * <code>bool break_filter_chain function_name(array &headers, string &body, bool uncached)</code>
+   * 
+   * @var bool
+   */
+  public static $outputFilters = array();
   
   /** @var bool */
   protected static $activated = false;
@@ -204,29 +212,22 @@ class APCResponseCacheProxy {
       }
       # Skip caching?
       if($no_cache && !$always_cache) {
-        ob_end_flush();
+        # Apply any filters
+        if(self::$outputFilters) {
+          $body = ob_get_clean();
+          foreach(self::$outputFilters as $filter) {
+            if( call_user_func_array($filter, array(0 => &$headers, 1 => &$body, false)) ) {
+              break;
+            }
+          }
+          echo $body;
+        }
+        else {
+          ob_end_flush();
+        }
       }
       else {
         $body = ob_get_clean();
-        
-        # Apply tidy
-        if(self::$tidy) {
-          $tidy = new tidy;
-          $tidy->parseString($body, array(
-            'clean'=>1,
-            'bare'=>1,
-            'hide-comments'=>1,
-            'doctype'=> 'omit',
-            'indent-spaces'=>0,
-            'tab-size'=>0,
-            'wrap'=>0,
-            'quote-ampersand'=>0,
-            'output-xhtml'   => true,
-            'quiet' => 1
-          ), 'utf8');
-          $tidy->cleanRepair();
-          $body = tidy_get_output($tidy);
-        }
         
         # Add expires header if not exists
         if(!$custom_expire_date) {
@@ -248,6 +249,14 @@ class APCResponseCacheProxy {
         $headers[] = 'Content-Length: '.strlen($body);
         $headers[] = 'X-Cache: HIT from '.php_uname('n');
         #$headers[] = 'Via: '.get_class().'/r'.$rev;
+        
+        # Apply any filters
+        foreach(self::$outputFilters as $filter) {
+          if( call_user_func_array($filter, array(0 => &$headers, 1 => &$body, false)) ) {
+            break;
+          }
+        }
+        
         apc_store(self::$key.'#H', $headers, self::$ttl);
         apc_store(self::$key.'#B', $body, self::$ttl);
         header('Content-Length: '.strlen($body));

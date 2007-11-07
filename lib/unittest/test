@@ -129,6 +129,7 @@ class UnitTestCLI extends ConsoleApplication {
 		    if(!isset($inputFiles[$dir])) {
 		      $inputFiles[$dir] = array();
 		    }
+		    include($target);
 		    $inputFiles[$dir][] = '*/'.basename($target);
 	    }
   		elseif(is_dir($target)) {
