@@ -15,14 +15,14 @@
 			<frame src="li_functions.html" name="li_functions">
 		</frameset>
 	{elseif $function_count < 1 && $subpackage_count < 2}
-		<frame src="li_classes.html" name="li_classes">
+		<frame src="li_ab.html" name="li_classes">
 	{else}
 		<frameset rows="150,*">
 			<frame src="li_packages.html" name="li_packages">
 			<frame src="li_classes.html" name="li_classes">
 		</frameset>
 	{/if}
-		<frame src="classtrees_all.html" name="right" id="mainframe">
+		<frame src="classtrees_ab.html" name="right" id="mainframe">
 		<noframes>
 			<h2>Frame Alert</h2>
 			This document is designed to be viewed using the frames feature.

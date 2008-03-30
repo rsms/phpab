@@ -117,6 +117,9 @@ THE SOFTWARE.
  * @subpackage base
  */
 
+/** AbstractBase version in the format MAJOR.MINOR.RELEASE */
+define('AB_VERSION', '1.0.0');
+
 /** Location of abstractbase libraries */
 define('AB_LIB', realpath(dirname(__FILE__).'/..'));
 
