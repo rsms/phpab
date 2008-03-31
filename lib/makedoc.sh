@@ -7,6 +7,7 @@
 PHPDOC=`which phpdoc`
 cd $(dirname $0)
 PWD=`pwd`
+VER=$($GREP "define('AB_VERSION'" base/boot.php|cut -d ' ' -f 2|sed 's/[^0-9\.]//g')
 
 if [ ! -x "$PHPDOC" ]; then
 	echo "phpdoc not installed" >&2
@@ -20,7 +21,7 @@ fi
 ###############################################################################
 # Configuration:
 
-TITLE="AbstractBase&nbsp;API&nbsp;Documentation"
+TITLE="AbstractBase&nbsp;$VER&nbsp;API&nbsp;Documentation"
 
 # name to use for the default package. If not specified, uses 'default'
 DEFAULT_PACKAGE="ab.unknown"

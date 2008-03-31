@@ -8,6 +8,9 @@ DEB_REMOTE_PATH='/var/www/hunch.se/www/public/debian/'
 cd `dirname $0`
 . dist.sh
 
+echo "work in progress" >&2
+exit 1
+
 # Ensure we're on Debian and has package builder
 if [ $(uname -s) != "Linux" ] || [ ! -x /usr/bin/dpkg-buildpackage ]; then
   echo 'This is not a debian machine or dpkg-buildpackage is not available.' >&2

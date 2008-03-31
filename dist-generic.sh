@@ -14,8 +14,8 @@
 #
 
 REMOTE_HOST='trac.hunch.se'
-REMOTE_PATH='/var/lib/trac/ab/dist/'
-REMOTE_PATH_DOCS='/var/lib/trac/ab/docs/'
+REMOTE_PATH='/var/lib/trac/ab/dist'
+REMOTE_PATH_DOCS='/var/lib/trac/ab/docs'
 
 if [ "$1" == "-h" ] || [ "$1" == "--help" ]; then
   echo "Package and distribute a new version." >&2
@@ -26,7 +26,7 @@ fi
 cd $(dirname $0)
 . dist.sh
 
-#ensure_clean_working_revision
+ensure_clean_working_revision
 
 
 # Clean previous
@@ -56,10 +56,17 @@ lib/makedoc.sh
 
 # Upload & update links on server
 echo "Uploading $DIST_PACKAGE_PATH to $REMOTE_HOST:$REMOTE_PATH"
-scp -qC "$DIST_PACKAGE_PATH" $REMOTE_HOST:$REMOTE_PATH
+scp -qC "$DIST_PACKAGE_PATH" $REMOTE_HOST:$REMOTE_PATH/
 ssh $REMOTE_HOST "cd $REMOTE_PATH;\
 if [ -f \"$DIST_PACKAGE_FILENAME\" ]; then\
   ln -sf \"$DIST_PACKAGE_FILENAME\" \"$PACKAGE-latest.tgz\";\
 fi;"
 echo "Uploading docs/api to $REMOTE_HOST:$REMOTE_PATH_DOCS"
-scp -qCr docs/api $REMOTE_HOST:$REMOTE_PATH_DOCS
+scp -qCr docs/api $REMOTE_HOST:$REMOTE_PATH_DOCS/.api_upload
+ssh $REMOTE_HOST "cd $REMOTE_PATH_DOCS; rm -rf api; mv -v .api_upload api"
+
+# Note about tagging
+echo 'Done!'
+echo 'You might want to tag this version:'
+REPROOT=$(svn info .|grep 'Repository Root:'|cut -d ' ' -f 3)
+echo svn cp . $REPROOT/tags/$DIST_PACKAGE_NAME

@@ -1,0 +1,15 @@
+Source: php5-abstractbase
+Section: web
+Priority: optional
+Maintainer: Rasmus Andersson <rasmus@flajm.se>
+Build-Depends: debhelper (>= 5.0.38), php5 (>= 5.1.0)
+Standards-Version: 3.7.2
+
+Package: php5-abstractbase
+Architecture: any
+Depends: php5, ${shlibs:Depends}
+Suggests: php5-curl, php5-imap, php5-mcrypt
+Description: A lightweight, high quality, strictly named and documented, object
+             oriented PHP 5 library.
+             .
+             Homepage: http://trac.hunch.se/ab
