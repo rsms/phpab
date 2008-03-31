@@ -7,7 +7,7 @@
 PHPDOC=`which phpdoc`
 cd $(dirname $0)
 PWD=`pwd`
-VER=$($GREP "define('AB_VERSION'" base/boot.php|cut -d ' ' -f 2|sed 's/[^0-9\.]//g')
+VER=$(grep "define('AB_VERSION'" base/boot.php|cut -d ' ' -f 2|sed 's/[^0-9\.]//g')
 
 if [ ! -x "$PHPDOC" ]; then
 	echo "phpdoc not installed" >&2

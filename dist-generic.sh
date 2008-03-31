@@ -26,6 +26,12 @@ fi
 cd $(dirname $0)
 . dist.sh
 
+CP=/bin/cp
+if [ "$(uname -s)" == "Darwin" ]; then
+  # don't include any extended attributes or resource forks
+  CP="$CP -X"
+fi
+
 ensure_clean_working_revision
 
 
@@ -42,13 +48,14 @@ mkdir -vp "$DIST_DIR_ROOT"
 for f in $(find -E lib -type f -regex '.+/(.*\.php|test)'); do
   DEST="$DIST_DIR_ROOT/$f"
   mkdir -pv $(dirname "$DEST")
-  cp -R "$f" "$DEST"
+  $CP -v "$f" "$DEST"
 done
 for f in LICENSE README; do
-  cp $f "$DIST_DIR_ROOT/"
+  $CP -v $f "$DIST_DIR_ROOT/"
 done
 rm -f "$DIST_PACKAGE_PATH"
-tar --directory "$DIST_DIR" --exclude '.*' -zcvf "$DIST_PACKAGE_PATH" .
+echo "tar --directory \"$DIST_DIR\" -czvf \"$DIST_PACKAGE_PATH\" ."
+tar --directory "$DIST_DIR" -czvf "$DIST_PACKAGE_PATH" .
 
 # Generate documentation
 echo 'Generating documentation...'
