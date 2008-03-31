@@ -74,6 +74,12 @@ ssh $REMOTE_HOST "cd $REMOTE_PATH_DOCS; rm -rf api; mv -v .api_upload api"
 
 # Note about tagging
 echo 'Done!'
-echo 'You might want to tag this version:'
+echo '-------------------------------------------------------'
+echo '                      IMPORTANT!'
+echo ''
+echo "Don't forget to bump up the RELEASE part of AB_VERSION."
+echo 'Also, You might want to tag this version:'
 REPROOT=$(svn info .|grep 'Repository Root:'|cut -d ' ' -f 3)
 echo svn cp . $REPROOT/tags/$DIST_PACKAGE_NAME
+echo ''
+echo '-------------------------------------------------------'
